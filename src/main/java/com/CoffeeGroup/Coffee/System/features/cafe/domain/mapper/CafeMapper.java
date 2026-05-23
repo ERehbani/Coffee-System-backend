@@ -28,18 +28,6 @@ public class CafeMapper {
                 .build();
     }
 
-
-    public void updateEntityFromRequest(UpdateCafeRequest request, CafeEntity existingEntity) {
-        if (request == null || existingEntity == null) return;
-
-        existingEntity.setAddress(request.address());
-        existingEntity.setEmail(new Email(request.email()));
-        existingEntity.setPhoneNumber(request.phoneNumber());
-        existingEntity.setDescription(request.description());
-        existingEntity.setSchedule(request.schedule());
-        existingEntity.setImage(request.image());
-    }
-
     public CafeResponse toResponse(CafeEntity entity) {
         if (entity == null) return null;
 

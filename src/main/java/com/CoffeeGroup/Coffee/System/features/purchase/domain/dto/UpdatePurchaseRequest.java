@@ -8,9 +8,7 @@ import java.util.UUID;
 
 public record UpdatePurchaseRequest(
         String date,
-        BigDecimal price,
-        ClientEntity client,
-        CafeEntity cafe
+        BigDecimal price
 ){
 
 }

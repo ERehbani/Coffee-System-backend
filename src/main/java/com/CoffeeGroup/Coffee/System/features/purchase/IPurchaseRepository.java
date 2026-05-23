@@ -1,5 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
+<<<<<<< HEAD
+=======
+import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+>>>>>>> 07f6abf (Servicio Purchase)
 
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
@@ -23,6 +29,7 @@ public interface IPurchaseRepository extends JpaRepository<PurchaseEntity,Long> 
 
     Optional<PurchaseEntity> findByExternalId(UUID externalId);
 
+<<<<<<< HEAD
     Optional<PurchaseEntity> findByDate(Date date);
 
     Optional<PurchaseEntity> findByClient(ClientEntity client);
@@ -32,5 +39,9 @@ public interface IPurchaseRepository extends JpaRepository<PurchaseEntity,Long> 
     boolean existsByExternalId(UUID externalId);
 
     boolean existsByEmail(Email email);
+=======
+    boolean existsByClient(ClientEntity client);
+
+>>>>>>> 07f6abf (Servicio Purchase)
 
 }
