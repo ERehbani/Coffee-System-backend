@@ -9,6 +9,6 @@ import java.util.UUID;
 @Repository
 public interface TierRepository extends JpaRepository<TierEntity, Long> {
     Optional<TierEntity> findByExternalId(UUID externalId);
-    boolean existsByName(ETiersEnum name);
-    void deleteByExternalId(UUID externalId);
+    boolean existsByName(String name);
+    boolean existsByMinPoints(Integer minPoints);
 }
