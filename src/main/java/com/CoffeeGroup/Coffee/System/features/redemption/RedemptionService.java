@@ -7,10 +7,12 @@ import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.IPurchaseRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionCreateMapper;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionUpdateRequest;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.mapper.RedemptionMapper;
+import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,8 @@ import java.util.UUID;
 public class RedemptionService implements IRedemptionService {
 
     private final IRedemptionRepository redemptionRepository;
-    private final RedemptionMapper redemptionMapper;
-
+    private final IRedemptionResponseMapper responseMapper;
+    private final IRedemptionCreateMapper createMapper;
     private final IClientRepository clientRepository;
     private final IPurchaseRepository purchaseRepository;
     private final IBenefitRepository benefitRepository;
@@ -34,17 +36,17 @@ public class RedemptionService implements IRedemptionService {
     @Override
     @Transactional
     public RedemptionResponse save(RedemptionCreateRequest redemptionCreateRequest) {
-        ClientEntity clientAux = clientRepository.findByExternalId(redemptionCreateRequest.clientid()).
+        ClientEntity clientAux = clientRepository.findByExternalId(redemptionCreateRequest.client()).
                 orElseThrow(()-> new EntityNotFoundException("Client not found"));
 
 
-        BenefitEntity benefitAux = benefitRepository.findByExternalId(redemptionCreateRequest.benefitid())
+        BenefitEntity benefitAux = benefitRepository.findByExternalId(redemptionCreateRequest.benefit())
                 .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
         PurchaseEntity purchaseAux = null;
 
 
-        if (redemptionCreateRequest.purchaseid() != null){
-            purchaseAux = purchaseRepository.findByExternalId(redemptionCreateRequest.purchaseid())
+        if (redemptionCreateRequest.purchase() != null){
+            purchaseAux = purchaseRepository.findByExternalId(redemptionCreateRequest.purchase())
                     .orElseThrow(()-> new EntityNotFoundException("Purchase not found"));
 
         }
@@ -56,7 +58,7 @@ public class RedemptionService implements IRedemptionService {
         clientAux.setCurrentPoints(clientAux.getCurrentPoints() - pointsCost);
         clientRepository.save(clientAux);
 
-        RedemptionEntity redemptionEntity = redemptionMapper.toEntity(redemptionCreateRequest);
+        RedemptionEntity redemptionEntity =  createMapper.toEntity(redemptionCreateRequest);
 
         redemptionEntity.setClient(clientAux);
         redemptionEntity.setBenefit(benefitAux);
@@ -67,7 +69,7 @@ public class RedemptionService implements IRedemptionService {
         redemptionEntity.setUsedPoints(pointsCost);
 
         redemptionRepository.save(redemptionEntity);
-        return redemptionMapper.toResponse(redemptionEntity);
+        return responseMapper.toDto(redemptionEntity);
     }
 
     @Override
@@ -79,12 +81,12 @@ public class RedemptionService implements IRedemptionService {
         save.setExternalId(redemptionUpdateRequest.externalId());
 
         redemptionRepository.save(save);
-        return redemptionMapper.toResponse(save);
+        return responseMapper.toDto(save);
     }
 
     @Override
     public RedemptionResponse findByid(UUID externalId) {
-        return redemptionRepository.findByExternalId(externalId).map(redemptionMapper::toResponse)
+        return redemptionRepository.findByExternalId(externalId).map(responseMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
     }
 
@@ -99,6 +101,6 @@ public class RedemptionService implements IRedemptionService {
 
     @Override
     public List<RedemptionResponse> findAll() {
-        return redemptionRepository.findAll().stream().map(redemptionMapper::toResponse).toList();
+        return redemptionRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 }

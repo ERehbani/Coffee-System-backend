@@ -10,5 +10,8 @@ public record RedemptionResponse(
         LocalDate date,
         Integer usedPoints,
         String validationCode,
-        Boolean state){
-}
+        Boolean state,
+        UUID purchase,
+        UUID benefit,
+        UUID client
+){ }
