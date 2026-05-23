@@ -11,7 +11,7 @@ public record CreatePurchaseRequest(
         UUID externalId,
         Date date,
         BigDecimal price,
-        ClientEntity client,
-        CafeEntity  cafe
+        UUID client,
+        UUID  cafe
 ) {
 }

@@ -18,8 +18,8 @@ public record PurchaseResponse(
         Date date,
         BigDecimal price,
         RedemptionEntity redemption,
-        ClientEntity client,
-        CafeEntity cafe,
+        UUID client,
+        UUID cafe,
         List<PurchaseDetailsEntity> purchaseDetails
 ) {
 }
