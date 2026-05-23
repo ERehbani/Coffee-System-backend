@@ -25,14 +25,15 @@ public class TierEntity {
     private UUID externalId;
 
     @Column(name = "name")
-    private String Name;
+    private ETiersEnum name;
 
     @Column(name = "min_points")
-    private Integer MinPoints;
+    private Integer minPoints;
 
     //relation tier
     @OneToMany(mappedBy = "tier")
     private List<ClientEntity> client;
+
 
 
 }
