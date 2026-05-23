@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.review.domain.Mappers;
 
-import com.CoffeeGroup.Coffee.System.common.Model.IMapper;
+import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewResponse;
 import org.mapstruct.Mapper;
