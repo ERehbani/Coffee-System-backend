@@ -75,4 +75,5 @@ public class BenefitEntity {
     @OneToMany(mappedBy = "benefit",fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<RedemptionEntity> Redemptions;
+
 }
