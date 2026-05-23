@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.user;
 
-import com.CoffeeGroup.Coffee.System.common.Model.Email;
+import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.role.RoleEntity;

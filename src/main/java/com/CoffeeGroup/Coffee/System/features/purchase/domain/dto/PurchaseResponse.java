@@ -4,12 +4,14 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Builder
 public record PurchaseResponse(
 
         UUID externaliD,

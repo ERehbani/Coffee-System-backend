@@ -3,6 +3,8 @@ package com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
+import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
+import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -23,5 +25,30 @@ public class PurchaseMapper {
                 .build();
 
     }
+
+
+    public PurchaseResponse toResponse(PurchaseEntity entity){
+
+        return PurchaseResponse.builder()
+                .externaliD(entity.getExternalId())
+                .date(entity.getDate())
+                .price(entity.getPrice())
+                .redemption(entity.getRedemption())
+                .client(entity.getClient())
+                .cafe(entity.getCafe())
+                .purchaseDetails(entity.getPurchaseDetails())
+                .build();
+    }
+
+
+    public PurchaseEntity updateEntityFromRequest(UpdatePurchaseRequest update){
+
+
+    }
+
+
+
+
+
 
 }

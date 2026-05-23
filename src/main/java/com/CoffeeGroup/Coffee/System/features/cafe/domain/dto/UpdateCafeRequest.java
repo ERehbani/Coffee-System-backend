@@ -7,10 +7,9 @@ import jakarta.validation.constraints.Size;
 
 public record UpdateCafeRequest(
 
-        @NotBlank(message = "La dirección es obligatoria")
+
         String address,
 
-        @NotBlank(message = "El email es obligatorio")
         @Email(message = "Debe tener un formato de email válido")
         String email, // en el servicio lo convertimos al objeto Email
 

@@ -6,6 +6,7 @@ import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ public class RedemptionEntity {
 
 
     @Column(name = "date_redemption")
-    private Date date;
+    private LocalDateTime date;
 
     @Column(name = "used_points")
     private Integer usedPoints;

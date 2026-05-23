@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.user;
 
-import com.CoffeeGroup.Coffee.System.common.Model.Email;
+import com.CoffeeGroup.Coffee.System.common.model.Email;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

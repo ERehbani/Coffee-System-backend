@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
-import com.CoffeeGroup.Coffee.System.common.Model.Email;
+import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;

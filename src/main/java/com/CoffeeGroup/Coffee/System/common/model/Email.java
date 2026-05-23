@@ -1,4 +1,4 @@
-package com.CoffeeGroup.Coffee.System.common.Model;
+package com.CoffeeGroup.Coffee.System.common.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

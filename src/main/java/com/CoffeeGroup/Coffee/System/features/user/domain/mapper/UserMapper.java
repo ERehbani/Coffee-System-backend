@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.user.domain.mapper;
 
-import com.CoffeeGroup.Coffee.System.common.Model.Email;
+import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.role.RoleEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.CreateUserRequest;
