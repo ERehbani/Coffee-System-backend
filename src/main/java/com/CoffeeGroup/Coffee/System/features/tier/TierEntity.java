@@ -2,7 +2,6 @@ package com.CoffeeGroup.Coffee.System.features.tier;
 
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import jakarta.persistence.*;
-import jakarta.security.auth.message.ClientAuth;
 import lombok.*;
 
 import java.util.List;
@@ -25,14 +24,15 @@ public class TierEntity {
     private UUID externalId;
 
     @Column(name = "name")
-    private String Name;
+    private String name;
 
     @Column(name = "min_points")
-    private Integer MinPoints;
+    private Integer minPoints;
 
     //relation tier
     @OneToMany(mappedBy = "tier")
     private List<ClientEntity> client;
+
 
 
 }
