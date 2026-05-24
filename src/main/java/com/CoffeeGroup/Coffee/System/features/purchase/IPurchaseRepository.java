@@ -1,6 +1,5 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
-import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

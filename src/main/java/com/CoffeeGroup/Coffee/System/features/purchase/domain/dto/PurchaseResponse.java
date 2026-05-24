@@ -1,7 +1,5 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
 
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import lombok.Builder;
