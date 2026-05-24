@@ -9,6 +9,7 @@ import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchase
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper.PurchaseMapper;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,7 @@ public class PurchaseService implements IPurchaseService{
 
 
     @Override
+    @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
 
         ClientEntity client = clientRepository.findByExternalId(request.client())
