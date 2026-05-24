@@ -1,13 +1,14 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
+
+import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
+
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Component
@@ -26,27 +27,19 @@ public class PurchaseMapper {
 
     }
 
-<<<<<<< HEAD
-=======
+
 
     public PurchaseResponse toResponse(PurchaseEntity entity){
 
-        return PurchaseResponse.builder()
-                .externaliD(entity.getExternalId())
-                .date(entity.getDate())
-                .price(entity.getPrice())
-                .redemption(entity.getRedemption())
-                .client(entity.getClient().getExternalId())
-                .cafe(entity.getCafe().getExternalId())
-                .purchaseDetails(entity.getPurchaseDetails())
-                .build();
+        return new PurchaseResponse(
+                entity.getExternalId(),
+                entity.getDate(),
+                entity.getPrice(),
+                entity.getRedemption(),
+                entity.getClient().getExternalId(),
+                entity.getCafe().getExternalId(),
+                entity.getPurchaseDetails()
+        );
     }
 
-
-
-
-
-
-
->>>>>>> 07f6abf (Servicio Purchase)
 }
