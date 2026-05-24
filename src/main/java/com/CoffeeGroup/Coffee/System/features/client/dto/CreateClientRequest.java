@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.util.UUID;
+
 public record CreateClientRequest(
         @NotBlank(message = "El nombre del cliente es obligatorio")
         String name,
@@ -21,10 +23,10 @@ public record CreateClientRequest(
         Integer historicalPoints,
 
         @NotNull(message = "El tier es obligatorio")
-        Long tierId,
+        UUID tierExternalId,
 
         @NotNull(message = "El usuario es obligatorio")
-        Long userId
+        UUID userExternalId
 ) {
 
 }
