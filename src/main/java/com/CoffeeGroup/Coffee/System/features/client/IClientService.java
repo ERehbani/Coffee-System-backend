@@ -7,7 +7,7 @@ import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import java.util.List;
 import java.util.UUID;
 
-public interface IUserService {
+public interface IClientService {
     ClientResponse create(CreateClientRequest request);
 
     List<ClientResponse> findAll();
