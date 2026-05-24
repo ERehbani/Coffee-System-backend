@@ -1,8 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_type;
 
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -23,4 +25,7 @@ public class BenefitTypeEntity {
 
     @Column(name = "name")
     private String name;
+
+    @OneToMany(mappedBy = "Type")
+    private List<BenefitEntity> benefitEntityList;
 }
