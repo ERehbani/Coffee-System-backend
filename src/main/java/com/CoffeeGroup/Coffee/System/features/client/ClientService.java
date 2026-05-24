@@ -10,9 +10,11 @@ import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.beans.Transient;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,8 @@ public class ClientService {
     private final UserRepository userRepository;
     private final ClientMapper clientMapper;
 
+
+    @Transactional
     public ClientResponse create(CreateClientRequest request) {
 
         TierEntity tier = tierRepository.findByExternalId(request.tierExternalId())
@@ -58,6 +62,7 @@ public class ClientService {
         return clientMapper.toResponse(client);
     }
 
+    @Transactional
     public ClientResponse update(UUID externalId, UpdateClientRequest request) {
 
         ClientEntity client = findById(externalId);
@@ -97,11 +102,13 @@ public class ClientService {
         return clientMapper.toResponse(clientUpdated);
     }
 
+    @Transactional
     public void delete(UUID externalId) {
 
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client = findById(externalId);
 
-        clientRepository.delete(client);
+
+        client.getUser().setState(false);
+        clientRepository.save(client);
     }
 }

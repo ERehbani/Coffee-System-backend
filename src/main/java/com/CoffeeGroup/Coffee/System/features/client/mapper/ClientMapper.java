@@ -33,7 +33,9 @@ public class ClientMapper {
                 client.getHistoricalPoints(),
                 client.getTier().getExternalId(),
                 client.getTier().getName(),
-                client.getUser().getExternalId()
+                client.getUser().getExternalId(),
+                client.getUser().getState()
+
         );
     }
 }

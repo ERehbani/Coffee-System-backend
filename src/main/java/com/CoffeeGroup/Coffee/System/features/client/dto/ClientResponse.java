@@ -10,6 +10,7 @@ public record ClientResponse (
         Integer historicalPoints,
         UUID tierExternalId,
         String tierName,
-        UUID userExternalId
+        UUID userExternalId,
+        Boolean state
 ){
 }
