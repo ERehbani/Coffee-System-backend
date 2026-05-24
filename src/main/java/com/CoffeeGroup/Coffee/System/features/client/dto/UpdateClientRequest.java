@@ -3,6 +3,8 @@ package com.CoffeeGroup.Coffee.System.features.client.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.util.UUID;
+
 public record UpdateClientRequest (
         String name,
 
@@ -16,8 +18,8 @@ public record UpdateClientRequest (
         @Min(value = 0, message = "Los puntos historicos no pueden ser negativos")
         Integer historicalPoints,
 
-        Long tierId,
+        UUID tierExternalId,
 
-        Long userId
+        UUID userExternalId
 ){
 }
