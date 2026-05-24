@@ -1,8 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
-import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
+
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
@@ -11,12 +10,9 @@ import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchase
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper.PurchaseMapper;
-import com.CoffeeGroup.Coffee.System.features.role.RoleEntity;
-import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
-import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UpdateUserRequest;
+
 import lombok.AllArgsConstructor;
 
-import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
