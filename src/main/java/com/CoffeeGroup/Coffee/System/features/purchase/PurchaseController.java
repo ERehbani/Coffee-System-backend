@@ -22,7 +22,6 @@ public class PurchaseController {
 
     @PostMapping
     public ResponseEntity<PurchaseResponse> save(@RequestBody CreatePurchaseRequest create){
-
         return new ResponseEntity<>(service.create(create), HttpStatus.CREATED);
     }
 
