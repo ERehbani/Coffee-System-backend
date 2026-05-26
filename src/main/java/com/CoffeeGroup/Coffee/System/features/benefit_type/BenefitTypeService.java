@@ -1,10 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_type;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.Mappers.IBenefitTypeCreateMapper;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.Mappers.IBenefitTypeResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeCreate;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeResponse;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     @Override
     public BenefitTypeResponse update(UUID externalId, BenefitTypeCreate benefitTypeCreate) {
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontro el tipo beneficio"));
+                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
 
         validateName(benefitTypeCreate.name());
 
@@ -42,7 +43,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     @Override
     public void delete(UUID externalId) {
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontro el tipo beneficio"));
+                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
         benefitTypeRepository.delete(benefitType);
     }
 
@@ -54,7 +55,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     @Override
     public void validateName(String name) {
         if (benefitTypeRepository.existsByName(name)){
-            throw new EntityNotFoundException("El nombre "+ name + " ya existe");
+            throw new EntityAlreadyExistsException("The name "+ name + " already exists");
         }
     }
 }

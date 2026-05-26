@@ -37,7 +37,7 @@ public class CafeService implements ICafeService {
     public CafeResponse getByExternalId(UUID externalId) {
         return repository.findByExternalId(externalId)
                 .map(mapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("Cafeteria no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class CafeService implements ICafeService {
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
 
         CafeEntity cafe = repository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafeteria no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
 
 
@@ -100,7 +100,7 @@ public class CafeService implements ICafeService {
     public void delete(UUID externalId) {
 
         CafeEntity cafe = repository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafeteria no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
         repository.delete(cafe);
     }
 }
