@@ -1,9 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.tier;
 
-import com.CoffeeGroup.Coffee.System.features.role.RoleEntity;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.NewTierDTO;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponseDTO;
-import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.CreateTierRequest;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,24 +17,26 @@ public class TierController {
     private final ITierService tierService;
 
     @GetMapping
+    public ResponseEntity<List<TierResponse>> findAll() {
+        return ResponseEntity.ok(tierService.findAll());
     public ResponseEntity<List<TierResponseDTO>> getAll() {
         return ResponseEntity.ok(tierService.getAll());
     }
 
     @GetMapping("/{externalId}")
-    public ResponseEntity<TierResponseDTO> findById(@PathVariable UUID externalId) {
+    public ResponseEntity<TierResponse> findById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(tierService.getById(externalId));
     }
 
     @PostMapping
-    public ResponseEntity<TierResponseDTO> create(@Valid @RequestBody NewTierDTO request) {
+    public ResponseEntity<TierResponse> save(@Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.create(request));
     }
 
     @PutMapping("/{externalId}")
-    public ResponseEntity<TierResponseDTO> update(
+    public ResponseEntity<TierResponse> update(
             @PathVariable UUID externalId,
-            @Valid @RequestBody NewTierDTO request) {
+            @Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.update(externalId, request));
     }
 

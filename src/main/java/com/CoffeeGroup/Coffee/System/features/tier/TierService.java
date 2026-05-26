@@ -2,14 +2,12 @@ package com.CoffeeGroup.Coffee.System.features.tier;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.NewTierDTO;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponseDTO;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.mappeers.NewTierMapper;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.mappeers.TierResponseMapper;
-import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.CreateTierRequest;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponse;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.mapper.NewTierMapper;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.mapper.TierResponseMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +22,7 @@ public class TierService implements ITierService {
     private final TierResponseMapper tierMapper;
 
     @Override
-    public TierResponseDTO create(NewTierDTO request) {
+    public TierResponse create(CreateTierRequest request) {
         validateTierNameDoesNotExist(request.name());
         validateTierPointsDoesNotExist(request.minPoints());
 
@@ -34,8 +32,13 @@ public class TierService implements ITierService {
         return tierMapper.toDto(tierEntity);
     }
 
+    public TierEntity findById(UUID tierId) {
+        return tierRepository.findByExternalId(tierId)
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+    }
+
     @Override
-    public List<TierResponseDTO> getAll() {
+    public List<TierResponse> findAll() {
         return tierRepository.findAll()
                 .stream()
                 .map(tierMapper::toDto)
@@ -43,14 +46,13 @@ public class TierService implements ITierService {
     }
     /// //
     @Override
-    public TierResponseDTO getById(UUID externalId) {
-        TierEntity tier = tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new  EntityNotFoundException("Tier not found"));
+    public TierResponse getById(UUID externalId) {
+        TierEntity tier = findById(externalId);
         return tierMapper.toDto(tier);
     }
 
     @Override
-    public TierResponseDTO update(UUID externalId, NewTierDTO request) {
+    public TierResponse update(UUID externalId, CreateTierRequest request) {
         TierEntity tier = findByExternalIdOrThrow(externalId);
         tier.setName(request.name());
         tier.setMinPoints(request.minPoints());
@@ -59,8 +61,7 @@ public class TierService implements ITierService {
 
     @Override
     public void delete(UUID externalId) {
-        TierEntity tier = tierRepository.findByExternalId(externalId)
-                        .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+        TierEntity tier = findById(externalId);
         tierRepository.delete(tier);
     }
 
