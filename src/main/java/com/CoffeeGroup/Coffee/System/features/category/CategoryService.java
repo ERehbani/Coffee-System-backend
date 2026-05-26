@@ -14,8 +14,6 @@ import java.util.regex.Pattern;
 @Service
 @AllArgsConstructor
 public class CategoryService implements ICategoryService {
-    private static final Pattern NAME_PATTERN = Pattern.compile("^\\p{L}+$");
-
     private final ICategoryRepository categoryRepository;
     private final IMapper<CategoryEntity, CategoryResponse> responseMapper;
 
@@ -31,8 +29,7 @@ public class CategoryService implements ICategoryService {
         return categoryRepository.findByExternalId(externalId)
                 .map(responseMapper::toDto)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Category", "Category was not found", "externalId", externalId.toString()
-                ));
+                        new EntityNotFoundException("Category not found"));
     }
 
     public CategoryResponse save(CategoryRequest categoryRequest){
@@ -54,15 +51,13 @@ public class CategoryService implements ICategoryService {
 
     public void delete(UUID externalId){
         CategoryEntity category = categoryRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Category", "Category not found", "externalId", externalId.toString()));
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
         categoryRepository.delete(category);
     }
 
     private void validateName(String name) {
-        if (name == null || name.isBlank() || !NAME_PATTERN.matcher(name).matches()) {
-            throw new IllegalArgumentException(
-                    "El nombre solo puede contener letras, sin numeros, simbolos ni espacios"
-            );
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("The name can only contain letters, with no numbers, symbols, or spaces");
         }
     }
 
