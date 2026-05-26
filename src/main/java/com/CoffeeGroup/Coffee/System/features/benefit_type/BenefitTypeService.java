@@ -6,6 +6,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.Mappers.IBenef
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.Mappers.IBenefitTypeResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeCreate;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeResponse;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,8 @@ public class BenefitTypeService implements IBenefitTypeService {
     private final IBenefitTypeResponseMapper responseMapper;
 
     @Override
-    public BenefitTypeResponse save(BenefitTypeCreate benefitTypeCreate) {
+    @Transactional
+    public BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate) {
         validateName(benefitTypeCreate.name());
         BenefitTypeEntity benefitType = createMapper.toEntity(benefitTypeCreate);
         benefitType.setExternalId(UUID.randomUUID());
@@ -29,6 +31,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     }
 
     @Override
+    @Transactional
     public BenefitTypeResponse update(UUID externalId, BenefitTypeCreate benefitTypeCreate) {
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
@@ -48,7 +51,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     }
 
     @Override
-    public List<BenefitTypeResponse> all() {
+    public List<BenefitTypeResponse> getAll() {
         return benefitTypeRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 

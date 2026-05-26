@@ -19,8 +19,8 @@ public class TierController {
     private final ITierService tierService;
 
     @GetMapping
-    public ResponseEntity<List<TierResponseDTO>> findAll() {
-        return ResponseEntity.ok(tierService.findAll());
+    public ResponseEntity<List<TierResponseDTO>> getAll() {
+        return ResponseEntity.ok(tierService.getAll());
     }
 
     @GetMapping("/{externalId}")
@@ -29,7 +29,7 @@ public class TierController {
     }
 
     @PostMapping
-    public ResponseEntity<TierResponseDTO> save(@Valid @RequestBody NewTierDTO request) {
+    public ResponseEntity<TierResponseDTO> create(@Valid @RequestBody NewTierDTO request) {
         return ResponseEntity.ok(tierService.create(request));
     }
 

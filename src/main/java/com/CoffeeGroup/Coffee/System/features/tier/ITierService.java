@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ITierService {
     TierResponseDTO create(NewTierDTO request);
-    List<TierResponseDTO> findAll();
+    List<TierResponseDTO> getAll();
     TierResponseDTO getById(UUID externalId);
     TierResponseDTO update(UUID externalId, NewTierDTO request);
     void delete(UUID externalId);

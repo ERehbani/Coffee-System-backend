@@ -12,7 +12,7 @@ public interface ICategoryService {
 
     CategoryResponse getCategoryByExternalId(UUID externalId);
 
-    CategoryResponse save(CategoryRequest categoryRequest);
+    CategoryResponse create(CategoryRequest categoryRequest);
 
     List<CategoryResponse> searchByName(String nameFragment);
 
