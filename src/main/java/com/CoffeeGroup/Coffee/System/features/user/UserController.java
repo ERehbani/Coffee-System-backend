@@ -22,17 +22,17 @@ public class UserController {
 
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> findAll() {
-        return ResponseEntity.ok(userService.findAll());
+    public ResponseEntity<List<UserResponse>> getAll() {
+        return ResponseEntity.ok(userService.getAll());
     }
 
     @GetMapping ("/{externalId}")
-    public ResponseEntity<UserResponse> findById(@PathVariable UUID externalId) {
+    public ResponseEntity<UserResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(userService.getById(externalId));
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> save(@Valid @RequestBody CreateUserRequest request){
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request){
         return ResponseEntity.ok(userService.create(request));
     }
 

@@ -19,18 +19,17 @@ public class RoleController {
     private final RoleMapper roleMapper;
 
     @GetMapping
-    public ResponseEntity<List<RoleResponse>> findAll() {
-        return ResponseEntity.ok(roleService.findAll());
+    public ResponseEntity<List<RoleResponse>> getAll() {
+        return ResponseEntity.ok(roleService.getAll());
     }
 
     @GetMapping("/{externalId}")
-    public ResponseEntity<RoleResponse> findById(@PathVariable UUID externalId) {
+    public ResponseEntity<RoleResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(roleService.getById(externalId));
     }
 
-
     @PostMapping
-    public ResponseEntity<RoleResponse> save (@Valid @RequestBody CreateRoleRequest request){
+    public ResponseEntity<RoleResponse> create (@Valid @RequestBody CreateRoleRequest request){
         return ResponseEntity.ok(roleService.create(request));
     }
 

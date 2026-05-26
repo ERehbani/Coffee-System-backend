@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface IPurchaseService {
     PurchaseResponse create(CreatePurchaseRequest request);
-    List<PurchaseResponse> findAll();
+    List<PurchaseResponse> getAll();
     PurchaseResponse getById(UUID externalId);
     PurchaseResponse update(UUID externalId, UpdatePurchaseRequest request);
     void delete(UUID externalId);

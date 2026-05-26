@@ -10,11 +10,11 @@ import java.util.List;
 
 public interface IRedemptionService {
 
-    RedemptionResponse save(RedemptionCreateRequest redemptionCreateRequest);
+    RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest);
 
     RedemptionResponse update(UUID externalId , RedemptionUpdateRequest redemptionUpdateRequest);
 
-    RedemptionResponse findByid(UUID externalId);
+    RedemptionResponse getById(UUID externalId);
 
     void deleteByid(UUID id);
 

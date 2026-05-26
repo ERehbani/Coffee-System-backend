@@ -32,7 +32,7 @@ public class ReviewService implements IReviewService {
 
 
     @Override
-    public ReviewResponse save(ReviewCreateRequest reviewCreateRequest) {
+    public ReviewResponse create(ReviewCreateRequest reviewCreateRequest) {
 
         ClientEntity clientAux = clientRepository.findByExternalId(reviewCreateRequest.clientId()).
                 orElseThrow(()-> new EntityNotFoundException("The customer not found"));
@@ -61,7 +61,7 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public ReviewResponse findByid(UUID externalId) {
+    public ReviewResponse getById(UUID externalId) {
         return reviewRepository.findByExternalId(externalId).map(MapReviewResponse::toDto).
                 orElseThrow(()-> new EntityNotFoundException("Review not found"));
     }
@@ -74,7 +74,7 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public List<ReviewResponse> findAll() {
+    public List<ReviewResponse> getAll() {
         return reviewRepository.findAll().stream().map(MapReviewResponse::toDto).toList();
     }
 }

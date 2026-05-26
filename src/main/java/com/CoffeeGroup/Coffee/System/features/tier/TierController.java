@@ -19,6 +19,8 @@ public class TierController {
     @GetMapping
     public ResponseEntity<List<TierResponse>> findAll() {
         return ResponseEntity.ok(tierService.findAll());
+    public ResponseEntity<List<TierResponseDTO>> getAll() {
+        return ResponseEntity.ok(tierService.getAll());
     }
 
     @GetMapping("/{externalId}")
