@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface IRoleService {
     RoleResponse create(CreateRoleRequest request);
-    List<RoleResponse> findAll();
+    List<RoleResponse> getAll();
     RoleResponse getById(UUID externalId);
     RoleResponse update(UUID externalId, UpdateUserRequest request);
     void delete(UUID externalId);

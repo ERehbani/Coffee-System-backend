@@ -35,7 +35,7 @@ public class TierService implements ITierService {
     }
 
     @Override
-    public List<TierResponseDTO> findAll() {
+    public List<TierResponseDTO> getAll() {
         return tierRepository.findAll()
                 .stream()
                 .map(tierMapper::toDto)

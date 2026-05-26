@@ -35,7 +35,7 @@ public class RedemptionService implements IRedemptionService {
 
     @Override
     @Transactional
-    public RedemptionResponse save(RedemptionCreateRequest redemptionCreateRequest) {
+    public RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest) {
         ClientEntity clientAux = clientRepository.findByExternalId(redemptionCreateRequest.client()).
                 orElseThrow(()-> new EntityNotFoundException("Client not found"));
 
@@ -85,7 +85,7 @@ public class RedemptionService implements IRedemptionService {
     }
 
     @Override
-    public RedemptionResponse findByid(UUID externalId) {
+    public RedemptionResponse getById(UUID externalId) {
         return redemptionRepository.findByExternalId(externalId).map(responseMapper::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
     }

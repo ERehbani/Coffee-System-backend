@@ -4,6 +4,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryRequest;
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +33,8 @@ public class CategoryService implements ICategoryService {
                         new EntityNotFoundException("Category not found"));
     }
 
-    public CategoryResponse save(CategoryRequest categoryRequest){
+    @Transactional
+    public CategoryResponse create(CategoryRequest categoryRequest){
         CategoryEntity entity = CategoryEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name(categoryRequest.name())

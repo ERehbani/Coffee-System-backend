@@ -36,7 +36,7 @@ public class RoleService implements IRoleService{
     }
 
     @Override
-    public List<RoleResponse> findAll() {
+    public List<RoleResponse> getAll() {
         return roleRepository.findAll()
                 .stream()
                 .map(roleMapper::toResponse)

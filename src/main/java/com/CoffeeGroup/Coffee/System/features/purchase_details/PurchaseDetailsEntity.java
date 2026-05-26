@@ -36,7 +36,6 @@ public class PurchaseDetailsEntity {
     @ToString.Exclude
     private ProductEntity product;
 
-
     @Column(name = "amount")
     private Integer amount;
 
