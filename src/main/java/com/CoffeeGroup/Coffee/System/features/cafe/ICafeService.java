@@ -10,11 +10,11 @@ import java.util.UUID;
 
 public interface ICafeService {
 
-    List<CafeResponse> getAll();
+    List<CafeResponse> findAll();
 
     CafeResponse getByExternalId(UUID externalId);
 
-    CafeResponse save(CreateCafeRequest request);
+    CafeResponse create(CreateCafeRequest request);
 
     CafeResponse update(UUID externalId, UpdateCafeRequest request);
 

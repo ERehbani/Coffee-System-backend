@@ -1,11 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,22 +15,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@AllArgsConstructor
 @Service
 public class CafeService implements ICafeService {
 
     private final ICafeRepository repository;
     private final CafeMapper mapper;
 
-    public CafeService(ICafeRepository cafeRepository, CafeMapper mapper) {
-        this.repository = cafeRepository;
-        this.mapper = mapper;
-    }
 
     @Override
-    public List<CafeResponse> getAll() {
-        List<CafeEntity> lista = repository.findAll();
+    public List<CafeResponse> findAll() {
 
-        return lista.stream()
+        return repository.findAll().stream()
                 .map(mapper::toResponse)
                 .toList();
     }
@@ -41,26 +39,24 @@ public class CafeService implements ICafeService {
     }
 
     @Override
-    public CafeResponse save(CreateCafeRequest request) {
+    @Transactional
+    public CafeResponse create(CreateCafeRequest request) {
 
-        /*if (repository.existsByEmail(new Email(request.email()))) {
+        if (repository.existsByEmail(new Email(request.email()))) {
             throw new EntityAlreadyExistsException("Email already exists");
-        }*/
+        }
 
         CafeEntity entity = mapper.toEntity(request);
 
-        CafeEntity savedEntity = repository.save(entity);
-
-        return mapper.toResponse(savedEntity);
+        return mapper.toResponse(repository.save(entity));
     }
 
     @Override
+    @Transactional
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
 
         CafeEntity cafe = repository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-
 
          if(request.address() != null && !request.address().isBlank()){
              cafe.setAddress(request.address());
@@ -69,16 +65,14 @@ public class CafeService implements ICafeService {
         Email nuevoEmail = new Email(request.email());
 
         if (!cafe.getEmail().equals(nuevoEmail)) {
-            /*if (repository.existsByEmail(nuevoEmail)) {
-                throw new EntityAlreadyExistsException("El Email ya existe");
-            }*/
+            if (repository.existsByEmail(nuevoEmail)) {
+                throw new EntityAlreadyExistsException("Email already exists");
+            }
             cafe.setEmail(nuevoEmail);
         }
 
          if(request.phoneNumber() != null && !request.phoneNumber().isBlank()){
-
              cafe.setPhoneNumber(request.phoneNumber());
-
          }
 
          if(request.description() != null && !request.description().isBlank()){
