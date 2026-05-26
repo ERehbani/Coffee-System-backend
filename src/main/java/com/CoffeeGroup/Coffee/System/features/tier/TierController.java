@@ -28,7 +28,7 @@ public class TierController {
     }
 
     @PostMapping
-    public ResponseEntity<TierResponse> create(@Valid @RequestBody CreateTierRequestgit  request) {
+    public ResponseEntity<TierResponse> create(@Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.create(request));
     }
 
