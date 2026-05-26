@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface ITierService {
     TierResponse create(CreateTierRequest request);
-    List<TierResponse> getAll();
+    List<TierResponse> findAll();
     TierResponse getById(UUID externalId);
     TierResponse update(UUID externalId, CreateTierRequest request);
     void delete(UUID externalId);

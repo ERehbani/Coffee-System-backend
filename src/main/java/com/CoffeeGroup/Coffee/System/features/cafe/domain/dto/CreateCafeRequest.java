@@ -15,7 +15,7 @@ public record CreateCafeRequest (
 
         @NotBlank(message = "El email es obligatorio")
         @Email(message = "Debe tener un formato de email válido")
-        String email, // Nota: Aquí pedimos un String. En tu servicio lo convertirás a tu objeto Email
+        String email,
 
         @Pattern(regexp = "^\\d{10}$", message = "El numero de teléfono debe contener la longitud correcta")
         String phoneNumber,
