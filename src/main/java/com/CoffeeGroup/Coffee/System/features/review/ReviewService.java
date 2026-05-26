@@ -71,7 +71,6 @@ public class ReviewService implements IReviewService {
         ReviewEntity review = reviewRepository.findByExternalId(externalId)
                 .orElseThrow(()-> new EntityNotFoundException("the Review not found"));
         reviewRepository.delete(review);
-        System.out.println("delete 100%");
     }
 
     @Override

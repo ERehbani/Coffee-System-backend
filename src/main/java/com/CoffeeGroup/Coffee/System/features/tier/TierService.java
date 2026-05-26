@@ -45,7 +45,7 @@ public class TierService implements ITierService {
     @Override
     public TierResponseDTO getById(UUID externalId) {
         TierEntity tier = tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new  EntityNotFoundException("Nivel no encontrado"));
+                .orElseThrow(() -> new  EntityNotFoundException("Tier not found"));
         return tierMapper.toDto(tier);
     }
 
@@ -60,26 +60,26 @@ public class TierService implements ITierService {
     @Override
     public void delete(UUID externalId) {
         TierEntity tier = tierRepository.findByExternalId(externalId)
-                        .orElseThrow(() -> new EntityNotFoundException("No se encontro el nivel"));
+                        .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
         tierRepository.delete(tier);
     }
 
 
     private void validateTierNameDoesNotExist(String name) {
         if (tierRepository.existsByName(name)) {
-            throw new EntityAlreadyExistsException("El tier " + name + " ya existe");
+            throw new EntityAlreadyExistsException("Tier " + name + " already exists");
         }
     }
 
     private void validateTierPointsDoesNotExist(Integer minPoints) {
         if (tierRepository.existsByMinPoints(minPoints)) {
-            throw new EntityAlreadyExistsException("Ya existe un tier con " + minPoints + " puntos mínimos");
+            throw new EntityAlreadyExistsException("Tier already with" + minPoints + " min points");
         }
     }
 
     private TierEntity findByExternalIdOrThrow(UUID externalId) {
         return tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
     }
 
 
