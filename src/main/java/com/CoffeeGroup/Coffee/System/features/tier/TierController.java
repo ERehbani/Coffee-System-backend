@@ -17,8 +17,9 @@ public class TierController {
     private final ITierService tierService;
 
     @GetMapping
-    public ResponseEntity<List<TierResponse>> findAll() {
-        return ResponseEntity.ok(tierService.findAll());
+
+    public ResponseEntity<List<TierResponse>> getAll() {
+        return ResponseEntity.ok(tierService.getAll());
     }
 
     @GetMapping("/{externalId}")
@@ -27,7 +28,7 @@ public class TierController {
     }
 
     @PostMapping
-    public ResponseEntity<TierResponse> save(@Valid @RequestBody CreateTierRequest request) {
+    public ResponseEntity<TierResponse> create(@Valid @RequestBody CreateTierRequestgit  request) {
         return ResponseEntity.ok(tierService.create(request));
     }
 

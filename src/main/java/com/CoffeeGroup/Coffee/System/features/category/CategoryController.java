@@ -29,7 +29,7 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
-        return new ResponseEntity<>(categoryService.save(categoryRequest), HttpStatus.CREATED);
+        return ResponseEntity.ok(categoryService.create(categoryRequest));
     }
 
     @DeleteMapping("/{externalId}")

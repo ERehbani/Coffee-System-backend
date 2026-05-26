@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface IReviewService {
 
-   ReviewResponse save(ReviewCreateRequest reviewCreateRequest);
+   ReviewResponse create(ReviewCreateRequest reviewCreateRequest);
 
     ReviewResponse update(UUID externalId , ReviewUpdateRequest reviewUpdateRequest);
 
-    ReviewResponse findByid(UUID externalId);
+    ReviewResponse getById(UUID externalId);
 
     void deleteByid(UUID externalId);
 
-    List<ReviewResponse> findAll();
+    List<ReviewResponse> getAll();
 }

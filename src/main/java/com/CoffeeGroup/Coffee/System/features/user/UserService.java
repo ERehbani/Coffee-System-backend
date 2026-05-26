@@ -43,7 +43,7 @@ public class UserService implements IUserService {
 
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserResponse> getAll() {
         return userRepository.findAll()
                 .stream()
                 .map(userMapper :: toResponse)

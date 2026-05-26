@@ -21,13 +21,13 @@ public class RedemptionController {
 
     private final IRedemptionService redemptionService;
 
-    @PostMapping("/create")
-    ResponseEntity<RedemptionResponse> createRedemption(@Valid @RequestBody RedemptionCreateRequest redemptionCreateRequest){
-        return new ResponseEntity<>(redemptionService.save(redemptionCreateRequest), HttpStatus.CREATED);
+    @PostMapping
+    ResponseEntity<RedemptionResponse> create(@Valid @RequestBody RedemptionCreateRequest redemptionCreateRequest){
+        return new ResponseEntity<>(redemptionService.create(redemptionCreateRequest), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<RedemptionResponse>> findAll() {
+    public ResponseEntity<List<RedemptionResponse>> getAll() {
         return ResponseEntity.ok(redemptionService.findAll());
     }
 
@@ -37,14 +37,14 @@ public class RedemptionController {
     }
 
     @DeleteMapping("/{externalId}")
-    ResponseEntity<Void> delete(@PathVariable UUID exteralId) {
-        redemptionService.deleteByid(exteralId);
+    ResponseEntity<Void> delete(@PathVariable UUID externalId) {
+        redemptionService.deleteByid(externalId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{externalId}")
-    ResponseEntity<RedemptionResponse> findById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(redemptionService.findByid(externalId));
+    ResponseEntity<RedemptionResponse> getById(@PathVariable UUID externalId) {
+        return ResponseEntity.ok(redemptionService.getById(externalId));
     }
 
 
