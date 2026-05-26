@@ -16,7 +16,6 @@ public class CategoryMapper implements IMapper<CategoryEntity, CategoryResponse>
                 .build();
     }
 
-
     @Override
     public CategoryResponse toDto(CategoryEntity entity) {
         return new CategoryResponse(entity.getExternalId(), entity.getName());
