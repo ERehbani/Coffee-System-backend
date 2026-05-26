@@ -33,7 +33,10 @@ public class RedemptionMapper {
                 date,
                 entity.getUsedPoints(),
                 entity.getValidationCode(),
-                entity.getState()
+                entity.getState(),
+                entity.getPurchase().getExternalId(),
+                entity.getBenefit().getExternalId(),
+                entity.getClient().getExternalId()
         );
     }
 }

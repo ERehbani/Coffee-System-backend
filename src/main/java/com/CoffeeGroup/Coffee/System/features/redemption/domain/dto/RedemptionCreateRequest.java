@@ -7,12 +7,12 @@ import java.util.UUID;
 public record RedemptionCreateRequest(
 
         @NotNull(message = "The customer ID is required")
-        UUID clientid,
+        UUID client,
 
         @NotNull(message = "The Benefit ID is required")
-        UUID benefitid,
+        UUID benefit,
 
         @NotNull(message = "The Purchase ID is required")
-        UUID purchaseid
+        UUID purchase
 
 ) {}
