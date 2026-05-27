@@ -17,10 +17,9 @@ import java.util.UUID;
 public class BenefitTypeController {
     private final  BenefitTypeService benefitTypeService;
 
-
     @PostMapping
     ResponseEntity<BenefitTypeResponse> save(@Valid @RequestBody BenefitTypeCreate benefitTypeCreate){
-        return new ResponseEntity<>(benefitTypeService.save(benefitTypeCreate), HttpStatus.CREATED);
+        return new ResponseEntity<>(benefitTypeService.create(benefitTypeCreate), HttpStatus.CREATED);
     }
 
     @PutMapping("/{externalId}")
@@ -35,8 +34,8 @@ public class BenefitTypeController {
     }
 
     @GetMapping
-    ResponseEntity<List<BenefitTypeResponse>> all(){
-        return ResponseEntity.ok(benefitTypeService.all());
+    ResponseEntity<List<BenefitTypeResponse>> getAll(){
+        return ResponseEntity.ok(benefitTypeService.getAll());
     }
 
 }

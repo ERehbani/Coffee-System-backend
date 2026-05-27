@@ -19,9 +19,9 @@ public class ReviewController {
 
     private final IReviewService reviewService;
 
-    @PostMapping("/create")
-    ResponseEntity<ReviewResponse> createRedemption(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest){
-        return new ResponseEntity<>(reviewService.save(reviewCreateRequest), HttpStatus.CREATED);
+    @PostMapping
+    ResponseEntity<ReviewResponse> create(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest){
+        return new ResponseEntity<>(reviewService.create(reviewCreateRequest), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{externalId}")
@@ -31,8 +31,8 @@ public class ReviewController {
     }
 
     @GetMapping("/{externalId}")
-    ResponseEntity<ReviewResponse> findById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(reviewService.findByid(externalId));
+    ResponseEntity<ReviewResponse> getById(@PathVariable UUID externalId) {
+        return ResponseEntity.ok(reviewService.getById(externalId));
     }
 
     @PutMapping("/{externalId}")
@@ -41,8 +41,8 @@ public class ReviewController {
     }
 
     @GetMapping
-    ResponseEntity<List<ReviewResponse>> findAll(){
-        return ResponseEntity.ok(reviewService.findAll());
+    ResponseEntity<List<ReviewResponse>> getAll(){
+        return ResponseEntity.ok(reviewService.getAll());
     }
 
 

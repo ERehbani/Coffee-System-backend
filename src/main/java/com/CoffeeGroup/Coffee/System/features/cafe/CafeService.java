@@ -24,7 +24,8 @@ public class CafeService implements ICafeService {
 
 
     @Override
-    public List<CafeResponse> getAll() {
+    public List<CafeResponse> findAll() {
+
         return repository.findAll().stream()
                 .map(mapper::toResponse)
                 .toList();

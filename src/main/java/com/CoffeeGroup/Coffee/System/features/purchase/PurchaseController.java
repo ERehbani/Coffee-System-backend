@@ -21,13 +21,13 @@ public class PurchaseController {
     private final PurchaseService service;
 
     @PostMapping
-    public ResponseEntity<PurchaseResponse> save(@RequestBody CreatePurchaseRequest create){
+    public ResponseEntity<PurchaseResponse> create(@RequestBody CreatePurchaseRequest create){
         return new ResponseEntity<>(service.create(create), HttpStatus.CREATED);
     }
 
     @GetMapping
     public ResponseEntity<List<PurchaseResponse>> getAll(){
-        return ResponseEntity.ok(service.findAll());
+        return ResponseEntity.ok(service.getAll());
     }
 
     @GetMapping("/{id}")
@@ -44,7 +44,6 @@ public class PurchaseController {
     @DeleteMapping("/{id}")
     public ResponseEntity<PurchaseResponse> delete (UUID externalId){
         service.delete(externalId);
-
         return ResponseEntity.ok().build();
     }
 

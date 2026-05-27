@@ -4,6 +4,7 @@ import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryReques
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +29,7 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
-        return ResponseEntity.ok(categoryService.save(categoryRequest));
+        return ResponseEntity.ok(categoryService.create(categoryRequest));
     }
 
     @DeleteMapping("/{externalId}")

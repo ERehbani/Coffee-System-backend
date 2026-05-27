@@ -1,7 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.tier.domain.dto;
 
 
-public record NewTierDTO(
+public record CreateTierRequest(
         String name,
         Integer minPoints) {
 }

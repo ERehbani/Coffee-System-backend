@@ -21,30 +21,31 @@ public class CafeController {
 
  private final CafeService service;
 
- @GetMapping
- ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.getAll());}
-
- @GetMapping("/{externalId}")
- ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
-     return ResponseEntity.ok(service.getByExternalId(externalId));
- }
-
  @PostMapping
- ResponseEntity<CafeResponse> save(@Valid @RequestBody CreateCafeRequest request){
+ ResponseEntity<CafeResponse> create(@Valid @RequestBody CreateCafeRequest request){
      return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
  }
 
  @PutMapping("/{externalId}")
- ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid  @RequestBody UpdateCafeRequest request){
+ ResponseEntity<CafeResponse> update (@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
     }
 
 
  @DeleteMapping("/{externalId}")
-    ResponseEntity<Void> delete(@PathVariable UUID externalId){
-     service.delete(externalId);
-     return ResponseEntity.noContent().build();
+  ResponseEntity<Void> delete(@PathVariable UUID externalId){
+  service.delete(externalId);
+   return ResponseEntity.noContent().build();
  }
+
+    @GetMapping
+    ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.findAll());}
+
+    @GetMapping("/{externalId}")
+    ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
+        return ResponseEntity.ok(service.getByExternalId(externalId));
+    }
+
 
 
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public interface ICafeService {
 
-    List<CafeResponse> getAll();
+    List<CafeResponse> findAll();
 
     CafeResponse getByExternalId(UUID externalId);
 

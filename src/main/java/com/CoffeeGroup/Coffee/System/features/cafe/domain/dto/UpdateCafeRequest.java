@@ -6,8 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCafeRequest(
-
-
+        @NotBlank(message = "La direccion no puede estar vacia")
         String address,
 
         @Pattern(regexp = "^\\d{10}$", message = "El numero de teléfono debe contener la longitud correcta")

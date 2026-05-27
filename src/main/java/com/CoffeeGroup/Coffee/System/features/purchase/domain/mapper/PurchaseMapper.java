@@ -38,11 +38,4 @@ public class PurchaseMapper {
                 .purchaseDetails(entity.getPurchaseDetails())
                 .build();
     }
-
-
-
-
-
-
-
 }

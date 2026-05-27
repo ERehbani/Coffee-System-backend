@@ -47,7 +47,7 @@ public class PurchaseService implements IPurchaseService{
     }
 
     @Override
-    public List<PurchaseResponse> findAll() {
+    public List<PurchaseResponse> getAll() {
 
         return repository.findAll().stream()
                 .map(mapper::toResponse)
