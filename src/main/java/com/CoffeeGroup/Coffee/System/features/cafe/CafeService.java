@@ -57,22 +57,11 @@ public class CafeService implements ICafeService {
 
         CafeEntity cafe = repository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        Email nuevoEmail = new Email(request.email());
-
-        if (cafe.getEmail().equals(nuevoEmail)) {
-            if (repository.existsByEmail(nuevoEmail)) {
-                throw new EntityAlreadyExistsException("Email already exists");
-            }
-            cafe.setEmail(nuevoEmail);
-        }
-
-             cafe.setAddress(request.address());
-             cafe.setPhoneNumber(request.phoneNumber());
-             cafe.setDescription(request.description());
-             cafe.setSchedule(request.schedule());
-             cafe.setImage(request.image());
-
+         cafe.setAddress(request.address());
+         cafe.setPhoneNumber(request.phoneNumber());
+         cafe.setDescription(request.description());
+         cafe.setSchedule(request.schedule());
+         cafe.setImage(request.image());
         return mapper.toResponse(repository.save(cafe));
     }
 

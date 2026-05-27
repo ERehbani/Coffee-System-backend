@@ -23,12 +23,12 @@ public class BenefitTypeController {
     }
 
     @PutMapping("/{externalId}")
-    ResponseEntity<BenefitTypeResponse> update(@RequestParam UUID externalId, @Valid @RequestBody BenefitTypeCreate benefitTypeCreate){
+    ResponseEntity<BenefitTypeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody BenefitTypeCreate benefitTypeCreate){
         return ResponseEntity.ok(benefitTypeService.update(externalId,benefitTypeCreate));
     }
 
     @DeleteMapping("/{externalId}")
-    ResponseEntity<BenefitTypeResponse> delete(@RequestParam UUID externalId){
+    ResponseEntity<BenefitTypeResponse> delete(@PathVariable UUID externalId){
         benefitTypeService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
