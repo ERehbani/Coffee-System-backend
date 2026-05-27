@@ -1,4 +1,4 @@
-package com.CoffeeGroup.Coffee.System.features.purchase_detail.dto;
+package com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

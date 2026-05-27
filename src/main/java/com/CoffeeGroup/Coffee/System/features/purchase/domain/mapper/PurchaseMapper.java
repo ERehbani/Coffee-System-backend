@@ -1,41 +1,38 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper;
-
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.mapper.PurchaseDetailMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class PurchaseMapper {
 
-    public PurchaseEntity toEntity(CreatePurchaseRequest request, ClientEntity client, CafeEntity cafe){
-        if(request == null) return null;
+    private final PurchaseDetailMapper purchaseDetailMapper;
 
-        return PurchaseEntity.builder()
-                .externalId(UUID.randomUUID())
-                .date(request.date())
-                .price(request.price())
-                .client(client)
-                .cafe(cafe)
-                .build();
+    public PurchaseResponse toResponse(PurchaseEntity entity) {
 
-    }
+        List<PurchaseDetailResponse> details = entity.getPurchaseDetails()
+                .stream()
+                .map(purchaseDetailMapper::toResponse)
+                .toList();
 
+        UUID redemptionId = entity.getRedemption() != null ? entity.getRedemption().getExternalId() : null;
 
-    public PurchaseResponse toResponse(PurchaseEntity entity){
-
-        return PurchaseResponse.builder()
-                .externaliD(entity.getExternalId())
-                .date(entity.getDate())
-                .price(entity.getPrice())
-                .redemption(entity.getRedemption())
-                .client(entity.getClient().getExternalId())
-                .cafe(entity.getCafe().getExternalId())
-                .purchaseDetails(entity.getPurchaseDetails())
-                .build();
+        return new PurchaseResponse(
+                entity.getExternalId(),
+                entity.getDate(),
+                entity.getPrice(),
+                entity.getStatus(),
+                entity.getClient().getExternalId(),
+                entity.getCafe().getExternalId(),
+                redemptionId,
+                details
+        );
     }
 }

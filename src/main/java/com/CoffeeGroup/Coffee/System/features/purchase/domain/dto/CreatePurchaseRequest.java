@@ -1,10 +1,8 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
-import com.CoffeeGroup.Coffee.System.features.purchase_detail.dto.CreatePurchaseDetailRequest;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.CreatePurchaseDetailRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 

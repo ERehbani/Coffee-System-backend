@@ -1,4 +1,4 @@
-package com.CoffeeGroup.Coffee.System.features.purchase_detail.dto;
+package com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;

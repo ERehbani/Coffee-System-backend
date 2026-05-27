@@ -1,9 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
 
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
-import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase_detail.dto.PurchaseDetailResponse;
-import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
 import lombok.Builder;
 
 
