@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -27,10 +28,10 @@ public class PurchaseEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private UUID externalId;
 
-    @Column(name = "date")
+    @Column(name = "date", nullable = false)
     private Date date;
 
-    @Column(name = "price")
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
 
     @OneToOne
@@ -44,6 +45,7 @@ public class PurchaseEntity {
     @JoinColumn(name = "cafe_id", nullable = false)
     private CafeEntity cafe;
 
-    @OneToMany(mappedBy = "purchase", fetch = FetchType.LAZY)
-    private List<PurchaseDetailsEntity> purchaseDetails;
+    @Builder.Default
+    @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<PurchaseDetailsEntity> purchaseDetails = new ArrayList<>();
 }

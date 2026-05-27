@@ -15,6 +15,7 @@ import java.util.UUID;
 @ToString
 @Table(name = "purchase_details")
 @Entity
+@Builder
 public class PurchaseDetailsEntity {
 
     @Id
@@ -24,10 +25,18 @@ public class PurchaseDetailsEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private UUID externalId;
 
+    @Column(name = "amount", nullable = false)
+    private Integer amount;
+
+    @Column(name = "unit_price", nullable = false)
+    private BigDecimal unitPrice;
+
+    @Column(name = "generated_points", nullable = false)
+    private Integer generatedPoints;
+
     // --- Relacion Compra ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_id", nullable = false)
-    @ToString.Exclude
     private PurchaseEntity purchase;
 
     // --- Relacion Producto ---
@@ -36,13 +45,6 @@ public class PurchaseDetailsEntity {
     @ToString.Exclude
     private ProductEntity product;
 
-    @Column(name = "amount")
-    private Integer amount;
 
-    @Column(name = "unit_price")
-    private BigDecimal unitPrice;
-
-    @Column(name = "generated_points")
-    private Integer generatedPoints;
 
 }

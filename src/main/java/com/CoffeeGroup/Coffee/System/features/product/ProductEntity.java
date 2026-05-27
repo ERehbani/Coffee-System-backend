@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 @Builder
-@Table(name = "Products")
+@Table(name = "products")
 @Entity
 @Getter
 @Setter
@@ -45,20 +45,21 @@ public class ProductEntity {
     @Column(name = "awarded_points")
     private Integer awardedPoints;
 
+    @Column(nullable = false,name = "state")
+    private Boolean state;
+
+
     // --- Relacion Categoria ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @ToString.Exclude
     private CategoryEntity category;
 
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<PurchaseDetailsEntity> purchaseDetails;
 
 
-    @Column(nullable = false,name = "state")
-    private Boolean state;
 
 
 }
