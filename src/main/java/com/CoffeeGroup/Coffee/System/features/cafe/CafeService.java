@@ -24,8 +24,7 @@ public class CafeService implements ICafeService {
 
 
     @Override
-    public List<CafeResponse> findAll() {
-
+    public List<CafeResponse> getAll() {
         return repository.findAll().stream()
                 .map(mapper::toResponse)
                 .toList();
@@ -57,36 +56,11 @@ public class CafeService implements ICafeService {
 
         CafeEntity cafe = repository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-         if(request.address() != null && !request.address().isBlank()){
-             cafe.setAddress(request.address());
-         }
-
-        Email nuevoEmail = new Email(request.email());
-
-        if (!cafe.getEmail().equals(nuevoEmail)) {
-            if (repository.existsByEmail(nuevoEmail)) {
-                throw new EntityAlreadyExistsException("Email already exists");
-            }
-            cafe.setEmail(nuevoEmail);
-        }
-
-         if(request.phoneNumber() != null && !request.phoneNumber().isBlank()){
-             cafe.setPhoneNumber(request.phoneNumber());
-         }
-
-         if(request.description() != null && !request.description().isBlank()){
-             cafe.setDescription(request.description());
-         }
-
-         if(request.schedule() != null && !request.schedule().isBlank()){
-
-             cafe.setSchedule(request.schedule());
-         }
-
-         if(request.image() != null && !request.image().isBlank()){
-             cafe.setImage(request.image());
-         }
+         cafe.setAddress(request.address());
+         cafe.setPhoneNumber(request.phoneNumber());
+         cafe.setDescription(request.description());
+         cafe.setSchedule(request.schedule());
+         cafe.setImage(request.image());
         return mapper.toResponse(repository.save(cafe));
     }
 

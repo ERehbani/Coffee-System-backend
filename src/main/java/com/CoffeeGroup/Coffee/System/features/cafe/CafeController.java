@@ -29,16 +29,13 @@ public class CafeController {
      return ResponseEntity.ok(service.getByExternalId(externalId));
  }
 
-
  @PostMapping
  ResponseEntity<CafeResponse> save(@Valid @RequestBody CreateCafeRequest request){
-     return new ResponseEntity<>(service.save(request), HttpStatus.CREATED);
+     return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
  }
 
-
-
  @PutMapping("/{externalId}")
- ResponseEntity<CafeResponse> update (@PathVariable UUID externalId, @Valid  @RequestBody UpdateCafeRequest request){
+ ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid  @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
     }
 

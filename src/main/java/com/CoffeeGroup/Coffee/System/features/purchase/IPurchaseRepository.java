@@ -7,9 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IPurchaseRepository extends JpaRepository<PurchaseEntity,Long> {
+
     Optional<PurchaseEntity> findByExternalId(UUID externalId);
-
     boolean existsByClient(ClientEntity client);
-
 
 }
