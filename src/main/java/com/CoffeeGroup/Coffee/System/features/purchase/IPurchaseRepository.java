@@ -13,7 +13,6 @@ import java.util.UUID;
 public interface IPurchaseRepository extends JpaRepository<PurchaseEntity,Long> {
     Optional<PurchaseEntity> findByExternalId(UUID externalId);
 
-    boolean existsByClient(ClientEntity client);
-
+    boolean existsByExternalId(UUID externalId);
 
 }
