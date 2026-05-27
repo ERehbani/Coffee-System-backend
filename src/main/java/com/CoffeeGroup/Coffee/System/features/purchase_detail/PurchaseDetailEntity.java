@@ -1,4 +1,4 @@
-package com.CoffeeGroup.Coffee.System.features.purchase_details;
+package com.CoffeeGroup.Coffee.System.features.purchase_detail;
 
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @Table(name = "purchase_details")
 @Entity
 @Builder
-public class PurchaseDetailsEntity {
+public class PurchaseDetailEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

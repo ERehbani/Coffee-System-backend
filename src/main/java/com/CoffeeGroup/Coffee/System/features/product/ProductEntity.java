@@ -1,10 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Struct;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -57,7 +56,7 @@ public class ProductEntity {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<PurchaseDetailsEntity> purchaseDetails;
+    private List<PurchaseDetailEntity> purchaseDetails;
 
 
 

@@ -3,7 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
-import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseRequest;
+import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseStatusRequest;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +37,7 @@ public class PurchaseController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<PurchaseResponse> update(@PathVariable UUID externalId, @RequestBody UpdatePurchaseRequest update){
+    public ResponseEntity<PurchaseResponse> update(@PathVariable UUID externalId, @RequestBody UpdatePurchaseStatusRequest update){
         return ResponseEntity.ok(service.update(externalId,update));
     }
 

@@ -8,7 +8,7 @@ import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
-import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseRequest;
+import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseStatusRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper.PurchaseMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -63,7 +63,7 @@ public class PurchaseService implements IPurchaseService{
     }
 
     @Override
-    public PurchaseResponse update(UUID externalId, UpdatePurchaseRequest request) {
+    public PurchaseResponse update(UUID externalId, UpdatePurchaseStatusRequest request) {
 
         PurchaseEntity entity = repository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("The purchase does not exist in the repository"));

@@ -2,7 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -34,6 +34,10 @@ public class PurchaseEntity {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private PurchaseStatus status;
+
     @OneToOne
     @JoinColumn(name = "redemption_id")
     private RedemptionEntity redemption;
@@ -47,5 +51,5 @@ public class PurchaseEntity {
 
     @Builder.Default
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<PurchaseDetailsEntity> purchaseDetails = new ArrayList<>();
+    private List<PurchaseDetailEntity> purchaseDetails = new ArrayList<>();
 }

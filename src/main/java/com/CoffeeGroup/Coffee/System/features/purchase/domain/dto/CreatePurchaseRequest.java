@@ -1,29 +1,25 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
-import jakarta.validation.constraints.FutureOrPresent;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.dto.CreatePurchaseDetailRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public record CreatePurchaseRequest(
 
-        UUID externalId,
+        @NotNull(message = "Client id is required")
+        UUID clientId,
 
-        @NotBlank(message = "La fecha no puede estar vacia")
-        @FutureOrPresent(message = "La fecha no puede ser anterior al dia de hoy")
-        Date date,
+        @NotNull(message = "Cafe id is required")
+        UUID cafeId,
 
-        @NotBlank(message = "El precio no puede estar vacio")
-        @PositiveOrZero(message = "El precio no puede ser negativo")
-        BigDecimal price,
+        UUID redemptionId,
 
-        @NotBlank(message = "El id del cliente no puede estar vacio")
-        UUID client,
-
-        @NotBlank(message = "El id de la cafeteria no puede estar vacia")
-        UUID cafe
+        @NotEmpty(message = "Purchase must have at least one detail")
+        @Valid
+        List<CreatePurchaseDetailRequest> details
 ) {
 }
