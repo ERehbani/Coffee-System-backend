@@ -9,9 +9,6 @@ public record UpdateCafeRequest(
         @NotBlank(message = "La direccion no puede estar vacia")
         String address,
 
-        @Email(message = "Debe tener un formato de email válido")
-        String email, // en el servicio lo convertimos al objeto Email
-
         @Pattern(regexp = "^\\d{10}$", message = "El numero de teléfono debe contener la longitud correcta")
         String phoneNumber,
 
