@@ -5,6 +5,7 @@ import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchase
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseStatusRequest;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,36 +19,27 @@ import java.util.UUID;
 @RequestMapping("/purchase")
 public class PurchaseController {
 
-    private final PurchaseService service;
+    private final PurchaseService purchaseService;
 
     @PostMapping
-    public ResponseEntity<PurchaseResponse> create(@RequestBody CreatePurchaseRequest create){
-        return new ResponseEntity<>(service.create(create), HttpStatus.CREATED);
+    public ResponseEntity<PurchaseResponse> create(@Valid @RequestBody CreatePurchaseRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(purchaseService.create(request));
     }
 
     @GetMapping
-    public ResponseEntity<List<PurchaseResponse>> getAll(){
-        return ResponseEntity.ok(service.getAll());
+    public ResponseEntity<List<PurchaseResponse>> findAll() {
+        return ResponseEntity.ok(purchaseService.findAll());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PurchaseResponse> getById(@PathVariable UUID externalId){
-        return ResponseEntity.ok(service.getById(externalId));
+    @GetMapping("/{externalId}")
+    public ResponseEntity<PurchaseResponse> getById(@PathVariable UUID externalId) {
+        return ResponseEntity.ok(purchaseService.getById(externalId));
     }
 
-
-    @PutMapping("/{id}")
-    public ResponseEntity<PurchaseResponse> update(@PathVariable UUID externalId, @RequestBody UpdatePurchaseStatusRequest update){
-        return ResponseEntity.ok(service.update(externalId,update));
+    @PatchMapping("/{externalId}/status")
+    public ResponseEntity<PurchaseResponse> updateStatus(@PathVariable UUID externalId, @Valid @RequestBody UpdatePurchaseStatusRequest request
+    ) {
+        return ResponseEntity.ok(purchaseService.updateStatus(externalId, request));
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<PurchaseResponse> delete (UUID externalId){
-        service.delete(externalId);
-        return ResponseEntity.ok().build();
-    }
-
-
-
 
 }
