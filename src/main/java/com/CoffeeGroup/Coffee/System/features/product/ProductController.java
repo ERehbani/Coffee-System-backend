@@ -13,28 +13,37 @@ import java.util.UUID;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/product")
+@RequestMapping("/products")
 public class ProductController {
 
     private final ProductService productService;
+
     @GetMapping
-    ResponseEntity<List<ProductResponse>> getAllProducts(){
-        return ResponseEntity.ok(productService.getAllProducts());
+    ResponseEntity<List<ProductResponse>> getAll(){
+        return ResponseEntity.ok(productService.getAll());
     }
 
-    @GetMapping("{productId}")
-    ResponseEntity<ProductResponse> getProductById(UUID productId){
-        return ResponseEntity.ok(productService.getProductById(productId));
+    @GetMapping("/{productId}")
+    ResponseEntity<ProductResponse> getById(@PathVariable UUID productId){
+        return ResponseEntity.ok(productService.getById(productId));
     }
 
     @PostMapping
-    ResponseEntity<ProductResponse> save(@RequestBody ProductRequest productBody){
-        return new ResponseEntity<>(productService.save(productBody), HttpStatus.CREATED);
+    ResponseEntity<ProductResponse> create(@RequestBody ProductRequest productBody){
+        return new ResponseEntity<>(productService.create(productBody), HttpStatus.CREATED);
     }
 
-    @PutMapping("{productId}")
-    ResponseEntity<ProductResponse> update(@RequestBody ProductRequest productBody, UUID productId){
+    @PutMapping("/{productId}")
+    ResponseEntity<ProductResponse> update(@RequestBody ProductRequest productBody, @PathVariable UUID productId){
         return ResponseEntity.ok(productService.update(productBody, productId));
     }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> delete(@PathVariable UUID productId){
+        productService.delete(productId);
+        return ResponseEntity.noContent().build();
+    }
+
+
 
 }

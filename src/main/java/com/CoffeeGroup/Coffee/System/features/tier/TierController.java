@@ -18,15 +18,16 @@ public class TierController {
 
     @GetMapping
     public ResponseEntity<List<TierResponse>> findAll() {
-        return ResponseEntity.ok(tierService.findAll());
+        return ResponseEntity.ok(tierService.getAll());
     }
+
     @GetMapping("/{externalId}")
-    public ResponseEntity<TierResponse> findById(@PathVariable UUID externalId) {
+    public ResponseEntity<TierResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(tierService.getById(externalId));
     }
 
     @PostMapping
-    public ResponseEntity<TierResponse> save(@Valid @RequestBody CreateTierRequest request) {
+    public ResponseEntity<TierResponse> create(@Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.create(request));
     }
 

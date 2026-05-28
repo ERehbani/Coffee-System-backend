@@ -18,7 +18,7 @@ public class ProductService implements IProductService{
     private final IMapper<ProductEntity, ProductResponse> productMapper;
 
     @Override
-    public List<ProductResponse> getAllProducts() {
+    public List<ProductResponse> getAll() {
         return productRepository.findAll()
                 .stream()
                 .map(productMapper::toDto)
@@ -26,7 +26,7 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public ProductResponse getProductById(UUID productId) {
+    public ProductResponse getById(UUID productId) {
         return productRepository.findByExternalId(productId)
                 .map(productMapper::toDto)
                 .orElseThrow(() ->
@@ -35,7 +35,7 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public ProductResponse save(ProductRequest productRequest) {
+    public ProductResponse create(ProductRequest productRequest) {
         ProductEntity entity = productMapper.toEntity(new ProductResponse(
                 UUID.randomUUID(),
                 productRequest.name(),
@@ -58,10 +58,16 @@ public class ProductService implements IProductService{
         return productMapper.toDto(productRepository.save(product));
     }
 
+
     @Override
     public void delete(UUID productId) {
-        ProductEntity product = productRepository.findByExternalId(productId)
+
+        ProductEntity entity = productRepository.findByExternalId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product", "Product not found", "productId", productId));
-        productRepository.delete(product);
+
+        productRepository.delete(entity);
+
     }
+
+
 }

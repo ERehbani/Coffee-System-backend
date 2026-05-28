@@ -16,7 +16,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RoleController {
     private final RoleService roleService;
-    private final RoleMapper roleMapper;
 
     @GetMapping
     public ResponseEntity<List<RoleResponse>> getAll() {

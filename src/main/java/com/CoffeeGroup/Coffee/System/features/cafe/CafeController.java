@@ -27,7 +27,7 @@ public class CafeController {
  }
 
  @PutMapping("/{externalId}")
- ResponseEntity<CafeResponse> update (@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
+ ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
     }
 
