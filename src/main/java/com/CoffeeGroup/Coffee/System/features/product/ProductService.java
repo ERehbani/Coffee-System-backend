@@ -61,7 +61,6 @@ public class ProductService implements IProductService{
 
     @Override
     public void delete(UUID productId) {
-
         ProductEntity entity = productRepository.findByExternalId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product", "Product not found", "productId", productId));
 

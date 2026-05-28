@@ -17,7 +17,7 @@ public class TierController {
     private final ITierService tierService;
 
     @GetMapping
-    public ResponseEntity<List<TierResponse>> findAll() {
+    public ResponseEntity<List<TierResponse>> getAll() {
         return ResponseEntity.ok(tierService.getAll());
     }
 

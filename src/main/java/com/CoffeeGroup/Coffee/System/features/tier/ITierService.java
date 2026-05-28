@@ -11,5 +11,5 @@ public interface ITierService {
     List<TierResponse> getAll();
     TierResponse getById(UUID externalId);
     TierResponse update(UUID externalId, CreateTierRequest request);
-    TierResponse delete(UUID externalId);
+    void delete(UUID externalId);
 }

@@ -24,7 +24,7 @@ public class CafeService implements ICafeService {
 
 
     @Override
-    public List<CafeResponse> findAll() {
+    public List<CafeResponse> getAll() {
 
         return repository.findAll().stream()
                 .map(mapper::toResponse)
@@ -32,7 +32,7 @@ public class CafeService implements ICafeService {
     }
 
     @Override
-    public CafeResponse getByExternalId(UUID externalId) {
+    public CafeResponse getById(UUID externalId) {
         return repository.findByExternalId(externalId)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
