@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface IBenefitRepository extends JpaRepository<BenefitEntity, Long> {
     Optional<BenefitEntity> findByExternalId(UUID externalId);
+    boolean existsByExternalId(UUID externalId);
+
 }

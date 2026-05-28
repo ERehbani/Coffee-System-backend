@@ -34,7 +34,7 @@ public class BenefitEntity {
     @Column(name = "price")
     private Integer price;
 
-    @Column(name = "points_cost")
+    @Column(name = "points_cost", nullable = false)
     private Integer pointsCost;
 
     @Column(name = "start_date")
@@ -43,8 +43,9 @@ public class BenefitEntity {
     @Column(name = "end_date")
     private Date endDate;
 
-    @Column(name = "status")
-    private Boolean status;
+    @Builder.Default
+    @Column(name = "status", columnDefinition = "boolean default true")
+    private Boolean status = true;
 
     @Column(name = "is_public")
     private Boolean isPublic;
