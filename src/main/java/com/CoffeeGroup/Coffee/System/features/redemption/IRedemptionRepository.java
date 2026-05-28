@@ -10,4 +10,5 @@ import java.util.UUID;
 @Repository
 public interface IRedemptionRepository extends JpaRepository <RedemptionEntity, Long> {
     Optional<RedemptionEntity> findByExternalId(UUID externalId);
+    boolean existsByExternalId(UUID externalId);
 }

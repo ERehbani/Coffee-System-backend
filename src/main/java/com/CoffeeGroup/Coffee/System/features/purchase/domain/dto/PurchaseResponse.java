@@ -1,7 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
 
-import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
-import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
 import lombok.Builder;
 
 
@@ -13,12 +13,13 @@ import java.util.UUID;
 @Builder
 public record PurchaseResponse(
 
-        UUID externaliD,
+        UUID externalId,
         Date date,
         BigDecimal price,
-        RedemptionEntity redemption,
-        UUID client,
-        UUID cafe,
-        List<PurchaseDetailsEntity> purchaseDetails
+        PurchaseStatus status,
+        UUID clientId,
+        UUID cafeId,
+        UUID redemptionId,
+        List<PurchaseDetailResponse> details
 ) {
 }

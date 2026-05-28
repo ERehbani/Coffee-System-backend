@@ -1,10 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase_details.PurchaseDetailsEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Struct;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @ToString
 @Builder
-@Table(name = "Products")
+@Table(name = "products")
 @Entity
 @Getter
 @Setter
@@ -45,20 +44,21 @@ public class ProductEntity {
     @Column(name = "awarded_points")
     private Integer awardedPoints;
 
+    @Column(nullable = false,name = "state")
+    private Boolean state;
+
+
     // --- Relacion Categoria ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @ToString.Exclude
     private CategoryEntity category;
 
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @ToString.Exclude
-    private List<PurchaseDetailsEntity> purchaseDetails;
+    private List<PurchaseDetailEntity> purchaseDetails;
 
 
-    @Column(nullable = false,name = "state")
-    private Boolean state;
 
 
 }
