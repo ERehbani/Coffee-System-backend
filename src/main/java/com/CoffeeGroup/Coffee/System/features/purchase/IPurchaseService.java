@@ -8,9 +8,5 @@ import java.util.UUID;
 
 
 public interface IPurchaseService {
-    PurchaseResponse create(CreatePurchaseRequest request);
-    List<PurchaseResponse> getAll();
-    PurchaseResponse getById(UUID externalId);
-    PurchaseResponse update(UUID externalId, UpdatePurchaseStatusRequest request);
-    void delete(UUID externalId);
+
 }
