@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IProductService {
-    List<ProductResponse> getAllProducts();
+    List<ProductResponse> getAll();
 
-    ProductResponse getProductById(UUID productId);
-    ProductResponse save(ProductRequest productRequest);
+    ProductResponse getById(UUID productId);
+
+    ProductResponse create(ProductRequest productRequest);
 
     ProductResponse update(ProductRequest productResponse, UUID productId);
     void delete(UUID productId);

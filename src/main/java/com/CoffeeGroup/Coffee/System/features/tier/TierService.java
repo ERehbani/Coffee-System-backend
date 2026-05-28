@@ -32,23 +32,20 @@ public class TierService implements ITierService {
         return tierMapper.toDto(tierEntity);
     }
 
-    public TierEntity findById(UUID tierId) {
-        return tierRepository.findByExternalId(tierId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
-    }
-
     @Override
-    public List<TierResponse> findAll() {
+    public List<TierResponse> getAll() {
         return tierRepository.findAll()
                 .stream()
                 .map(tierMapper::toDto)
                 .collect(Collectors.toList());
     }
-    /// //
+
     @Override
     public TierResponse getById(UUID externalId) {
-        TierEntity tier = findById(externalId);
-        return tierMapper.toDto(tier);
+
+        return tierRepository.findByExternalId(externalId)
+                .map(tierMapper::toDto)
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
     }
 
     @Override
@@ -61,7 +58,9 @@ public class TierService implements ITierService {
 
     @Override
     public void delete(UUID externalId) {
-        TierEntity tier = findById(externalId);
+        TierEntity tier = tierRepository.findByExternalId(externalId)
+                        .orElseThrow(() -> new EntityNotFoundException("tier not found"));
+
         tierRepository.delete(tier);
     }
 

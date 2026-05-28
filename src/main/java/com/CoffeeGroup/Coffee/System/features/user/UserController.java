@@ -18,8 +18,6 @@ import java.util.UUID;
 
 public class UserController {
     private final UserService userService;
-    private final UserMapper userMapper;
-
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAll() {
