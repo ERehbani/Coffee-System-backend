@@ -4,7 +4,6 @@ import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
 import lombok.Builder;
 
-
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
