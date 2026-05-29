@@ -33,4 +33,10 @@ public class SharedRewardsController {
     public ResponseEntity<SharedRewardsResponse> save(@RequestBody @Valid SharedRewardsRequest sharedReward){
         return ResponseEntity.status(HttpStatus.OK).body(service.save(sharedReward));
     }
+
+    @DeleteMapping("/{sharedRewardId}")
+    public ResponseEntity.BodyBuilder delete(@PathVariable UUID sharedRewardId){
+        service.delete(sharedRewardId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT);
+    }
 }
