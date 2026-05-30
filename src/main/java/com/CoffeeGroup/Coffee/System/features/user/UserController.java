@@ -29,10 +29,6 @@ public class UserController {
         return ResponseEntity.ok(userService.getById(externalId));
     }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request){
-        return ResponseEntity.ok(userService.create(request));
-    }
 
     @PutMapping("/{externalId}")
     public ResponseEntity<UserResponse> update(@Valid @PathVariable UUID externalId, @RequestBody UpdateUserRequest request){

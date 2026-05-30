@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IUserService {
-    UserResponse create(CreateUserRequest request);
     List<UserResponse> getAll();
     UserResponse getById(UUID externalId);
     UserResponse update(UUID externalId, UpdateUserRequest request);

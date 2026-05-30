@@ -3,20 +3,17 @@ package com.CoffeeGroup.Coffee.System.features.user.domain.dto;
 import jakarta.validation.constraints.*;
 
 public record CreateUserRequest(
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "Email no valido")
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Invalid email")
     String email,
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    @NotBlank(message = "Password is mandatory")
+    @Size(min = 6, message = "The password must be at least 6 characters long")
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-            message = "Ea contraseña debe tener al menos una mayuscula, una minuscula y un numero"
+            message = "The password must contain at least one uppercase letter, one lowercase letter, and one number"
     )
-    String password,
-
-    @NotNull(message = "El rol es obligatorio")
-    Long roleId
+    String password
 
 ) {
 }
