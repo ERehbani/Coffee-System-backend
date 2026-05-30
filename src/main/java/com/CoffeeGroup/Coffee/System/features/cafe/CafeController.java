@@ -38,6 +38,8 @@ public class CafeController {
    return ResponseEntity.noContent().build();
  }
 
+
+ /*
     @GetMapping
     ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.findAll());}
 
@@ -45,7 +47,7 @@ public class CafeController {
     ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
         return ResponseEntity.ok(service.getByExternalId(externalId));
     }
-
+*/
 
 
 

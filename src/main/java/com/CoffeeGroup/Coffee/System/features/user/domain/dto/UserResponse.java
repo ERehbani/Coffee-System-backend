@@ -5,7 +5,6 @@ import java.util.UUID;
 public record UserResponse (
         UUID externalId,
         String email,
-        Boolean state,
-        String role
+        Boolean state
 ){
 }
