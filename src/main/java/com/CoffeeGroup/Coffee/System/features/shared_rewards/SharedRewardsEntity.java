@@ -20,14 +20,11 @@ public class SharedRewardsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "reward_id", nullable = false)
-    private Long rewardId;
+    @Column(name = "external_id", nullable = false, unique = true)
+    private UUID externalId;
 
     @Column(nullable = false)
     private java.time.LocalDate date;
-
-    @Column(name = "external_id", nullable = false, unique = true)
-    private UUID externalId;
 
     //RELACION CON BENEFICIO
     @OneToOne
