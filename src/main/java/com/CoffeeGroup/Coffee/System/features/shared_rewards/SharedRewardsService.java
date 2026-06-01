@@ -1,5 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.shared_rewards;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.IClientService;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.dto.SharedRewardsRequest;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.dto.SharedRewardsResponse;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.mapper.ISharedRewardsMapper;
@@ -17,6 +23,8 @@ public class SharedRewardsService implements ISharedRewardsService{
 
     private final ISharedRewardsRepository repository;
     private final ISharedRewardsMapper mapper;
+    private final IClientRepository clientRepository;
+    private final IBenefitRepository benefitRepository;
 
     public List<SharedRewardsResponse> findAll(){
         return repository.findAll()
@@ -33,10 +41,17 @@ public class SharedRewardsService implements ISharedRewardsService{
 
     public SharedRewardsResponse save(SharedRewardsRequest request){
         SharedRewardsEntity entity = mapper.toEntity(request);
-
+        ClientEntity receiver = clientRepository.findByExternalId(request.receiver())
+                .orElseThrow(()-> new EntityNotFoundException("Cliente not found"));
+        ClientEntity transmitter = clientRepository.findByExternalId(request.transmitter())
+                .orElseThrow(()-> new EntityNotFoundException("Cliente not found"));
+        BenefitEntity benefit = benefitRepository.findByExternalId(request.benefit())
+                        .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
         entity.setExternalId(UUID.randomUUID());
         entity.setDate(LocalDate.now());
-
+        entity.setReceiver(receiver);
+        entity.setTransmitter(transmitter);
+        entity.setBenefit(benefit);
         return mapper.toDto(repository.save(entity));
     }
 

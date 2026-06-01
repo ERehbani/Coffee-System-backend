@@ -8,6 +8,6 @@ public record SharedRewardsResponse(
         LocalDate date,
         UUID benefit,
         UUID transmitter,
-        UUID reveiver
+        UUID receiver
 ) {
 }
