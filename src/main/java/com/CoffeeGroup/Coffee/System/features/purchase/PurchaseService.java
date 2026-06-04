@@ -39,25 +39,6 @@ public class PurchaseService implements IPurchaseService{
     private final PurchaseMapper purchaseMapper;
 
 
-    private PurchaseEntity findPurchaseByExternalId(UUID externalId) {
-        return purchaseRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
-    }
-
-    private ClientEntity findClientByExternalId(UUID externalId) {
-        return clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-    }
-
-    private CafeEntity findCafeByExternalId(UUID externalId) {
-        return cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-    }
-
-    private ProductEntity findProductByExternalId(UUID externalId) {
-        return productRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-    }
 
     private RedemptionEntity findRedemptionByExternalIdOrNull(UUID externalId) {
         if (externalId == null) {
@@ -71,8 +52,12 @@ public class PurchaseService implements IPurchaseService{
     @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
 
-        ClientEntity client = findClientByExternalId(request.clientId());
-        CafeEntity cafe = findCafeByExternalId(request.cafeId());
+        ClientEntity client = clientRepository.findByExternalId(request.clientId())
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+
+        CafeEntity cafe = cafeRepository.findByExternalId(request.cafeId())
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+
         RedemptionEntity redemption = findRedemptionByExternalIdOrNull(request.redemptionId());
 
         PurchaseEntity purchase = buildPurchase(client, cafe, redemption);
@@ -80,7 +65,8 @@ public class PurchaseService implements IPurchaseService{
         BigDecimal totalPrice = BigDecimal.ZERO;
 
         for (CreatePurchaseDetailRequest detailRequest : request.details()) {
-            ProductEntity product = findProductByExternalId(detailRequest.productId());
+            ProductEntity product = productRepository.findByExternalId(detailRequest.productId())
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
             PurchaseDetailEntity detail = buildPurchaseDetail(purchase, product, detailRequest.amount());
 
@@ -104,7 +90,9 @@ public class PurchaseService implements IPurchaseService{
     }
 
     public PurchaseResponse getById(UUID externalId) {
-        PurchaseEntity purchase = findPurchaseByExternalId(externalId);
+        PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+
         return purchaseMapper.toResponse(purchase);
     }
 
@@ -119,7 +107,8 @@ public class PurchaseService implements IPurchaseService{
 
     @Transactional
     public PurchaseResponse updateStatus(UUID externalId, UpdatePurchaseStatusRequest request) {
-        PurchaseEntity purchase = findPurchaseByExternalId(externalId);
+        PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
 
         purchase.setStatus(request.status());
 
