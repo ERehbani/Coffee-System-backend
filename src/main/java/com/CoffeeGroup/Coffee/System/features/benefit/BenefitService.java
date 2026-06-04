@@ -15,6 +15,7 @@ import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,10 +31,11 @@ public class BenefitService implements IBenefitService {
     private final IBenefitCreateMapper createMapper;
     private final IBenefitResponseMapper responseMapper;
 
+    @Transactional
     @Override
     public BenefitResponse save(BenefitCreateRequest benefitCreate) {
         CafeEntity cafeEntity = cafeRepository.findByExternalId(benefitCreate.cafeId())
-                .orElseThrow(() -> new EntityNotFoundException("caffe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("cafe not found"));
         TierEntity tierEntity = tierRepository.findByExternalId(benefitCreate.tierId())
                 .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(benefitCreate.typeId())
@@ -72,6 +74,7 @@ public class BenefitService implements IBenefitService {
         return responseMapper.toDto(benefit);
     }
 
+
     public BenefitResponse cancelBenefit(UUID externalId){
         BenefitEntity benefit = findBenefit(externalId);
         benefit.setIsPublic(false);
@@ -79,6 +82,7 @@ public class BenefitService implements IBenefitService {
         return responseMapper.toDto(benefit);
     }
 
+    @Transactional
     public BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest){
         BenefitEntity benefit = findBenefit(externalId);
         benefit.setEndDate(newEndDateRequest.endDate());
