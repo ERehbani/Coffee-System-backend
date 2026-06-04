@@ -50,11 +50,21 @@ public class RedemptionService implements IRedemptionService {
                     .orElseThrow(()-> new EntityNotFoundException("Purchase not found"));
 
         }
+
+        if (benefitAux.getStatus() == false && benefitAux.getIsPublic() == false){
+            throw new IllegalStateException("el beneficio no esta habilitado");
+        }
+
+        if (benefitAux.getMaxRedemptions() <= 0){
+            throw new IllegalStateException("el beneficio se quedo sin tokens// modificar a ingles");
+        }
+        benefitAux.setMaxRedemptions(benefitAux.getMaxRedemptions() - 1);
+        benefitRepository.save(benefitAux);
+
         Integer pointsCost = benefitAux.getPointsCost();
         if (clientAux.getCurrentPoints() < pointsCost) {
             throw new IllegalStateException("The customer does not have enough points");
         }
-
         clientAux.setCurrentPoints(clientAux.getCurrentPoints() - pointsCost);
         clientRepository.save(clientAux);
 

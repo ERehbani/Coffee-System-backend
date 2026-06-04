@@ -72,10 +72,6 @@ public class CafeEntity {
     @ToString.Exclude
     private List<PurchaseEntity> purchases;
 
-    @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<BenefitEntity> benefits;
-
     @OneToMany(mappedBy = "cafe")
     private List<ReviewEntity> review;
 }

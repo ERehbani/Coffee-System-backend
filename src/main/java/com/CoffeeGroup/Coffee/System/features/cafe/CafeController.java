@@ -39,15 +39,18 @@ public class CafeController {
  }
 
 
- /*
-    @GetMapping
-    ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.findAll());}
 
+    @GetMapping
+    ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.getAll());}
+
+    /*
     @GetMapping("/{externalId}")
     ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
         return ResponseEntity.ok(service.getByExternalId(externalId));
     }
-*/
+
+     */
+
 
 
 

@@ -26,6 +26,6 @@ public class BenefitTypeEntity {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(mappedBy = "Type")
+    @OneToMany(mappedBy = "benefitType")
     private List<BenefitEntity> benefitEntityList;
 }

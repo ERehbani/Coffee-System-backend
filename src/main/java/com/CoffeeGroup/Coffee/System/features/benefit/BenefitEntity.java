@@ -8,6 +8,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -28,20 +29,17 @@ public class BenefitEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private UUID externalId;
 
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "price")
-    private Integer price;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "points_cost", nullable = false)
     private Integer pointsCost;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private LocalDate endDate;
 
     @Builder.Default
     @Column(name = "status", columnDefinition = "boolean default true")
@@ -53,28 +51,22 @@ public class BenefitEntity {
     @Column(name = "max_redemptions")
     private Integer maxRedemptions;
 
-    // Relacion con cafetería
+    @Column(name = "description")
+    private String description;
+
     @ManyToOne
-    @JoinColumn(name = "type_id",nullable = false)
-    private BenefitTypeEntity Type;
+    @JoinColumn(name = "type_id")
+    private BenefitTypeEntity benefitType;
 
-    // Relacion cafetería
     @ManyToOne
-    @JoinColumn(name = "cafe_id",nullable = false)
-    private CafeEntity cafe;
+    @JoinColumn(name = "tier_id")
+    private TierEntity tierEntity;
 
-    // Relacion tier
-    @ManyToOne
-    @JoinColumn(name = "tier_id",nullable = false)
-    private TierEntity tier;
+    @OneToOne
+    @JoinColumn(name = "cafe_id")
+    private CafeEntity cafeEntity;
 
-    //Relation sharedRewards
-    @OneToOne(mappedBy = "benefit")
-    private SharedRewardsEntity SharedRewards;
-
-    // --- Relation Redemption ---
-    @OneToMany(mappedBy = "benefit",fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<RedemptionEntity> Redemptions;
+    @OneToMany(mappedBy = "benefit")
+    private List<RedemptionEntity> redemptionList;
 
 }
