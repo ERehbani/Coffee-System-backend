@@ -29,7 +29,6 @@ public class TierEntity {
     @Column(name = "min_points")
     private Integer minPoints;
 
-    //relation tier
     @OneToMany(mappedBy = "tier")
     private List<ClientEntity> client;
 
