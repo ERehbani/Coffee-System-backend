@@ -76,14 +76,16 @@ public class UserService implements IUserService {
 
     @Override
     public UserResponse getById(UUID externalId) {
-        UserEntity user = findByExternalId(externalId);
+        UserEntity user = userRepository
+                .findByExternalId(externalId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         return  userMapper.toResponse(user);
     }
 
     @Override
     public UserResponse update(UUID externalId, UpdateUserRequest request) {
-        UserEntity user = findByExternalId(externalId);
+        UserEntity user = userRepository
+                .findByExternalId(externalId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if(request.email() != null ){
             user.setEmail(new Email(request.email()));
@@ -100,14 +102,13 @@ public class UserService implements IUserService {
 
     @Override
     public void delete(UUID externalId) {
-        UserEntity user = findByExternalId(externalId);
+        UserEntity user = userRepository
+                .findByExternalId(externalId).orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        userRepository.delete(user);
+        user.setState(false);
+        userRepository.save(user);
     }
 
 
-    public UserEntity findByExternalId(UUID externalId) {
-        return userRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-    }
+
 }
