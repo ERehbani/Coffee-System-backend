@@ -4,7 +4,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.IPurchaseRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionCreateMapper;
@@ -12,7 +12,6 @@ import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedempt
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionUpdateRequest;
-import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ public class RedemptionService implements IRedemptionService {
     private final IRedemptionRepository redemptionRepository;
     private final IRedemptionResponseMapper responseMapper;
     private final IRedemptionCreateMapper createMapper;
-    private final IClientRepository clientRepository;
+    private final ClientRepository clientRepository;
     private final IPurchaseRepository purchaseRepository;
     private final IBenefitRepository benefitRepository;
 

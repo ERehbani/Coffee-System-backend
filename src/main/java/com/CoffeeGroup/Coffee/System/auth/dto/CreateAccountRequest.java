@@ -16,6 +16,9 @@ public record CreateAccountRequest(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
                 message = "The password must contain at least one uppercase letter, one lowercase letter, and one number"
         )
-        String password
+        String password,
+        @NotBlank(message = "Name is mandatory")
+        String name
+
 ) {
 }

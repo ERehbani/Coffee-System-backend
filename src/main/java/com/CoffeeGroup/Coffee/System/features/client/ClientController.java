@@ -18,10 +18,9 @@ import java.util.UUID;
 public class ClientController {
     private final ClientService clientService;
 
-    @PostMapping
-    public ResponseEntity<ClientResponse> create(@Valid @RequestBody CreateClientRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(clientService.create(request));
-    }
+
+    //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido
+    //crear un cliente aislado de un usuario, por lo tanto se le pega al endpount auth/register
 
     @GetMapping
     public ResponseEntity<List<ClientResponse>> getAll() {

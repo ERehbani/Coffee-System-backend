@@ -4,8 +4,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
-import com.CoffeeGroup.Coffee.System.features.client.IClientService;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.dto.SharedRewardsRequest;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.dto.SharedRewardsResponse;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.mapper.ISharedRewardsMapper;
@@ -23,7 +22,7 @@ public class SharedRewardsService implements ISharedRewardsService{
 
     private final ISharedRewardsRepository repository;
     private final ISharedRewardsMapper mapper;
-    private final IClientRepository clientRepository;
+    private final ClientRepository clientRepository;
     private final IBenefitRepository benefitRepository;
 
     public List<SharedRewardsResponse> findAll(){

@@ -9,6 +9,11 @@ import com.CoffeeGroup.Coffee.System.auth.permissions.Roles;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.ClientService;
+import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.CreateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UpdateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
@@ -32,7 +37,9 @@ public class UserService implements IUserService {
     private final RoleRepository roleRepository;
     private final CredentialsRepository credentialsRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final ClientRepository clientRepository;
+    private final TierRepository tierRepository;
+    private final ClientService clientService;
     @Override
     public List<UserResponse> getAll() {
         return userRepository.findAll()
@@ -41,6 +48,7 @@ public class UserService implements IUserService {
                 .toList();
     }
 
+    //Le saco el @Transactional Ya que el .save es transactional por defecto (si no les gusta se quejan con el profe)
     @Transactional
     public UserResponse save(CreateAccountRequest request) {
 
@@ -48,6 +56,10 @@ public class UserService implements IUserService {
 
         if (userRepository.existsByEmail(email)) {
             throw new EntityAlreadyExistsException("Email already exists");
+        }
+
+        if (credentialsRepository.existsByUsername(request.email())) {
+            throw new EntityAlreadyExistsException("Username already exists");
         }
 
         RoleEntity role = roleRepository.findByRole(Roles.ROLE_CLIENTE)
@@ -71,6 +83,8 @@ public class UserService implements IUserService {
                 .build();
 
         credentialsRepository.save(credentials);
+
+        clientService.create(request.name(), savedUser);
 
         return userMapper.toResponse(savedUser);
     }

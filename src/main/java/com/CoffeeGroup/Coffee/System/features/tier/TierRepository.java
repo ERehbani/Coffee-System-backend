@@ -11,4 +11,6 @@ public interface TierRepository extends JpaRepository<TierEntity, Long> {
     Optional<TierEntity> findByExternalId(UUID externalId);
     boolean existsByName(String name);
     boolean existsByMinPoints(Integer minPoints);
+    Optional<TierEntity> findByMinPoints(Integer minPoints);
+    Optional<TierEntity> findByName(String name);
 }
