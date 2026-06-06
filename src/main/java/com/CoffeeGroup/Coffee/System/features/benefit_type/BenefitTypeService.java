@@ -8,7 +8,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.Be
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeCreate;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto.BenefitTypeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import lombok.AllArgsConstructor;
@@ -24,7 +24,7 @@ public class BenefitTypeService implements IBenefitTypeService {
     private final IBenefitTypeResponseMapper responseMapper;
     private final SecurityUtils securityUtils;
     private final IProductRepository productRepository;
-    private final ICafeRepository cafeRepository;
+    private final CafeRepository cafeRepository;
 
 
     @Override

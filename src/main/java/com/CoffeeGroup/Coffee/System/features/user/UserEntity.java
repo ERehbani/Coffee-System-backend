@@ -42,8 +42,8 @@ public class UserEntity {
     @OneToOne(mappedBy = "usuario")
     private CredentialsEntity credentials;
 
-    @ManyToMany(mappedBy = "users")
-    private List<CafeEntity> cafes;
+    @OneToOne(mappedBy = "user")
+    private CafeEntity cafe;
 
     @OneToOne(mappedBy = "user")
     private ClientEntity client;

@@ -3,7 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
@@ -32,7 +32,7 @@ public class PurchaseService implements IPurchaseService{
 
     private final IPurchaseRepository purchaseRepository;
     private final ClientRepository clientRepository;
-    private final ICafeRepository cafeRepository;
+    private final CafeRepository cafeRepository;
     private final ICartRepository cartRepository;
     private final IProductRepository productRepository;
     private final IRedemptionRepository redemptionRepository;

@@ -2,7 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.review;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
@@ -23,7 +23,7 @@ public class ReviewService implements IReviewService {
 
 
     private final ClientRepository clientRepository;
-    private final ICafeRepository cafeRepository;
+    private final CafeRepository cafeRepository;
     private final IReviewRepository reviewRepository;
 
     private final IReviewCreateRequest MapReviewCreateRequest;

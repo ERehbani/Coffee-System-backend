@@ -1,9 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
-import org.springframework.http.ResponseEntity;
+import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
 import java.util.List;
 import java.util.UUID;
@@ -14,7 +14,7 @@ public interface ICafeService {
 
     CafeResponse getById(UUID externalId);
 
-    CafeResponse create(CreateCafeRequest request);
+    CafeEntity create(CreateCafeAccountRequest request, UserEntity user);
 
     CafeResponse update(UUID externalId, UpdateCafeRequest request);
 

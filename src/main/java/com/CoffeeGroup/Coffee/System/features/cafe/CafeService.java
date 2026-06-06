@@ -1,75 +1,87 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
+import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @AllArgsConstructor
 @Service
 public class CafeService implements ICafeService {
 
-    private final ICafeRepository repository;
+    private final CafeRepository cafeRepository;
     private final CafeMapper mapper;
 
 
     @Override
     public List<CafeResponse> getAll() {
 
-        return repository.findAll().stream()
+        return cafeRepository.findAll().stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Override
     public CafeResponse getById(UUID externalId) {
-        return repository.findByExternalId(externalId)
+        return cafeRepository.findByExternalId(externalId)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
     }
 
-    @Override
-    @Transactional
-    public CafeResponse create(CreateCafeRequest request) {
 
-        if (repository.existsByEmail(new Email(request.email()))) {
-            throw new EntityAlreadyExistsException("Email already exists");
+    public CafeEntity create(CreateCafeAccountRequest request, UserEntity user) {
+
+        Email cafeEmail = new Email(request.email());
+
+        if (cafeRepository.existsByEmail(cafeEmail)) {
+            throw new EntityAlreadyExistsException("Cafe email already exists");
         }
 
-        CafeEntity entity = mapper.toEntity(request);
+        CafeEntity cafe = CafeEntity.builder()
+                .externalId(UUID.randomUUID())
+                .name(request.name())
+                .address(request.address())
+                .email(cafeEmail)
+                .phoneNumber(request.phoneNumber())
+                .description(request.description())
+                .state(true)
+                .image(null)
+                .schedule(request.schedule())
+                .user(user)
+                .build();
 
-        return mapper.toResponse(repository.save(entity));
+        return cafeRepository.save(cafe);
     }
 
     @Override
     @Transactional
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
 
-        CafeEntity cafe = repository.findByExternalId(externalId)
+        CafeEntity cafe = cafeRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
          cafe.setAddress(request.address());
          cafe.setPhoneNumber(request.phoneNumber());
          cafe.setDescription(request.description());
          cafe.setSchedule(request.schedule());
          cafe.setImage(request.image());
-        return mapper.toResponse(repository.save(cafe));
+        return mapper.toResponse(cafeRepository.save(cafe));
     }
 
     @Override
     public void delete(UUID externalId) {
 
-        CafeEntity cafe = repository.findByExternalId(externalId)
+        CafeEntity cafe = cafeRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        repository.delete(cafe);
+        cafeRepository.delete(cafe);
     }
 }

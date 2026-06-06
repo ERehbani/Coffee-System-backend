@@ -1,14 +1,15 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
+import com.CoffeeGroup.Coffee.System.features.user.IUserService;
+import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,11 +20,13 @@ import java.util.UUID;
 @RequestMapping("/cafes")
 public class CafeController {
 
- private final CafeService service;
+ private final ICafeService service;
+ private final IUserService userService;
 
- @PostMapping
- ResponseEntity<CafeResponse> create(@Valid @RequestBody CreateCafeRequest request){
-     return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+ @PostMapping("/register")
+ public ResponseEntity<UserResponse> registerCafe(@Valid @RequestBody CreateCafeAccountRequest request) {
+     return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
  }
 
  @PutMapping("/{externalId}")
