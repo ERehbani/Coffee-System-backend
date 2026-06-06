@@ -24,23 +24,29 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ClientService {
-    private final IClientRepository clientRepository;
+    private final ClientRepository clientRepository;
     private final TierRepository tierRepository;
     private final UserRepository userRepository;
     private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
 
 
+
     @Transactional
-    public ClientResponse create(CreateClientRequest request) {
+    public ClientEntity create(String name, UserEntity user) {
 
-        TierEntity tier = tierRepository.findByExternalId(request.tierExternalId())
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+        TierEntity initialTier = tierRepository.findByMinPoints(0)
+                .orElseThrow(() -> new EntityNotFoundException("Initial tier not found"));
 
-        UserEntity user = userRepository.findByExternalId(request.userExternalId()  )
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        ClientEntity client = clientMapper.toEntity(request, tier, user);
+        ClientEntity client = ClientEntity.builder()
+                .externalId(UUID.randomUUID())
+                .name(name)
+                .profilePhoto(null)
+                .currentPoints(0)
+                .historicalPoints(0)
+                .tier(initialTier)
+                .user(user)
+                .build();
 
         ClientEntity clientSaved = clientRepository.save(client);
 
@@ -50,9 +56,10 @@ public class ClientService {
                 .items(List.of())
                 .totalPrice(BigDecimal.ZERO)
                 .build();
+
         cartRepository.save(cart);
 
-        return clientMapper.toResponse(clientSaved);
+        return clientSaved;
     }
 
     public List<ClientResponse> findAll() {

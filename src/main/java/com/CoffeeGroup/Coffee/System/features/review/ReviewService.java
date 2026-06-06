@@ -4,7 +4,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
@@ -22,7 +22,7 @@ import java.util.UUID;
 public class ReviewService implements IReviewService {
 
 
-    private final IClientRepository clientRepository;
+    private final ClientRepository clientRepository;
     private final ICafeRepository cafeRepository;
     private final IReviewRepository reviewRepository;
 

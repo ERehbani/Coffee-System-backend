@@ -5,10 +5,9 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
-import com.CoffeeGroup.Coffee.System.features.cart.CartItem;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
@@ -32,7 +31,7 @@ import java.util.UUID;
 public class PurchaseService implements IPurchaseService{
 
     private final IPurchaseRepository purchaseRepository;
-    private final IClientRepository clientRepository;
+    private final ClientRepository clientRepository;
     private final ICafeRepository cafeRepository;
     private final ICartRepository cartRepository;
     private final IProductRepository productRepository;
