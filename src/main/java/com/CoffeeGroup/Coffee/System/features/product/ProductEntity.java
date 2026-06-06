@@ -58,7 +58,4 @@ public class ProductEntity {
     @ToString.Exclude
     private List<PurchaseDetailEntity> purchaseDetails;
 
-
-
-
 }
