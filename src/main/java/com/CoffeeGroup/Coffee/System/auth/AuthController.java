@@ -29,7 +29,7 @@ public class AuthController {
         aca tienen el json por si quieren cargar algo
     {
         "email": "Nanotest@mail.com",
-        "password": "Test1234",
+        "password": "",
         "name": "Nano cojeancianas"
     }
     */

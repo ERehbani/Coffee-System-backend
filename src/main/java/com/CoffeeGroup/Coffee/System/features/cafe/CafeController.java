@@ -27,7 +27,7 @@ public class CafeController {
     aca tienen el json por si quieren cargar algo
     {
             "email": "sao@gmail.com",
-            "password": "Saocafe123",
+            "password": "",
             "name": "cafe centro",
             "address": "av Colon 1234",
             "description": "cafeteria de especialidad en el centro",
