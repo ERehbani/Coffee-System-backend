@@ -16,12 +16,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
     private final UserService userService;
     private final JwtService jwtService;
+
+
+
+    /*
+        aca tienen el json por si quieren cargar algo
+    {
+        "email": "Nanotest@mail.com",
+        "password": "Test1234",
+        "name": "Nano cojeancianas"
+    }
+    */
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest authRequest){

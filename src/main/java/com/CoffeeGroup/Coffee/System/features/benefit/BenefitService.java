@@ -10,7 +10,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitRes
 import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import lombok.AllArgsConstructor;
@@ -28,7 +28,7 @@ public class BenefitService implements IBenefitService {
 
     private final IBenefitRepository benefitRepository;
     private final IBenefitTypeRepository benefitTypeRepository;
-    private final ICafeRepository cafeRepository;
+    private final CafeRepository cafeRepository;
     private final TierRepository tierRepository;
     private final IBenefitCreateMapper createMapper;
     private final IBenefitResponseMapper responseMapper;

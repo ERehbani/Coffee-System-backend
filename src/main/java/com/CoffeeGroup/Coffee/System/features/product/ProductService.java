@@ -4,7 +4,7 @@ package com.CoffeeGroup.Coffee.System.features.product;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 import lombok.AllArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class ProductService implements IProductService{
     private final IProductRepository productRepository;
     private final IMapper<ProductEntity, ProductResponse> productMapper;
-    private final ICafeRepository cafeRepository;
+    private final CafeRepository cafeRepository;
 
     @Override
     public List<ProductResponse> getAll() {

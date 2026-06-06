@@ -1,7 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
 import com.CoffeeGroup.Coffee.System.common.model.Email;
-import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
@@ -34,8 +33,6 @@ public class CafeEntity {
     @Column(nullable = false,name = "address")
     private String address;
 
-
-
     @Embedded
     @AttributeOverride(name = "value", column = @Column(name = "email_address", unique = true, nullable = false))
     private Email email;
@@ -55,13 +52,9 @@ public class CafeEntity {
     @Column(name = "schedule")
     private String schedule;
 
-    @ManyToMany
-    @JoinTable(
-            name = "cafe_user",
-            joinColumns = @JoinColumn(name = "cafe_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
-    private List<UserEntity> users;
+    @OneToOne
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private UserEntity user;
 
     // --- Relacion Producto ---
     @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
