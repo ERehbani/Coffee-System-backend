@@ -4,6 +4,8 @@ import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.auth.permissions.*;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -24,6 +26,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CredentialsRepository credentialsRepository;
     private final PasswordEncoder passwordEncoder;
+    private final TierRepository tierRepository;
 
     /*con esto lo que hago es iniciar con un super admin, en la env variable agregan un email y una pass ficticia para el login,
     asi se loguean, cuando hacemos un /api/auth/register solo puede registrarse un usuario, la cafeteria la registramos nosotros con otro endpoint que falta,
@@ -77,9 +80,10 @@ public class DatabaseInitializer implements CommandLineRunner {
                 permits
         );
 
+        createInitialTiers();
+
         createSuperAdmin(superAdminRole);
     }
-
     private Map<Permits, PermitEntity> createPermits() {
         Map<Permits, PermitEntity> permitsMap = new HashMap<>();
 
@@ -137,5 +141,26 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .build();
 
         credentialsRepository.save(credentials);
+    }
+
+    private void createInitialTiers() {
+        createTierIfNotExists("BRONCE", 0);
+        createTierIfNotExists("PLATA", 1000);
+        createTierIfNotExists("ORO", 3000);
+        createTierIfNotExists("DIAMANTE", 7000);
+    }
+
+    private void createTierIfNotExists(String name, Integer minPoints) {
+        if (tierRepository.findByName(name).isPresent()) {
+            return;
+        }
+
+        TierEntity tier = TierEntity.builder()
+                .externalId(UUID.randomUUID())
+                .name(name)
+                .minPoints(minPoints)
+                .build();
+
+        tierRepository.save(tier);
     }
 }

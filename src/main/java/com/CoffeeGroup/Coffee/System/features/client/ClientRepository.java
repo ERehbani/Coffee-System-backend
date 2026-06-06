@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface IClientRepository extends JpaRepository<ClientEntity,Long> {
+public interface ClientRepository extends JpaRepository<ClientEntity,Long> {
     Optional<ClientEntity> findByExternalId(UUID externalId);
     boolean existsByExternalId(UUID externalId);
 }
