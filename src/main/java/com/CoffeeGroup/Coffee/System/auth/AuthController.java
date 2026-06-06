@@ -23,17 +23,6 @@ public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;
 
-
-
-    /*
-        aca tienen el json por si quieren cargar algo
-    {
-        "email": "Nanotest@mail.com",
-        "password": "",
-        "name": "Nano cojeancianas"
-    }
-    */
-
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest authRequest){
         UserDetails user = authService.authenticate(authRequest);

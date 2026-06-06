@@ -23,19 +23,6 @@ public class CafeController {
  private final ICafeService service;
  private final IUserService userService;
 
- /*
-    aca tienen el json por si quieren cargar algo
-    {
-            "email": "sao@gmail.com",
-            "password": "",
-            "name": "cafe centro",
-            "address": "av Colon 1234",
-            "description": "cafeteria de especialidad en el centro",
-            "phoneNumber": "2234567890",
-            "schedule": "Lunes a sabados de 8 a 20"
-    }
-*/
-
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
  @PostMapping("/register")
  public ResponseEntity<UserResponse> registerCafe(@Valid @RequestBody CreateCafeAccountRequest request) {
