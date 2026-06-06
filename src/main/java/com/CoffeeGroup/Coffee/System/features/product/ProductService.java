@@ -3,6 +3,8 @@ package com.CoffeeGroup.Coffee.System.features.product;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 import lombok.AllArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class ProductService implements IProductService{
     private final IProductRepository productRepository;
     private final IMapper<ProductEntity, ProductResponse> productMapper;
+    private final ICafeRepository cafeRepository;
 
     @Override
     public List<ProductResponse> getAll() {
@@ -36,13 +39,17 @@ public class ProductService implements IProductService{
 
     @Override
     public ProductResponse create(ProductRequest productRequest) {
-        ProductEntity entity = productMapper.toEntity(new ProductResponse(
-                UUID.randomUUID(),
-                productRequest.name(),
-                productRequest.description(),
-                productRequest.price(),
-                productRequest.awardedPoints()
-        ));
+        CafeEntity cafe = cafeRepository.findByExternalId(productRequest.cafe())
+                .orElseThrow(() -> new EntityNotFoundException("Cafe no encontrado"));
+        ProductEntity entity = ProductEntity.builder()
+                .externalId(UUID.randomUUID())
+                .name(productRequest.name())
+                .description(productRequest.description())
+                .price(productRequest.price())
+                .awardedPoints(productRequest.awardedPoints())
+                .state(true)
+                .cafe(cafe)
+                .build();
         return productMapper.toDto(productRepository.save(entity));
     }
 

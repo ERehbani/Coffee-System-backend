@@ -29,7 +29,8 @@ public class ProductMapper implements IMapper<ProductEntity, ProductResponse> {
                 entity.getName(),
                 entity.getDescription(),
                 entity.getPrice(),
-                entity.getAwardedPoints()
+                entity.getAwardedPoints(),
+                entity.getCafe().getExternalId()
         );
     }
 }

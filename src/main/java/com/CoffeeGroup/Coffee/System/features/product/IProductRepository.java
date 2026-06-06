@@ -11,4 +11,5 @@ public interface IProductRepository extends JpaRepository<ProductEntity, Long> {
     Optional<ProductEntity> findByExternalId(UUID productId);
     Optional<ProductEntity> findByName(String productName);
     boolean existsByExternalId(UUID externalId);
+    Optional<ProductEntity> findByExternalIdAndCafeExternalId(UUID externalId, UUID cafeExternalId);
 }

@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IBenefitTypeService {
-    BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate);
-    BenefitTypeResponse update(UUID externalId, BenefitTypeCreate benefitTypeCreate);
-    void delete(UUID externalId);
     List<BenefitTypeResponse> getAll();
-    void validateName(String name);
+    BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate);
 }
