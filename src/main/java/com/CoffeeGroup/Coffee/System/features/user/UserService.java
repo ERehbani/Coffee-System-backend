@@ -5,6 +5,7 @@ import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
 import com.CoffeeGroup.Coffee.System.auth.permissions.RoleEntity;
 import com.CoffeeGroup.Coffee.System.auth.permissions.RoleRepository;
+import com.CoffeeGroup.Coffee.System.auth.permissions.Roles;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
@@ -49,8 +50,8 @@ public class UserService implements IUserService {
             throw new EntityAlreadyExistsException("Email already exists");
         }
 
-        RoleEntity role = roleRepository.findById(1L)
-                .orElseThrow(() -> new EntityNotFoundException("Role not found"));
+        RoleEntity role = roleRepository.findByRole(Roles.ROLE_CLIENTE)
+                .orElseThrow(() -> new EntityNotFoundException("Role CLIENTE not found"));
 
         UserEntity user = UserEntity.builder()
                 .externalId(UUID.randomUUID())
