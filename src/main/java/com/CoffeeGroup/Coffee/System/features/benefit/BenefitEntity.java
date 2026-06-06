@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.shared_rewards.SharedRewardsEntity;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Builder
 
 public class BenefitEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -54,6 +56,10 @@ public class BenefitEntity {
     @Column(name = "description")
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "is_global")
+    private GlobalBenefit isGlobal;
+
     @ManyToOne
     @JoinColumn(name = "type_id")
     private BenefitTypeEntity benefitType;
@@ -62,11 +68,10 @@ public class BenefitEntity {
     @JoinColumn(name = "tier_id")
     private TierEntity tierEntity;
 
-    @OneToOne
-    @JoinColumn(name = "cafe_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cafe_id", nullable = true)
     private CafeEntity cafeEntity;
 
     @OneToMany(mappedBy = "benefit")
     private List<RedemptionEntity> redemptionList;
-
 }

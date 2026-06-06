@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
@@ -10,7 +11,6 @@ import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.ICafeRepository;
-import com.CoffeeGroup.Coffee.System.features.client.IClientRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import lombok.AllArgsConstructor;
@@ -34,12 +34,15 @@ public class BenefitService implements IBenefitService {
     @Transactional
     @Override
     public BenefitResponse save(BenefitCreateRequest benefitCreate) {
-        CafeEntity cafeEntity = cafeRepository.findByExternalId(benefitCreate.cafeId())
-                .orElseThrow(() -> new EntityNotFoundException("cafe not found"));
         TierEntity tierEntity = tierRepository.findByExternalId(benefitCreate.tierId())
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(benefitCreate.typeId())
-                .orElseThrow(()-> new EntityNotFoundException("Type Benefit not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tipo de beneficio no encontrado"));
+        CafeEntity cafeEntity = null;
+        if (benefitCreate.cafeId() != null) {
+            cafeEntity = cafeRepository.findByExternalId(benefitCreate.cafeId())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe no encontrado"));
+        }
 
         BenefitEntity benefit = createMapper.toEntity(benefitCreate);
         benefit.setExternalId(UUID.randomUUID());
@@ -47,9 +50,14 @@ public class BenefitService implements IBenefitService {
         benefit.setTierEntity(tierEntity);
         benefit.setCafeEntity(cafeEntity);
         benefit.setIsPublic(false);
+        benefit.setIsGlobal(cafeEntity == null
+                ? GlobalBenefit.GLOBAL_BENEFIT
+                : GlobalBenefit.CAFFETERIA_BENEFIT);
+
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
     }
+
     @Override
     public void delete(UUID externalId) {
         BenefitEntity benefit = findBenefit(externalId);

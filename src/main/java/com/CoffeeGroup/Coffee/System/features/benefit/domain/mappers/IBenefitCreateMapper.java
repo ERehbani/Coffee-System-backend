@@ -14,5 +14,6 @@ public interface IBenefitCreateMapper extends IMapper<BenefitEntity, BenefitCrea
     @Mapping(target = "benefitType", ignore = true)
     @Mapping(target = "externalId", ignore = true)
     @Mapping(target = "isPublic", ignore = true)
+    @Mapping(target = "isGlobal", ignore = true)
     BenefitEntity toEntity(BenefitCreateRequest benefitCreateRequest);
 }
