@@ -31,7 +31,6 @@ public record BenefitCreateRequest(
         @NotNull
         UUID typeId,
 
-        @NotNull
         UUID cafeId,
 
         @NotNull
