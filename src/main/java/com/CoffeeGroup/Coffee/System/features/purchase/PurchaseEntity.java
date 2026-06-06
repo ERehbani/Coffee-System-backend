@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
@@ -41,6 +42,12 @@ public class PurchaseEntity {
     @OneToOne
     @JoinColumn(name = "redemption_id")
     private RedemptionEntity redemption;
+
+    @OneToOne
+    @JoinColumn(name = "cart_id")
+    @ToString.Exclude
+    private CartEntity cart;
+
     @ManyToOne
     @JoinColumn(name = "client_id")
     private ClientEntity client;

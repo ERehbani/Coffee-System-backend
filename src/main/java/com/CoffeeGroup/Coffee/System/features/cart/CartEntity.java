@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.cart;
 
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,5 +33,9 @@ public class CartEntity {
     @ElementCollection
     @CollectionTable(name = "cart_items", joinColumns = @JoinColumn(name = "cart_id"))
     private List<CartItem> items;
+
+    @OneToOne(mappedBy = "cart")
+    @ToString.Exclude
+    private PurchaseEntity purchase;
 
 }
