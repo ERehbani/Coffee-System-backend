@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_type;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.Mappers.IBenefitTypeCreateMapper;
@@ -17,45 +18,16 @@ import java.util.UUID;
 @AllArgsConstructor
 public class BenefitTypeService implements IBenefitTypeService {
     private final IBenefitTypeRepository benefitTypeRepository;
-    private final IBenefitTypeCreateMapper createMapper;
     private final IBenefitTypeResponseMapper responseMapper;
-
-    @Override
-    @Transactional
-    public BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate) {
-        validateName(benefitTypeCreate.name());
-        BenefitTypeEntity benefitType = createMapper.toEntity(benefitTypeCreate);
-        benefitType.setExternalId(UUID.randomUUID());
-        benefitTypeRepository.save(benefitType);
-        return responseMapper.toDto(benefitType);
-    }
-
-    @Override
-    @Transactional
-    public BenefitTypeResponse update(UUID externalId, BenefitTypeCreate benefitTypeCreate) {
-        BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
-
-        validateName(benefitTypeCreate.name());
-
-        benefitType.setName(benefitTypeCreate.name());
-        benefitTypeRepository.save(benefitType);
-        return responseMapper.toDto(benefitType);
-    }
-
-    @Override
-    public void delete(UUID externalId) {
-        BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
-        benefitTypeRepository.delete(benefitType);
-    }
+    private final SecurityUtils securityUtils;
 
     @Override
     public List<BenefitTypeResponse> getAll() {
+        if (securityUtils.isCafeteria()){
+        }
         return benefitTypeRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 
-    @Override
     public void validateName(String name) {
         if (benefitTypeRepository.existsByName(name)){
             throw new EntityAlreadyExistsException("The name "+ name + " already exists");

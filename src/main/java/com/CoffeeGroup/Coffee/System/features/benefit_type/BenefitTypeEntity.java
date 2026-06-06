@@ -1,6 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_type;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,9 +26,22 @@ public class BenefitTypeEntity {
     @Column(name = "external_id", nullable = false, unique = true)
     private UUID externalId;
 
-    @Column(name = "name")
-    private String name;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "name", nullable = false)
+    private BenefitType name;
+
+    @Column(name = "porcentaje_Descuento", nullable = true)
+    private Double porcentajeDescuento;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producto_id", nullable = true)
+    private ProductEntity producto;
 
     @OneToMany(mappedBy = "benefitType")
     private List<BenefitEntity> benefitEntityList;
+
+    @Column(nullable = true)
+    @OneToMany
+    @JoinColumn(name = "cafe_id")
+    private CafeEntity cafeEntity;
 }

@@ -17,22 +17,6 @@ import java.util.UUID;
 public class BenefitTypeController {
     private final  BenefitTypeService benefitTypeService;
 
-    @PostMapping
-    ResponseEntity<BenefitTypeResponse> save(@Valid @RequestBody BenefitTypeCreate benefitTypeCreate){
-        return new ResponseEntity<>(benefitTypeService.create(benefitTypeCreate), HttpStatus.CREATED);
-    }
-
-    @PutMapping("/{externalId}")
-    ResponseEntity<BenefitTypeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody BenefitTypeCreate benefitTypeCreate){
-        return ResponseEntity.ok(benefitTypeService.update(externalId,benefitTypeCreate));
-    }
-
-    @DeleteMapping("/{externalId}")
-    ResponseEntity<BenefitTypeResponse> delete(@PathVariable UUID externalId){
-        benefitTypeService.delete(externalId);
-        return ResponseEntity.noContent().build();
-    }
-
     @GetMapping
     ResponseEntity<List<BenefitTypeResponse>> getAll(){
         return ResponseEntity.ok(benefitTypeService.getAll());
