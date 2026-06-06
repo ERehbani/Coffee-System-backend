@@ -51,21 +51,18 @@ public class ClientService {
                 .toList();
     }
 
-    public ClientEntity findById(UUID externalId) {
-        return clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-    }
-
     public ClientResponse getById(UUID externalId) {
 
-        ClientEntity client = findById(externalId);
+        ClientEntity client = clientRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
         return clientMapper.toResponse(client);
     }
 
     @Transactional
     public ClientResponse update(UUID externalId, UpdateClientRequest request) {
 
-        ClientEntity client = findById(externalId);
+        ClientEntity client = clientRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         if (request.name() != null) {
             client.setName(request.name());
@@ -104,8 +101,8 @@ public class ClientService {
 
     @Transactional
     public void delete(UUID externalId) {
-
-        ClientEntity client = findById(externalId);
+        ClientEntity client = clientRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
 
         client.getUser().setState(false);

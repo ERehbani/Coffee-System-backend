@@ -60,7 +60,8 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public void delete(UUID externalId) {
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         benefitRepository.delete(benefit);
     }
 
@@ -71,12 +72,14 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public BenefitResponse findByBenefit(UUID externalId){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         return responseMapper.toDto(benefit);
     }
 
     public BenefitResponse confirmBenefit(UUID externalId){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         benefit.setIsPublic(true);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
@@ -84,7 +87,8 @@ public class BenefitService implements IBenefitService {
 
 
     public BenefitResponse cancelBenefit(UUID externalId){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         benefit.setIsPublic(false);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
@@ -92,16 +96,17 @@ public class BenefitService implements IBenefitService {
 
     @Transactional
     public BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         benefit.setEndDate(newEndDateRequest.endDate());
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
     }
 
-    public BenefitEntity findBenefit(UUID externalId){
-        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
-                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
-        return benefit;
-    }
+//    public BenefitEntity findBenefit(UUID externalId){
+//        BenefitEntity benefit = benefitRepository.findByExternalId(externalId)
+//                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
+//        return benefit;
+//    }
 
 }

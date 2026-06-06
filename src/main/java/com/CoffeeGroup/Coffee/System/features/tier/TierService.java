@@ -50,7 +50,7 @@ public class TierService implements ITierService {
 
     @Override
     public TierResponse update(UUID externalId, CreateTierRequest request) {
-        TierEntity tier = findByExternalIdOrThrow(externalId);
+        TierEntity tier = tierRepository.findByExternalId(externalId).orElseThrow(() -> new EntityNotFoundException("Tier not found"));
         tier.setName(request.name());
         tier.setMinPoints(request.minPoints());
         return tierMapper.toDto(tierRepository.save(tier));
@@ -75,11 +75,6 @@ public class TierService implements ITierService {
         if (tierRepository.existsByMinPoints(minPoints)) {
             throw new EntityAlreadyExistsException("Tier already with" + minPoints + " min points");
         }
-    }
-
-    private TierEntity findByExternalIdOrThrow(UUID externalId) {
-        return tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
     }
 
 
