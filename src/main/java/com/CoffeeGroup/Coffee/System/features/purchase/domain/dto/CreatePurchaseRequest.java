@@ -1,9 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
-import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.CreatePurchaseDetailRequest;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
-import java.util.List;
 import java.util.UUID;
 
 public record CreatePurchaseRequest(
@@ -14,10 +11,9 @@ public record CreatePurchaseRequest(
         @NotNull(message = "Cafe id is required")
         UUID cafeId,
 
-        UUID redemptionId,
+        @NotNull(message = "Cart id is required")
+        UUID cartId,
 
-        @NotEmpty(message = "Purchase must have at least one detail")
-        @Valid
-        List<CreatePurchaseDetailRequest> details
+        UUID redemptionId
 ) {
 }

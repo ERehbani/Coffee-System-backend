@@ -2,6 +2,8 @@ package com.CoffeeGroup.Coffee.System.features.client;
 
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
+import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.CreateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
@@ -14,7 +16,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.beans.Transient;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,7 @@ public class ClientService {
     private final IClientRepository clientRepository;
     private final TierRepository tierRepository;
     private final UserRepository userRepository;
+    private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
 
 
@@ -40,6 +43,14 @@ public class ClientService {
         ClientEntity client = clientMapper.toEntity(request, tier, user);
 
         ClientEntity clientSaved = clientRepository.save(client);
+
+        CartEntity cart = CartEntity.builder()
+                .externalId(UUID.randomUUID())
+                .clientId(clientSaved.getExternalId())
+                .items(List.of())
+                .totalPrice(BigDecimal.ZERO)
+                .build();
+        cartRepository.save(cart);
 
         return clientMapper.toResponse(clientSaved);
     }
