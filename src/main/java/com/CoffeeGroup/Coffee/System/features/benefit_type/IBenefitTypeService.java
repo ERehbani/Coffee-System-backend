@@ -8,4 +8,5 @@ import java.util.UUID;
 
 public interface IBenefitTypeService {
     List<BenefitTypeResponse> getAll();
+    BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate);
 }

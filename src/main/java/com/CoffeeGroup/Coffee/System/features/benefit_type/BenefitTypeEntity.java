@@ -35,13 +35,13 @@ public class BenefitTypeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "producto_id", nullable = true)
-    private ProductEntity producto;
+    private ProductEntity product;
 
     @OneToMany(mappedBy = "benefitType")
     private List<BenefitEntity> benefitEntityList;
 
-    @Column(nullable = true)
-    @OneToMany
-    @JoinColumn(name = "cafe_id")
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cafe_id", nullable = true)
     private CafeEntity cafeEntity;
 }

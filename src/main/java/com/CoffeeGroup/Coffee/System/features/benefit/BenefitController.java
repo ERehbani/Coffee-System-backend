@@ -23,7 +23,7 @@ public class BenefitController {
 
     private final IBenefitService benefitService;
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping
     ResponseEntity<BenefitResponse> create(@Valid @RequestBody BenefitCreateRequest CreateRequest){
         return new ResponseEntity<>(benefitService.save(CreateRequest),HttpStatus.CREATED);
