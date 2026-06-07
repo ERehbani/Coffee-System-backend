@@ -6,6 +6,7 @@ import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
 import com.CoffeeGroup.Coffee.System.features.user.UserService;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,14 +25,14 @@ public class AuthController {
     private final JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest authRequest){
+    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody @Valid AuthRequest authRequest){
         UserDetails user = authService.authenticate(authRequest);
         String token = jwtService.generateToken(user);
         return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> registerUser(@RequestBody CreateAccountRequest newAccountRequest){
+    public ResponseEntity<UserResponse> registerUser(@RequestBody @Valid CreateAccountRequest newAccountRequest){
         return new ResponseEntity<>(userService.save(newAccountRequest), HttpStatus.CREATED);
     }
 }
