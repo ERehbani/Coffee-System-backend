@@ -9,5 +9,7 @@ import java.util.UUID;
 @Repository
 public interface ClientRepository extends JpaRepository<ClientEntity,Long> {
     Optional<ClientEntity> findByExternalId(UUID externalId);
+
+    Optional<ClientEntity> findByExternalIdAndUser_Credentials_Username(UUID externalId, String username);
     boolean existsByExternalId(UUID externalId);
 }
