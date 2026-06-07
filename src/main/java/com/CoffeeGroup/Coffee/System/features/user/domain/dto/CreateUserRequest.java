@@ -3,11 +3,11 @@ package com.CoffeeGroup.Coffee.System.features.user.domain.dto;
 import jakarta.validation.constraints.*;
 
 public record CreateUserRequest(
-    @NotBlank(message = "Email is mandatory")
+    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email")
     String email,
 
-    @NotBlank(message = "Password is mandatory")
+    @NotBlank(message = "Password is required")
     @Size(min = 6, message = "The password must be at least 6 characters long")
     @Pattern(
             regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",

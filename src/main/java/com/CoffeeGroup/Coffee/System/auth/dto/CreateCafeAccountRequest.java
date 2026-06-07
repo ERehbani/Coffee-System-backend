@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateCafeAccountRequest(
-        @NotBlank(message = "Email is mandatory")
+        @NotBlank(message = "Email is required")
         @Email(message = "Invalid email")
         String email,
 
