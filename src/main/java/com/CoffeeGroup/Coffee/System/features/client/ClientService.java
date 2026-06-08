@@ -5,7 +5,6 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
-import com.CoffeeGroup.Coffee.System.features.client.dto.CreateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.mapper.ClientMapper;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
@@ -14,16 +13,20 @@ import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
-public class ClientService {
+public class ClientService implements IClientService {
     private final ClientRepository clientRepository;
     private final TierRepository tierRepository;
     private final UserRepository userRepository;
@@ -70,9 +73,19 @@ public class ClientService {
     }
 
     public ClientResponse getById(UUID externalId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
 
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client;
+        if (isAdmin) {
+            client = clientRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
+                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+        }
         return clientMapper.toResponse(client);
     }
 
@@ -116,6 +129,8 @@ public class ClientService {
 
         return clientMapper.toResponse(clientUpdated);
     }
+
+
 
     @Transactional
     public void delete(UUID externalId) {
