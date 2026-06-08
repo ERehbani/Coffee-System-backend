@@ -15,6 +15,7 @@ import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,8 @@ public class ClientService {
 
         return clientMapper.toResponse(clientUpdated);
     }
+
+
 
     @Transactional
     public void delete(UUID externalId) {
