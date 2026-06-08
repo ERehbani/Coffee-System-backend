@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class ClientController {
     //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido
     //crear un cliente aislado de un usuario, por lo tanto se le pega al endpount auth/register
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<ClientResponse>> getAll() {
         return ResponseEntity.ok(clientService.findAll());
@@ -38,6 +40,7 @@ public class ClientController {
         return ResponseEntity.ok(clientService.update(externalId, request));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
     public ResponseEntity<Void> delete(@PathVariable UUID externalId) {
         clientService.delete(externalId);

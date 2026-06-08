@@ -14,6 +14,10 @@ import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -70,9 +74,18 @@ public class ClientService {
     }
 
     public ClientResponse getById(UUID externalId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
 
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client;
+        if (isAdmin) {
+            client = clientRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
+                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+        }
         return clientMapper.toResponse(client);
     }
 
@@ -116,6 +129,8 @@ public class ClientService {
 
         return clientMapper.toResponse(clientUpdated);
     }
+
+
 
     @Transactional
     public void delete(UUID externalId) {
