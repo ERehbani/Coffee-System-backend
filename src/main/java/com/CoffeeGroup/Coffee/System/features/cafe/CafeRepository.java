@@ -2,6 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.cafe;
 
 
 import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

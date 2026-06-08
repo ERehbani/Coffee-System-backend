@@ -26,7 +26,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAll());
     }
 
-    @GetMapping
+    @GetMapping("/{productId}")
     ResponseEntity<ProductResponse> getById(
             @RequestParam(required = false) UUID productId,
             @RequestParam(required = false) UUID cafe){
