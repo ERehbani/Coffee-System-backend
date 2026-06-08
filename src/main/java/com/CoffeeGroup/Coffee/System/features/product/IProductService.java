@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 
@@ -9,10 +10,12 @@ import java.util.UUID;
 public interface IProductService {
     List<ProductResponse> getAll();
 
-    ProductResponse getById(UUID productId);
+    ProductResponse getById(UUID productId, UUID Cafe);
 
     ProductResponse create(ProductRequest productRequest);
 
     ProductResponse update(ProductRequest productResponse, UUID productId);
     void delete(UUID productId);
+
+    List<ProductResponse> ListProducts(UUID Cafe);
 }

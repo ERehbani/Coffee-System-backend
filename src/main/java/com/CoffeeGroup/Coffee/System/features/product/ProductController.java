@@ -26,10 +26,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAll());
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/{productId}")
-    ResponseEntity<ProductResponse> getById(@PathVariable UUID productId){
-        return ResponseEntity.ok(productService.getById(productId));
+    ResponseEntity<ProductResponse> getById(
+            @RequestParam(required = false) UUID productId,
+            @RequestParam(required = false) UUID cafe){
+        return ResponseEntity.ok(productService.getById(productId,cafe));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA')")
@@ -50,4 +51,11 @@ public class ProductController {
         productService.delete(productId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{externalId}/Cafe")
+    public ResponseEntity<List<ProductResponse>> findCafeProduts(@PathVariable UUID externalId){
+        return ResponseEntity.ok(productService.ListProducts(externalId));
+    }
+
+
 }

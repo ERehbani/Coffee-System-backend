@@ -5,6 +5,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.ICafeService;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 import lombok.AllArgsConstructor;
@@ -29,11 +30,14 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public ProductResponse getById(UUID productId) {
-        return productRepository.findByExternalId(productId)
+    public ProductResponse getById(UUID externalId, UUID Cafe) {
+        CafeEntity cafe = cafeRepository.findByExternalId(Cafe)
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+
+        return productRepository.findByExternalIdAndCafe(externalId,cafe)
                 .map(productMapper::toDto)
                 .orElseThrow(() ->
-                        new EntityNotFoundException("Product", "Product was not found", "externalId", productId.toString()
+                        new EntityNotFoundException("Product", "Product was not found", "externalId", externalId.toString()
                         ));
     }
 
@@ -73,6 +77,17 @@ public class ProductService implements IProductService{
 
         productRepository.delete(entity);
 
+    }
+
+    @Override
+    public List<ProductResponse> ListProducts(UUID Cafe) {
+        CafeEntity cafeEntity = cafeRepository.findByExternalId(Cafe)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontro la cafeteria"));
+
+        return productRepository.findByCafe(cafeEntity)
+                .stream()
+                .map(productMapper::toDto)
+                .toList();
     }
 
 

@@ -12,12 +12,12 @@ public interface IRedemptionService {
 
     RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest);
 
-    RedemptionResponse update(UUID externalId , RedemptionUpdateRequest redemptionUpdateRequest);
-
-    RedemptionResponse getById(UUID externalId);
-
     void deleteByid(UUID id);
 
-    List<RedemptionResponse> findAll();
+    List<RedemptionResponse> findbyClients(UUID client);
+
+    RedemptionResponse validate(String validationCode);
+
+    RedemptionResponse cancel(String validationCode);
 
 }
