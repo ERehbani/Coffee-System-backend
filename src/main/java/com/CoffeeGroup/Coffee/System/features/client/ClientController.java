@@ -1,11 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
-import com.CoffeeGroup.Coffee.System.features.client.dto.CreateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +15,7 @@ import java.util.UUID;
 @RequestMapping("/clients")
 @RequiredArgsConstructor
 public class ClientController {
-    private final ClientService clientService;
+    private final IClientService clientService;
 
 
     //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido

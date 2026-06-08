@@ -10,9 +10,13 @@ import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -33,9 +37,20 @@ public class CafeService implements ICafeService {
 
     @Override
     public CafeResponse getById(UUID externalId) {
-        return cafeRepository.findByExternalId(externalId)
-                .map(mapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+
+        CafeEntity cafe;
+        if (isAdmin) {
+            cafe = cafeRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
+                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+        }
+        return mapper.toResponse(cafe);
     }
 
 
