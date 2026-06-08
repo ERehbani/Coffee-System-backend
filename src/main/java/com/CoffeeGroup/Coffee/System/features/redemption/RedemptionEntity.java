@@ -52,4 +52,6 @@ public class RedemptionEntity {
     @JoinColumn(name = "benefit_id")
     private BenefitEntity benefit;
 
+
+
 }

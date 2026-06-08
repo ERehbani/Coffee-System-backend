@@ -2,12 +2,11 @@ package com.CoffeeGroup.Coffee.System.features.redemption;
 
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionUpdateRequest;
-import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.*;
@@ -22,30 +21,24 @@ public class RedemptionController {
     private final IRedemptionService redemptionService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ROLE_CLIENTE')")
     ResponseEntity<RedemptionResponse> create(@Valid @RequestBody RedemptionCreateRequest redemptionCreateRequest){
         return new ResponseEntity<>(redemptionService.create(redemptionCreateRequest), HttpStatus.CREATED);
     }
 
-    @GetMapping
-    public ResponseEntity<List<RedemptionResponse>> getAll() {
-        return ResponseEntity.ok(redemptionService.findAll());
+    @GetMapping("/{externalId}")
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE','ROLE_SUPERADMIN')")
+    public ResponseEntity<List<RedemptionResponse>> getAll(@PathVariable UUID externalId) {
+        return ResponseEntity.ok(redemptionService.findbyClients(externalId));
     }
 
-    @PutMapping("/{externalId}")
-    ResponseEntity<RedemptionResponse> update(@PathVariable UUID externalId, @RequestBody RedemptionUpdateRequest redemptionUpdateRequest) {
-        return ResponseEntity.ok(redemptionService.update(externalId, redemptionUpdateRequest));
-    }
-
+    @PreAuthorize("hasAnyRole('ROLE_CLIENTE','ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
     ResponseEntity<Void> delete(@PathVariable UUID externalId) {
         redemptionService.deleteByid(externalId);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{externalId}")
-    ResponseEntity<RedemptionResponse> getById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(redemptionService.getById(externalId));
-    }
 
 
 }

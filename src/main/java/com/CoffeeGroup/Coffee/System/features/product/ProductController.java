@@ -23,9 +23,11 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAll());
     }
 
-    @GetMapping("/{productId}")
-    ResponseEntity<ProductResponse> getById(@PathVariable UUID productId){
-        return ResponseEntity.ok(productService.getById(productId));
+    @GetMapping
+    ResponseEntity<ProductResponse> getById(
+            @RequestParam(required = false) UUID productId,
+            @RequestParam(required = false) UUID cafe){
+        return ResponseEntity.ok(productService.getById(productId,cafe));
     }
 
     @PostMapping
@@ -44,6 +46,10 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{externalId}/Cafe")
+    public ResponseEntity<List<ProductResponse>> findCafeProduts(@PathVariable UUID externalId){
+        return ResponseEntity.ok(productService.ListProducts(externalId));
+    }
 
 
 }
