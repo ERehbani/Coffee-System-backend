@@ -34,8 +34,8 @@ public class CafeController {
       return ResponseEntity.ok(service.update(externalId,request));
     }
 
-
- @DeleteMapping("/{externalId}")
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @DeleteMapping("/{externalId}")
   ResponseEntity<Void> delete(@PathVariable UUID externalId){
   service.delete(externalId);
    return ResponseEntity.noContent().build();
@@ -43,16 +43,15 @@ public class CafeController {
 
 
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
     ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.getAll());}
 
-    /*
     @GetMapping("/{externalId}")
     ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
-        return ResponseEntity.ok(service.getByExternalId(externalId));
+        return ResponseEntity.ok(service.getById(externalId));
     }
 
-     */
 
 
 

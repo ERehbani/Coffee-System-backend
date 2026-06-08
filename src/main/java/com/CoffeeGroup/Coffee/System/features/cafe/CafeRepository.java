@@ -13,11 +13,8 @@ public interface CafeRepository extends JpaRepository <CafeEntity, Long> {
 
     Optional<CafeEntity> findByExternalId(UUID externalId);
 
-    Optional<CafeEntity> findByEmail(Email email);
-
-    boolean existsByExternalId(UUID externalId);
-
     boolean existsByEmail(Email email);
 
+    Optional<CafeEntity> findByExternalIdAndUser_Credentials_Username(UUID externalId, String username);
 
 }
