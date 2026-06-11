@@ -20,4 +20,6 @@ public interface ICafeService {
 
     void delete(UUID externalId);
 
+    List<CafeResponse> filterCafes(String name, String address, Boolean state);
+
 }
