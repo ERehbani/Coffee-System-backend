@@ -36,7 +36,7 @@ public class BenefitController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA','ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA','ROLE_CLIENTE')")
     @GetMapping
     ResponseEntity<List<BenefitResponse>> listAll(){
         return ResponseEntity.ok(benefitService.findAll());
@@ -48,19 +48,19 @@ public class BenefitController {
         return ResponseEntity.ok(benefitService.findByBenefit(externalId));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/publish")
     ResponseEntity<BenefitResponse> publishBenefit(@PathVariable UUID externalId){
         return ResponseEntity.ok(benefitService.confirmBenefit(externalId));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/cancel")
     ResponseEntity<BenefitResponse> cancelBenefit(@PathVariable UUID externalId){
         return ResponseEntity.ok(benefitService.cancelBenefit(externalId));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/changeEndDate")
     ResponseEntity<BenefitResponse> changeEnd(@PathVariable UUID externalId, @Valid @RequestBody NewEndDateRequest newEndDate){
        return ResponseEntity.ok(benefitService.changeEndDate(externalId,newEndDate));

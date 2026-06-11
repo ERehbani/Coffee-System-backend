@@ -19,9 +19,14 @@ public class BenefitTypeController {
     private final  BenefitTypeService benefitTypeService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     ResponseEntity<BenefitTypeResponse> create(@Valid @RequestBody BenefitTypeCreate request) {
         return new ResponseEntity<>(benefitTypeService.create(request), HttpStatus.CREATED);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    ResponseEntity<List<BenefitTypeResponse>> AllTypeBenefit(){
+        return ResponseEntity.ok(benefitTypeService.getAll());
+    }
 }

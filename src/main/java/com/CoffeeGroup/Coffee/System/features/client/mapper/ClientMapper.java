@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.client.mapper;
 
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.CreateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
@@ -37,5 +38,9 @@ public class ClientMapper {
                 client.getUser().getState()
 
         );
+    }
+
+    public ClientPointsResponse toResponsePoints(ClientEntity client) {
+        return new ClientPointsResponse(client.getName(), client.getCurrentPoints());
     }
 }

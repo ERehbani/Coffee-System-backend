@@ -1,9 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.mapper.ClientMapper;
@@ -32,6 +34,7 @@ public class ClientService implements IClientService {
     private final UserRepository userRepository;
     private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
+    private final SecurityUtils securityUtils;
 
 
 
@@ -141,4 +144,17 @@ public class ClientService implements IClientService {
         client.getUser().setState(false);
         clientRepository.save(client);
     }
+    /*
+    public ClientPointsResponse viewMyPoints(UUID externalId) {
+            ClientEntity client = clientRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cliente not found"));
+
+            if (securityUtils.isCliente() && !client.getExternalId().equals(securityUtils.getCurrentUserExternalId())) {
+                throw new AccessDeniedException("No podés ver los puntos de otro cliente");
+            }
+
+            return clientMapper.toResponsePoints(client);
+    }
+
+    */
 }

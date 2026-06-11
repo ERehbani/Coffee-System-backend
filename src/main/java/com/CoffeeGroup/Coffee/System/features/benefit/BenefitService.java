@@ -82,7 +82,7 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public List<BenefitResponse> findAll() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
         if (isAdmin){
