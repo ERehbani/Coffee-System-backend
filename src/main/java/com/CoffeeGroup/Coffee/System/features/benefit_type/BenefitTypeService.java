@@ -29,8 +29,6 @@ public class BenefitTypeService implements IBenefitTypeService {
 
     @Override
     public List<BenefitTypeResponse> getAll() {
-        if (securityUtils.isCafeteria()){
-        }
         return benefitTypeRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 

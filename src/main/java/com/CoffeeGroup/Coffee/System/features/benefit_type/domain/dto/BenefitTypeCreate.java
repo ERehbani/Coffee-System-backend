@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record BenefitTypeCreate(
-        @NotEmpty
+        @NotNull
         BenefitType benefitType,
         Double porcentajeDescuento,
         UUID product,

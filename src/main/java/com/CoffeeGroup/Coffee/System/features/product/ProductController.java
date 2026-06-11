@@ -33,7 +33,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.getById(productId,cafe));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_SUPERADMIN')")
     @PostMapping
     ResponseEntity<ProductResponse> create(@RequestBody @Valid ProductRequest productBody){
         return new ResponseEntity<>(productService.create(productBody), HttpStatus.CREATED);

@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
