@@ -97,6 +97,34 @@ public class CafeService implements ICafeService {
 
         CafeEntity cafe = cafeRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        cafeRepository.delete(cafe);
+        cafe.setState(false);
+        cafeRepository.save(cafe);
+    }
+
+    @Override
+    public List<CafeResponse> filterCafes(String name, String address, Boolean state) {
+        List<CafeEntity> filteredCafes;
+
+        if (name != null && address != null && state != null) {
+            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCaseAndState(name, address, state);
+        } else if (name != null && address != null) {
+            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address);
+        } else if (name != null && state != null) {
+            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndState(name, state);
+        } else if (address != null && state != null) {
+            filteredCafes = cafeRepository.findByAddressContainingIgnoreCaseAndState(address, state);
+        } else if (name != null) {
+            filteredCafes = cafeRepository.findByNameContainingIgnoreCase(name);
+        } else if (address != null) {
+            filteredCafes = cafeRepository.findByAddressContainingIgnoreCase(address);
+        } else if (state != null) {
+            filteredCafes = cafeRepository.findByState(state);
+        } else {
+            filteredCafes = cafeRepository.findAll();
+        }
+
+        return filteredCafes.stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 }

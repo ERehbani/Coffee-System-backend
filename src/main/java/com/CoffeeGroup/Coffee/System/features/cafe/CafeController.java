@@ -20,28 +20,26 @@ import java.util.UUID;
 @RequestMapping("/cafes")
 public class CafeController {
 
- private final ICafeService service;
- private final IUserService userService;
+    private final ICafeService service;
+    private final IUserService userService;
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
- @PostMapping("/register")
- public ResponseEntity<UserResponse> registerCafe(@Valid @RequestBody CreateCafeAccountRequest request) {
+    @PostMapping("/register")
+    public ResponseEntity<UserResponse> registerCafe(@Valid @RequestBody CreateCafeAccountRequest request) {
      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
- }
+    }
 
- @PutMapping("/{externalId}")
- ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
+    @PutMapping("/{externalId}")
+    ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-  ResponseEntity<Void> delete(@PathVariable UUID externalId){
-  service.delete(externalId);
-   return ResponseEntity.noContent().build();
- }
-
-
+    ResponseEntity<Void> delete(@PathVariable UUID externalId){
+        service.delete(externalId);
+        return ResponseEntity.noContent().build();
+    }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
@@ -53,7 +51,13 @@ public class CafeController {
     }
 
 
-
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @GetMapping("/filter")
+    ResponseEntity<List<CafeResponse>> filterCafes(@RequestParam(required = false) String name,
+                                                   @RequestParam(required = false) String address,
+                                                   @RequestParam(required = false) Boolean state){
+        return ResponseEntity.ok(service.filterCafes(name, address, state));
+    }
 
 
 }
