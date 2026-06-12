@@ -87,10 +87,11 @@ public class CafeController {
     }
 
 
-
-
-
-
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/{cafeId}/products")
+    ResponseEntity<List<ProductResponse>> getAllByCafe(@PathVariable UUID cafeId){
+        return ResponseEntity.ok(productService.getAllByCafe(cafeId));
+    }
 
 
 }

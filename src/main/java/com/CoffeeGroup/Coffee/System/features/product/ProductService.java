@@ -93,13 +93,23 @@ public class ProductService implements IProductService{
 
     }
 
-    @Override
-    public List<ProductResponse> ListProducts(UUID Cafe) {
-        CafeEntity cafeEntity = cafeRepository.findByExternalId(Cafe)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontro la cafeteria"));
 
-        return productRepository.findByCafe(cafeEntity)
-                .stream()
+
+    @Override
+    public List<ProductResponse> getAllByCafe(UUID cafeExternalId) {
+
+        CafeEntity cafe;
+
+        if(securityUtils.isAdmin()){
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        }
+
+        return productRepository.findByCafe(cafe).stream()
                 .map(productMapper::toDto)
                 .toList();
     }

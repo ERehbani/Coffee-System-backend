@@ -18,7 +18,6 @@ public interface IProductService {
 
     void delete(UUID productId);
 
-    List<ProductResponse> ListProducts(UUID Cafe);
-
+    List<ProductResponse> getAllByCafe(UUID cafeExternalId);
 
 }
