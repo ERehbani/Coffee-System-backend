@@ -9,13 +9,13 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record BenefitCreateRequest(
-        @NotBlank
+        @NotBlank(message = "The name is required")
         String name,
 
-        @NotBlank
+        @NotBlank(message = "The description is required")
         String description,
 
-        @NotNull
+        @NotNull(message = "The pointsCost is required")
         Integer pointsCost,
 
         @FutureOrPresent
@@ -24,15 +24,15 @@ public record BenefitCreateRequest(
         @FutureOrPresent
         LocalDate endDate,
 
-        @NotNull
-        @Positive(message = "minimo 1")
+        @NotNull(message = "The maxRedemptions is required")
+        @Positive(message = "The maxRedemptions must be bigger than 0")
         Integer maxRedemptions,
 
-        @NotNull
+        @NotNull(message = "The typeId is required")
         UUID typeId,
 
         UUID cafeId,
 
-        @NotNull
+        @NotNull(message = "The tierId is required")
         UUID tierId
 ) {}

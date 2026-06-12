@@ -18,4 +18,5 @@ public interface IBenefitService {
     BenefitResponse cancelBenefit(UUID externalId);
     BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest);
     BenefitEntity findBenefit(UUID externalId);
+    List<BenefitResponse> getAllByCafe(UUID cafeExternalId);
 }

@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
@@ -14,6 +15,8 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BenefitService implements IBenefitService {
 
     private final IBenefitRepository benefitRepository;
@@ -32,6 +35,7 @@ public class BenefitService implements IBenefitService {
     private final TierRepository tierRepository;
     private final IBenefitCreateMapper createMapper;
     private final IBenefitResponseMapper responseMapper;
+    private final SecurityUtils securityUtils;
 
     @Transactional
     @Override
@@ -128,4 +132,30 @@ public class BenefitService implements IBenefitService {
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
      }
+
+
+    @Override
+    public List<BenefitResponse> getAllByCafe(UUID cafeExternalId) {
+
+        CafeEntity cafe;
+
+        if(securityUtils.isAdmin()){
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        }
+
+        return benefitRepository.findByCafeEntity(cafe).stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+
+
+
+
+
 }
