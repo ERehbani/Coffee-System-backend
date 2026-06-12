@@ -10,5 +10,4 @@ public class CoffeeSystemApplication {
 		System.out.println("jijo");
 		SpringApplication.run(CoffeeSystemApplication.class, args);
 	}
-
 }

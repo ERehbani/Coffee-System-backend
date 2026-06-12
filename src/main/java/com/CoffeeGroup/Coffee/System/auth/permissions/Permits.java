@@ -1,0 +1,18 @@
+package com.CoffeeGroup.Coffee.System.auth.permissions;
+
+public enum Permits {
+    VER_PRODUCTOS,
+    CREAR_PRODUCTOS,
+    ACTUALIZAR_PRODUCTOS,
+    ELIMINAR_PRODUCTOS,
+
+    VER_USUARIOS,
+    CREAR_USUARIOS,
+    ACTUALIZAR_USUARIOS,
+    ELIMINAR_USUARIOS,
+
+    CREAR_COMPRA,
+    VER_COMPRAS_PROPIAS,
+    VER_COMPRAS_CAFETERIA,
+    VER_TODAS_LAS_COMPRAS
+}

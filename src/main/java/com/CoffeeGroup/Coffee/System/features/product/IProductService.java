@@ -1,0 +1,22 @@
+package com.CoffeeGroup.Coffee.System.features.product;
+
+import java.util.List;
+import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
+
+public interface IProductService {
+    List<ProductResponse> getAll();
+
+    ProductResponse getById(UUID productExternalId, UUID cafeExternalId);
+
+    ProductResponse create(ProductRequest productRequest);
+
+    ProductResponse update(ProductRequest productResponse, UUID productId);
+
+    void delete(UUID productId);
+
+    List<ProductResponse> getAllByCafe(UUID cafeExternalId);
+
+}
