@@ -10,12 +10,14 @@ import java.util.UUID;
 public interface IProductService {
     List<ProductResponse> getAll();
 
-    ProductResponse getById(UUID productId, UUID Cafe);
+    ProductResponse getById(UUID productExternalId, UUID cafeExternalId);
 
     ProductResponse create(ProductRequest productRequest);
 
     ProductResponse update(ProductRequest productResponse, UUID productId);
+
     void delete(UUID productId);
 
-    List<ProductResponse> ListProducts(UUID Cafe);
+    List<ProductResponse> getAllByCafe(UUID cafeExternalId);
+
 }

@@ -7,20 +7,20 @@ import jakarta.validation.constraints.Size;
 
 public record CreateCafeRequest (
 
-        @NotBlank(message = "El nombre de la cafetería es obligatorio")
+        @NotBlank(message = "The name is required")
         String name,
 
-        @NotBlank(message = "La dirección es obligatoria")
+        @NotBlank(message = "The address is required")
         String address,
 
-        @NotBlank(message = "El email es obligatorio")
-        @Email(message = "Debe tener un formato de email válido")
+        @NotBlank(message = "The email is required")
+        @Email(message = "The email must be in a valid format.")
         String email,
 
-        @Pattern(regexp = "^\\d{10}$", message = "El numero de teléfono debe contener la longitud correcta")
+        @Pattern(regexp = "^\\d{10}$", message = "The phone number must be of the correct length.")
         String phoneNumber,
 
-        @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+        @Size(max = 500, message = "The description cannot exceed 500 characters.")
         String description,
 
         String schedule,

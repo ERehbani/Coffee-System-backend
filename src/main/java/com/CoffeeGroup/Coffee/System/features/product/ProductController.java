@@ -52,10 +52,5 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/{externalId}/Cafe")
-    public ResponseEntity<List<ProductResponse>> findCafeProduts(@PathVariable UUID externalId){
-        return ResponseEntity.ok(productService.ListProducts(externalId));
-    }
-
 
 }

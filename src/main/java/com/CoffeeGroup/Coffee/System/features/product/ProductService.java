@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
@@ -9,17 +10,20 @@ import com.CoffeeGroup.Coffee.System.features.cafe.ICafeService;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductService implements IProductService{
     private final IProductRepository productRepository;
     private final IMapper<ProductEntity, ProductResponse> productMapper;
     private final CafeRepository cafeRepository;
+    private final SecurityUtils securityUtils;
 
     @Override
     public List<ProductResponse> getAll() {
@@ -29,16 +33,26 @@ public class ProductService implements IProductService{
                 .toList();
     }
 
-    @Override
-    public ProductResponse getById(UUID externalId, UUID Cafe) {
-        CafeEntity cafe = cafeRepository.findByExternalId(Cafe)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        return productRepository.findByExternalIdAndCafe(externalId,cafe)
-                .map(productMapper::toDto)
-                .orElseThrow(() ->
-                        new EntityNotFoundException("Product", "Product was not found", "externalId", externalId.toString()
-                        ));
+    @Override
+    public ProductResponse getById(UUID productExternalId, UUID cafeExternalId) {
+
+        CafeEntity cafe;
+
+        if(securityUtils.isAdmin()){
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        }
+
+
+         ProductEntity entity = productRepository.findByExternalIdAndCafe(productExternalId,cafe)
+                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+        return productMapper.toDto(entity);
     }
 
     @Override
@@ -79,13 +93,23 @@ public class ProductService implements IProductService{
 
     }
 
-    @Override
-    public List<ProductResponse> ListProducts(UUID Cafe) {
-        CafeEntity cafeEntity = cafeRepository.findByExternalId(Cafe)
-                .orElseThrow(() -> new EntityNotFoundException("No se encontro la cafeteria"));
 
-        return productRepository.findByCafe(cafeEntity)
-                .stream()
+
+    @Override
+    public List<ProductResponse> getAllByCafe(UUID cafeExternalId) {
+
+        CafeEntity cafe;
+
+        if(securityUtils.isAdmin()){
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        }
+
+        return productRepository.findByCafe(cafe).stream()
                 .map(productMapper::toDto)
                 .toList();
     }

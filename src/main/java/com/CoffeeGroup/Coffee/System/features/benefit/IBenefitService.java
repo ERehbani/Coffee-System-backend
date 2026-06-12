@@ -12,10 +12,12 @@ public interface IBenefitService {
 
     BenefitResponse save(BenefitCreateRequest benefitCreate);
     void delete(UUID externalId);
-    List<BenefitResponse> findAll();
-    BenefitResponse findByBenefit(UUID externalId);
+    List<BenefitResponse> getAll();
+    BenefitResponse getByBenefit(UUID externalId);
     BenefitResponse confirmBenefit(UUID externalId);
     BenefitResponse cancelBenefit(UUID externalId);
     BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest);
-    BenefitEntity findBenefit(UUID externalId);
+    BenefitEntity getBenefit(UUID externalId);
+    List<BenefitResponse> getAllByCafe(UUID cafeExternalId);
+    BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId);
 }
