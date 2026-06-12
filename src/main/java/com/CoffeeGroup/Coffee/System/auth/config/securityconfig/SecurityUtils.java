@@ -1,13 +1,9 @@
 package com.CoffeeGroup.Coffee.System.auth.config.securityconfig;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
-@RequiredArgsConstructor
 public class SecurityUtils {
         public boolean isAdmin() {
             return hasRole("ROLE_SUPERADMIN");

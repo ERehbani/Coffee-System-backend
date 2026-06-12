@@ -1,12 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 public interface IBenefitService {
 

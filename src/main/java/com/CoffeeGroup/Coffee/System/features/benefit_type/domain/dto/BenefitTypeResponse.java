@@ -1,9 +1,8 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_type.domain.dto;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 
 public record BenefitTypeResponse(
         UUID externalId,

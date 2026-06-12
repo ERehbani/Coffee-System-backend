@@ -1,31 +1,31 @@
 package com.CoffeeGroup.Coffee.System.features.client.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
-import java.util.UUID;
-
 public record CreateClientRequest(
-        @NotBlank(message = "El nombre del cliente es obligatorio")
+        @NotBlank(message = "Client name is required")
         String name,
 
         String profilePhoto,
 
-        @NotNull(message = "Los puntos actuales son obligatorios")
+        @NotNull(message = "Current points are required")
         @PositiveOrZero
-        @Min(value = 0, message = "Los puntos actuales no pueden ser negativos")
+        @Min(value = 0, message = "Current points cannot be negative")
         Integer currentPoints,
 
-        @NotNull(message = "Los puntos historicos son obligatorios")
-        @Min(value = 0, message = "Los puntos historicos no pueden ser negativos")
+        @NotNull(message = "Historical points are required")
+        @Min(value = 0, message = "Historical points cannot be negative")
         Integer historicalPoints,
 
-        @NotNull(message = "El tier es obligatorio")
+        @NotNull(message = "Tier is required")
         UUID tierExternalId,
 
-        @NotNull(message = "El usuario es obligatorio")
+        @NotNull(message = "User is required")
         UUID userExternalId
 ) {
 

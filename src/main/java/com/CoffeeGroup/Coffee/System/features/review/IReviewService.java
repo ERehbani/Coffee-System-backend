@@ -1,11 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.review;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewUpdateRequest;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface IReviewService {
 
@@ -15,7 +15,7 @@ public interface IReviewService {
 
     ReviewResponse getById(UUID externalId);
 
-    void deleteByid(UUID externalId);
+    void deleteById(UUID externalId);
 
     List<ReviewResponse> getAll();
 }

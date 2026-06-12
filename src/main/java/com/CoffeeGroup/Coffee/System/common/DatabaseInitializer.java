@@ -1,21 +1,33 @@
 package com.CoffeeGroup.Coffee.System.common;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
-import com.CoffeeGroup.Coffee.System.auth.permissions.*;
+import com.CoffeeGroup.Coffee.System.auth.permissions.PermitEntity;
+import com.CoffeeGroup.Coffee.System.auth.permissions.PermitRepository;
+import com.CoffeeGroup.Coffee.System.auth.permissions.Permits;
+import com.CoffeeGroup.Coffee.System.auth.permissions.RoleEntity;
+import com.CoffeeGroup.Coffee.System.auth.permissions.RoleRepository;
+import com.CoffeeGroup.Coffee.System.auth.permissions.Roles;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
+
 import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component
 @RequiredArgsConstructor

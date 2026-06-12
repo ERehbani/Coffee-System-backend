@@ -1,10 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.category;
 
-import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryRequest;
-import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
-
 import java.util.List;
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryRequest;
+import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
 
 public interface ICategoryService {
 

@@ -18,7 +18,7 @@ public record CreateCafeAccountRequest(
         )
         String password,
 
-        @NotBlank(message = "The name of the cafeteria is required")
+        @NotBlank(message = "The name of the cafe is required")
         @Size(min = 2, max = 80, message = "The name must be between 2 and 80 characters long")
         String name,
 
