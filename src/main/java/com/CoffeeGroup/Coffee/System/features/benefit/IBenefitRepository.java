@@ -11,9 +11,6 @@ import java.util.UUID;
 public interface IBenefitRepository extends JpaRepository<BenefitEntity, Long> {
     Optional<BenefitEntity> findByExternalId(UUID externalId);
     List<BenefitEntity> findByIsGlobal(GlobalBenefit isGlobal);
-    // Corregido: Mayúscula en la 'C'
     List<BenefitEntity> findByCafeEntity(CafeEntity cafe);
-
-    // Corregido: Usar el nombre exacto de la propiedad 'CafeEntity'
     Optional<BenefitEntity> findByCafeEntityAndExternalId(CafeEntity cafe, UUID benefitExternalId);
 }
