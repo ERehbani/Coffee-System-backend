@@ -86,8 +86,12 @@ public class BenefitService implements IBenefitService {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
         if (isAdmin){
+            return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
+            /*
             return benefitRepository.findByIsGlobal(GlobalBenefit.GLOBAL_BENEFIT).stream()
                     .map(responseMapper::toDto).toList();
+
+             */
         }
         return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
@@ -100,12 +104,12 @@ public class BenefitService implements IBenefitService {
 
     @Transactional
     public BenefitResponse confirmBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,true, true);
     }
 
     @Transactional
     public BenefitResponse cancelBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,false, false);
     }
 
     @Transactional
@@ -122,10 +126,12 @@ public class BenefitService implements IBenefitService {
         return benefitEntity;
     }
 
-     private BenefitResponse setVisibility(UUID externalId, boolean isPublic){
+    private BenefitResponse setVisibility(UUID externalId, boolean isPublic, boolean status){
         BenefitEntity benefit = findBenefit(externalId);
         benefit.setIsPublic(isPublic);
+        benefit.setStatus(status);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
-     }
+    }
+
 }

@@ -10,9 +10,6 @@ public record RedemptionCreateRequest(
         UUID client,
 
         @NotNull(message = "The Benefit ID is required")
-        UUID benefit,
-
-        @NotNull(message = "The Purchase ID is required")
-        UUID purchase
+        UUID benefit
 
 ) {}

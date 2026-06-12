@@ -10,6 +10,5 @@ import org.mapstruct.Mapping;
 public interface IRedemptionCreateMapper {
     @Mapping(target = "client", ignore = true)
     @Mapping(target = "benefit", ignore = true)
-    @Mapping(target = "purchase", ignore = true)
     RedemptionEntity toEntity(RedemptionCreateRequest redemptionCreateRequest);
 }

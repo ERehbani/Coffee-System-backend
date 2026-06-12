@@ -41,6 +41,8 @@ public class CafeController {
         return ResponseEntity.noContent().build();
     }
 
+
+
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
     ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.getAll());}
@@ -50,7 +52,6 @@ public class CafeController {
         return ResponseEntity.ok(service.getById(externalId));
     }
 
-
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/filter")
     ResponseEntity<List<CafeResponse>> filterCafes(@RequestParam(required = false) String name,
@@ -58,6 +59,5 @@ public class CafeController {
                                                    @RequestParam(required = false) Boolean state){
         return ResponseEntity.ok(service.filterCafes(name, address, state));
     }
-
 
 }

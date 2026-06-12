@@ -44,14 +44,13 @@ public class RedemptionService implements IRedemptionService {
 
         BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefit())
                 .orElseThrow(() -> new EntityNotFoundException("Beneficio no encontrado"));
-
         if (!benefit.getStatus() || !benefit.getIsPublic()) {
             throw new IllegalStateException("El beneficio no está habilitado");
         }
         if (benefit.getEndDate() != null && benefit.getEndDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("El beneficio está vencido");
         }
-        if (benefit.getMaxRedemptions() <= 0) {
+        if (benefit.getMaxRedemptions() == 0) {
             throw new IllegalStateException("El beneficio no tiene canjes disponibles");
         }
         if (client.getCurrentPoints() < benefit.getPointsCost()) {
@@ -68,7 +67,7 @@ public class RedemptionService implements IRedemptionService {
         redemption.setExternalId(UUID.randomUUID());
         redemption.setClient(client);
         redemption.setBenefit(benefit);
-        redemption.setState(true);
+        redemption.setState(false);
         redemption.setDate(LocalDateTime.now());
         redemption.setValidationCode(UUID.randomUUID().toString());
         redemption.setUsedPoints(benefit.getPointsCost());
@@ -118,7 +117,7 @@ public class RedemptionService implements IRedemptionService {
             throw new IllegalArgumentException("Este canje no pertenece a tu cafetería");
         }
 
-        redemption.setState(false);
+        redemption.setState(true);
         redemptionRepository.save(redemption);
         return responseMapper.toDto(redemption);
     }
