@@ -68,4 +68,16 @@ public class CafeController {
         return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/{cafeId}/benefits/{benefitId}")
+    ResponseEntity<List<BenefitResponse>> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
+        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
+    }
+
+
+
+
+
+
+
 }

@@ -39,13 +39,13 @@ public class BenefitController {
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA','ROLE_CLIENTE')")
     @GetMapping
     ResponseEntity<List<BenefitResponse>> listAll(){
-        return ResponseEntity.ok(benefitService.findAll());
+        return ResponseEntity.ok(benefitService.getAll());
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{externalId}")
     ResponseEntity<BenefitResponse> getById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(benefitService.findByBenefit(externalId));
+        return ResponseEntity.ok(benefitService.getByBenefit(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
