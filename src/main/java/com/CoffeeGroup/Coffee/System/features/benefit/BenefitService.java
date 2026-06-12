@@ -74,7 +74,7 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public void delete(UUID externalId) {
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = getBenefit(externalId);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isCafeteria = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
@@ -85,7 +85,7 @@ public class BenefitService implements IBenefitService {
     }
 
     @Override
-    public List<BenefitResponse> findAll() {
+    public List<BenefitResponse> getAll() {
        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
@@ -97,8 +97,8 @@ public class BenefitService implements IBenefitService {
     }
 
     @Override
-    public BenefitResponse findByBenefit(UUID externalId){
-        BenefitEntity benefit = findBenefit(externalId);
+    public BenefitResponse getByBenefit(UUID externalId){
+        BenefitEntity benefit = getBenefit(externalId);
         return responseMapper.toDto(benefit);
     }
 
@@ -114,20 +114,20 @@ public class BenefitService implements IBenefitService {
 
     @Transactional
     public BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = getBenefit(externalId);
         benefit.setEndDate(newEndDateRequest.endDate());
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
     }
 
-    public BenefitEntity findBenefit(UUID externalId){
+    public BenefitEntity getBenefit(UUID externalId){
         BenefitEntity benefitEntity = benefitRepository.findByExternalId(externalId)
                 .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
         return benefitEntity;
     }
 
      private BenefitResponse setVisibility(UUID externalId, boolean isPublic){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = getBenefit(externalId);
         benefit.setIsPublic(isPublic);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
@@ -153,9 +153,26 @@ public class BenefitService implements IBenefitService {
                 .toList();
     }
 
+    @Override
+    public BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId) {
+
+        CafeEntity cafe;
+
+        if(securityUtils.isAdmin()){
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        }
+
+        BenefitEntity benefit = benefitRepository.findByCafeEntityAndExternalId(cafe,benefitExternalId)
+                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
 
 
-
+        return responseMapper.toDto(benefit);
+    }
 
 
 }
