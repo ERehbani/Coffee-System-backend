@@ -1,6 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitService;
+import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitService;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.user.IUserService;
@@ -22,6 +25,7 @@ public class CafeController {
 
  private final ICafeService service;
  private final IUserService userService;
+ private final IBenefitService benefitService;
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
  @PostMapping("/register")
@@ -52,6 +56,11 @@ public class CafeController {
         return ResponseEntity.ok(service.getById(externalId));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/{cafeId}/benefits")
+    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@PathVariable UUID cafeId){
+        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
+    }
 
 
 
