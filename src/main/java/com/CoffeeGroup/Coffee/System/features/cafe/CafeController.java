@@ -32,6 +32,7 @@ public class CafeController {
      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
     }
 
+
     @PutMapping("/{externalId}")
     ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
@@ -70,8 +71,8 @@ public class CafeController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{cafeId}/benefits/{benefitId}")
-    ResponseEntity<List<BenefitResponse>> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
-        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
+    ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
+        return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
 
 
