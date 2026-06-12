@@ -1,11 +1,12 @@
 package com.CoffeeGroup.Coffee.System.features.product.domain.mapper;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
-import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class ProductMapper implements IMapper<ProductEntity, ProductResponse> {

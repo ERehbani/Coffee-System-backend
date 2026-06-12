@@ -1,14 +1,15 @@
 package com.CoffeeGroup.Coffee.System.features.client.mapper;
 
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.CreateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
-import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ClientMapper {

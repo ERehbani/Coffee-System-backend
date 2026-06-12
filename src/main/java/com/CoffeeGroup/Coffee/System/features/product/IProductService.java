@@ -1,11 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
-import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
-
 import java.util.List;
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 
 public interface IProductService {
     List<ProductResponse> getAll();

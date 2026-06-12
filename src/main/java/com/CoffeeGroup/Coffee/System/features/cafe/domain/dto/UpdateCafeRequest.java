@@ -1,18 +1,17 @@
 package com.CoffeeGroup.Coffee.System.features.cafe.domain.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCafeRequest(
-        @NotBlank(message = "La direccion no puede estar vacia")
+        @NotBlank(message = "Address cannot be empty")
         String address,
 
-        @Pattern(regexp = "^\\d{10}$", message = "El numero de teléfono debe contener la longitud correcta")
+        @Pattern(regexp = "^\\d{10}$", message = "Phone number must have the correct length")
         String phoneNumber,
 
-        @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+        @Size(max = 500, message = "Description cannot exceed 500 characters")
         String description,
 
         String schedule,

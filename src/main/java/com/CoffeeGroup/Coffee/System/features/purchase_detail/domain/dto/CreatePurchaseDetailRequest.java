@@ -1,9 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto;
 
+import java.util.UUID;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.UUID;
 
 public record CreatePurchaseDetailRequest(
         @NotNull(message = "Product id is required")

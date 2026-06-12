@@ -1,5 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
@@ -16,13 +24,6 @@ import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionRe
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -40,22 +41,22 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest) {
         ClientEntity client = clientRepository.findByExternalId(redemptionCreateRequest.client())
-                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefit())
-                .orElseThrow(() -> new EntityNotFoundException("Beneficio no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
 
         if (!benefit.getStatus() || !benefit.getIsPublic()) {
-            throw new IllegalStateException("El beneficio no está habilitado");
+            throw new IllegalStateException("Benefit is not enabled");
         }
         if (benefit.getEndDate() != null && benefit.getEndDate().isBefore(LocalDate.now())) {
-            throw new IllegalStateException("El beneficio está vencido");
+            throw new IllegalStateException("Benefit has expired");
         }
         if (benefit.getMaxRedemptions() <= 0) {
-            throw new IllegalStateException("El beneficio no tiene canjes disponibles");
+            throw new IllegalStateException("Benefit has no available redemptions");
         }
         if (client.getCurrentPoints() < benefit.getPointsCost()) {
-            throw new IllegalStateException("El cliente no tiene suficientes puntos");
+            throw new IllegalStateException("Client does not have enough points");
         }
 
         client.setCurrentPoints(client.getCurrentPoints() - benefit.getPointsCost());
@@ -78,7 +79,7 @@ public class RedemptionService implements IRedemptionService {
 
     @Override
     @Transactional
-    public void deleteByid(UUID externalId) {
+    public void deleteById(UUID externalId) {
 
         RedemptionEntity redemptionEntity = redemptionRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
@@ -86,9 +87,9 @@ public class RedemptionService implements IRedemptionService {
     }
 
     @Override
-    public List<RedemptionResponse> findbyClients(UUID externalId) {
+    public List<RedemptionResponse> findByClients(UUID externalId) {
         ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("cliente no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
         return redemptionRepository.findByClientAndState(client, false)
                 .stream().map(responseMapper::toDto).toList();
     }
@@ -101,21 +102,21 @@ public class RedemptionService implements IRedemptionService {
 
 
         if (!redemption.getState()) {
-            throw new IllegalStateException("Este código ya fue utilizado");
+            throw new IllegalStateException("This code has already been used");
         }
 
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
 
         CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
         if (!redemption.getBenefit().getCafeEntity().getExternalId()
                 .equals(cafe.getExternalId())) {
-            throw new IllegalArgumentException("Este canje no pertenece a tu cafetería");
+            throw new IllegalArgumentException("This redemption does not belong to your cafe");
         }
 
         redemption.setState(false);
@@ -127,24 +128,24 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse cancel(String validationCode) {
         RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Código no válido"));
+                .orElseThrow(() -> new EntityNotFoundException("Invalid code"));
 
         if (!redemption.getState()) {
-            throw new IllegalStateException("Este código ya fue utilizado o cancelado");
+            throw new IllegalStateException("This code has already been used or cancelled");
         }
 
         String username = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
 
         CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
         if (!redemption.getBenefit().getCafeEntity().getExternalId()
                 .equals(cafe.getExternalId())) {
-            throw new IllegalArgumentException("Este canje no pertenece a tu cafetería");
+            throw new IllegalArgumentException("This redemption does not belong to your cafe");
         }
 
         ClientEntity client = redemption.getClient();

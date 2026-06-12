@@ -1,6 +1,9 @@
 package com.CoffeeGroup.Coffee.System.features.user.domain.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record CreateUserRequest(
     @NotBlank(message = "Email is required")

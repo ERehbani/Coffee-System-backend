@@ -1,20 +1,18 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionUpdateRequest;
-import org.springframework.data.repository.query.Param;
+import java.util.List;
 import java.util.UUID;
 
-import java.util.List;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
 
 public interface IRedemptionService {
 
     RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest);
 
-    void deleteByid(UUID id);
+    void deleteById(UUID id);
 
-    List<RedemptionResponse> findbyClients(UUID client);
+    List<RedemptionResponse> findByClients(UUID client);
 
     RedemptionResponse validate(String validationCode);
 

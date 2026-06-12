@@ -1,13 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper;
 
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CreateCafeRequest;
-import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
-import org.springframework.stereotype.Component;
 
-import java.util.UUID;
+import org.springframework.stereotype.Component;
 
 @Component
 public class CafeMapper {

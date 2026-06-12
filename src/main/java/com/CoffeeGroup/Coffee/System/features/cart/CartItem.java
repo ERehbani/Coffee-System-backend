@@ -1,9 +1,15 @@
 package com.CoffeeGroup.Coffee.System.features.cart;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Embeddable
 @Getter

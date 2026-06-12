@@ -1,18 +1,32 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
-import com.CoffeeGroup.Coffee.System.features.shared_rewards.SharedRewardsEntity;
-import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
+import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
+import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "benefits")

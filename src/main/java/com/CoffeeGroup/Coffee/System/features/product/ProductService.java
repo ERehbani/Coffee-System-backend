@@ -1,21 +1,21 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
-import com.CoffeeGroup.Coffee.System.features.cafe.ICafeService;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

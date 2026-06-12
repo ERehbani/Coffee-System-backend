@@ -1,5 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.user;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
@@ -11,24 +19,14 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsExcept
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeService;
-import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientService;
-import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
-import com.CoffeeGroup.Coffee.System.features.user.domain.dto.CreateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UpdateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
 import com.CoffeeGroup.Coffee.System.features.user.domain.mapper.UserMapper;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
