@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,9 +99,18 @@ public class CafeController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{cafeId}/products")
-    ResponseEntity<List<ProductResponse>> getAllByCafe(@PathVariable UUID cafeId){
+    ResponseEntity<List<ProductResponse>> getAllProductsByCafe(@PathVariable UUID cafeId){
         return ResponseEntity.ok(productService.getAllByCafe(cafeId));
     }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/{cafeId}/products/filter")
+    ResponseEntity<List<ProductResponse>> filterProductsByCafe(@PathVariable UUID cafeId, @RequestParam(required = false) String name, @RequestParam(required = false) BigDecimal price, @RequestParam(required = false) Integer awardedPoints){
+        return ResponseEntity.ok(productService.filterProductsByCafe(cafeId,name,price,awardedPoints));
+    }
+
+
+
 
 
 }
