@@ -20,6 +20,5 @@ public interface IRedemptionResponseMapper extends IMapper<RedemptionEntity, Red
 
     @Mapping(target = "client", source = "client.externalId")
     @Mapping(target = "benefit", source = "benefit.externalId")
-    @Mapping(target = "purchase", source = "purchase.externalId")
     RedemptionResponse toDto(RedemptionEntity redemptionEntity);
 }

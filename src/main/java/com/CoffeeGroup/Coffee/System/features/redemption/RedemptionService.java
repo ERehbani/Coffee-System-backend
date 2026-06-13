@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class RedemptionService implements IRedemptionService {
     private final IBenefitRepository benefitRepository;
     private final CredentialsRepository credentialsRepository;
     private final CafeRepository cafeRepository;
+    private final SecurityUtils securityUtils;
 
     @Override
     @Transactional
@@ -45,6 +47,8 @@ public class RedemptionService implements IRedemptionService {
 
         BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefit())
                 .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
+
+        CafeEntity cafe = benefit.getCafeEntity();
 
         if (!benefit.getStatus() || !benefit.getIsPublic()) {
             throw new IllegalStateException("Benefit is not enabled");
@@ -69,6 +73,7 @@ public class RedemptionService implements IRedemptionService {
         redemption.setExternalId(UUID.randomUUID());
         redemption.setClient(client);
         redemption.setBenefit(benefit);
+        redemption.setCafeEntity(cafe);
         redemption.setState(true);
         redemption.setDate(LocalDateTime.now());
         redemption.setValidationCode(UUID.randomUUID().toString());
@@ -90,7 +95,7 @@ public class RedemptionService implements IRedemptionService {
     public List<RedemptionResponse> findByClients(UUID externalId) {
         ClientEntity client = clientRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-        return redemptionRepository.findByClientAndState(client, false)
+        return redemptionRepository.findByClientAndState(client, true)
                 .stream().map(responseMapper::toDto).toList();
     }
 
@@ -98,25 +103,28 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse validate(String validationCode) {
         RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(()-> new EntityNotFoundException("Redemption not found"));
-
+                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
 
         if (!redemption.getState()) {
             throw new IllegalStateException("This code has already been used");
         }
 
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+        if (redemption.getBenefit().getCafeEntity() == null) {
+            if (!securityUtils.isAdmin()) {
+                throw new IllegalArgumentException("Only admin can validate global benefits");
+            }
+        } else {
+            String username = SecurityContextHolder.getContext()
+                    .getAuthentication().getName();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(username)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        if (!redemption.getBenefit().getCafeEntity().getExternalId()
-                .equals(cafe.getExternalId())) {
-            throw new IllegalArgumentException("This redemption does not belong to your cafe");
+            if (!redemption.getBenefit().getCafeEntity().getExternalId()
+                    .equals(cafe.getExternalId())) {
+                throw new IllegalArgumentException("This redemption does not belong to your cafe");
+            }
         }
 
         redemption.setState(false);
@@ -128,26 +136,28 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse cancel(String validationCode) {
         RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Invalid code"));
+                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
+
 
         if (!redemption.getState()) {
-            throw new IllegalStateException("This code has already been used or cancelled");
+            throw new IllegalStateException("This code has already been used");
         }
 
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+        if (redemption.getBenefit().getCafeEntity() == null) {
+            if (!securityUtils.isAdmin()) {
+                throw new IllegalArgumentException("Only admin can cancel global benefits");
+            }
+        } else {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(username)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        if (!redemption.getBenefit().getCafeEntity().getExternalId()
-                .equals(cafe.getExternalId())) {
-            throw new IllegalArgumentException("This redemption does not belong to your cafe");
+            if (!redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
+                throw new IllegalArgumentException("this redemption does not belong to your cafe");
+            }
         }
-
         ClientEntity client = redemption.getClient();
         client.setCurrentPoints(client.getCurrentPoints() + redemption.getUsedPoints());
         clientRepository.save(client);
@@ -156,7 +166,8 @@ public class RedemptionService implements IRedemptionService {
         benefit.setMaxRedemptions(benefit.getMaxRedemptions() + 1);
         benefitRepository.save(benefit);
 
-        redemptionRepository.delete(redemption);
+        redemption.setState(false);
+        redemptionRepository.save(redemption);
         return responseMapper.toDto(redemption);
     }
 }

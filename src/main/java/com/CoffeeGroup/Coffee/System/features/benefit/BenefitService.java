@@ -65,6 +65,7 @@ public class BenefitService implements IBenefitService {
         benefit.setTierEntity(tierEntity);
         benefit.setCafeEntity(cafeEntity);
         benefit.setIsPublic(false);
+        benefit.setStatus(false);
         benefit.setIsGlobal(cafeEntity == null
                 ? GlobalBenefit.GLOBAL_BENEFIT
                 : GlobalBenefit.CAFFETERIA_BENEFIT);
@@ -91,26 +92,34 @@ public class BenefitService implements IBenefitService {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
         if (isAdmin){
+            return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
+            /*
             return benefitRepository.findByIsGlobal(GlobalBenefit.GLOBAL_BENEFIT).stream()
                     .map(responseMapper::toDto).toList();
+
+             */
         }
         return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 
     @Override
-    public BenefitResponse getByBenefit(UUID externalId){
+    public BenefitResponse getByBenefit(UUID externalId) {
+        return null;
+    }
+
+    public BenefitResponse findByBenefit(UUID externalId){
         BenefitEntity benefit = getBenefit(externalId);
         return responseMapper.toDto(benefit);
     }
 
     @Transactional
     public BenefitResponse confirmBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,true, true);
     }
 
     @Transactional
     public BenefitResponse cancelBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,false, false);
     }
 
     @Transactional
@@ -127,12 +136,12 @@ public class BenefitService implements IBenefitService {
         return benefitEntity;
     }
 
-     private BenefitResponse setVisibility(UUID externalId, boolean isPublic){
+    private BenefitResponse setVisibility(UUID externalId, boolean isPublic, boolean status){
         BenefitEntity benefit = getBenefit(externalId);
         benefit.setIsPublic(isPublic);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
-     }
+    }
 
 
     @Override
