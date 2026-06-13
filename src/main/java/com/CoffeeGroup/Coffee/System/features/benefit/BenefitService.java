@@ -101,8 +101,12 @@ public class BenefitService implements IBenefitService {
     }
 
     @Override
+    public BenefitResponse getByBenefit(UUID externalId) {
+        return null;
+    }
+
     public BenefitResponse findByBenefit(UUID externalId){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = getBenefit(externalId);
         return responseMapper.toDto(benefit);
     }
 
@@ -130,14 +134,12 @@ public class BenefitService implements IBenefitService {
         return benefitEntity;
     }
 
-     private BenefitResponse setVisibility(UUID externalId, boolean isPublic){
-        BenefitEntity benefit = getBenefit(externalId);
     private BenefitResponse setVisibility(UUID externalId, boolean isPublic, boolean status){
-        BenefitEntity benefit = findBenefit(externalId);
+        BenefitEntity benefit = getBenefit(externalId);
         benefit.setIsPublic(isPublic);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
-     }
+    }
 
 
     @Override
@@ -180,7 +182,5 @@ public class BenefitService implements IBenefitService {
         return responseMapper.toDto(benefit);
     }
 
-
-    }
 
 }
