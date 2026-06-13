@@ -1,5 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.review;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
@@ -10,12 +16,8 @@ import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewRespo
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewUpdateRequest;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
@@ -35,9 +37,9 @@ public class ReviewService implements IReviewService {
     public ReviewResponse create(ReviewCreateRequest reviewCreateRequest) {
 
         ClientEntity clientAux = clientRepository.findByExternalId(reviewCreateRequest.clientId()).
-                orElseThrow(()-> new EntityNotFoundException("The customer not found"));
+                orElseThrow(()-> new EntityNotFoundException("Client not found"));
         CafeEntity cafeAux = cafeRepository.findByExternalId(reviewCreateRequest.cafeId()).
-                orElseThrow(() ->  new EntityNotFoundException("The caffe not found"));
+                orElseThrow(() ->  new EntityNotFoundException("Cafe not found"));
 
         ReviewEntity review = MapReviewCreateRequest.toEntity(reviewCreateRequest);
 
@@ -53,7 +55,7 @@ public class ReviewService implements IReviewService {
     @Override
     public ReviewResponse update(UUID externalId, ReviewUpdateRequest reviewUpdateRequest) {
         ReviewEntity review = reviewRepository.findByExternalId(externalId)
-                .orElseThrow(()-> new EntityNotFoundException("the Review not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Review not found"));
 
        review.setMessage(reviewUpdateRequest.message());
        reviewRepository.save(review);
@@ -67,9 +69,9 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public void deleteByid(UUID externalId) {
+    public void deleteById(UUID externalId) {
         ReviewEntity review = reviewRepository.findByExternalId(externalId)
-                .orElseThrow(()-> new EntityNotFoundException("the Review not found"));
+                .orElseThrow(()-> new EntityNotFoundException("Review not found"));
         reviewRepository.delete(review);
     }
 

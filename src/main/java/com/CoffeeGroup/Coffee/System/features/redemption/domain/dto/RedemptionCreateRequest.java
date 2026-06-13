@@ -1,8 +1,8 @@
 package com.CoffeeGroup.Coffee.System.features.redemption.domain.dto;
 
-import jakarta.validation.constraints.NotNull;
-
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
 
 public record RedemptionCreateRequest(
 

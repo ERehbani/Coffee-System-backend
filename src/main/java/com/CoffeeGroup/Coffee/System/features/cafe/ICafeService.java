@@ -1,12 +1,12 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface ICafeService {
 

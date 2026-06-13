@@ -1,15 +1,27 @@
 package com.CoffeeGroup.Coffee.System.features.user;
 
+import java.util.Date;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import jakarta.persistence.*;
-import lombok.*;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "users")

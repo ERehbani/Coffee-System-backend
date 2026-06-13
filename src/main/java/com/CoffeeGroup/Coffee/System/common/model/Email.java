@@ -1,12 +1,11 @@
 package com.CoffeeGroup.Coffee.System.common.model;
 
+import java.util.regex.Pattern;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import jakarta.persistence.Embeddable;
-import lombok.Data;
-import lombok.Setter;
 
-import java.util.regex.Pattern;
+import jakarta.persistence.Embeddable;
 
 
 @Embeddable

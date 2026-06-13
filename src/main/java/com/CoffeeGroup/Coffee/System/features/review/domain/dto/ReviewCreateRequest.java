@@ -1,10 +1,8 @@
 package com.CoffeeGroup.Coffee.System.features.review.domain.dto;
 
-import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import jakarta.validation.constraints.NotNull;
-
-import java.time.LocalDate;
 import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
 
 public record ReviewCreateRequest(
         @NotNull(message = "the customer not found")

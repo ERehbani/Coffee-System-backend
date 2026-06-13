@@ -1,16 +1,17 @@
 package com.CoffeeGroup.Coffee.System.features.category;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryRequest;
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
+
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.regex.Pattern;
 
 @Service
 @AllArgsConstructor

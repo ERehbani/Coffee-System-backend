@@ -1,12 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 
 @Repository
 public interface IProductRepository extends JpaRepository<ProductEntity, Long> {

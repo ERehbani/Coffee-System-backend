@@ -1,14 +1,14 @@
 package com.CoffeeGroup.Coffee.System.features.user.domain.mapper;
 
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.CreateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
-import java.util.Date;
-import java.util.UUID;
 
 @Component
 public class UserMapper {

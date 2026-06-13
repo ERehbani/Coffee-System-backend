@@ -1,10 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers;
 
-import com.CoffeeGroup.Coffee.System.common.model.IMapper;
-import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 
 @Mapper(componentModel = "spring")
 public interface IBenefitResponseMapper {

@@ -1,11 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.cart;
 
+import java.util.List;
+import java.util.UUID;
+
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CreateCartRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.UpdateCartRequest;
-
-import java.util.List;
-import java.util.UUID;
 
 public interface ICartService {
 
@@ -15,7 +15,7 @@ public interface ICartService {
 
     CartResponse create(CreateCartRequest request);
 
-    CartResponse update(UUID externalId, UpdateCartRequest request);
+    CartResponse update(UpdateCartRequest request);
 
     void delete(UUID externalId);
 

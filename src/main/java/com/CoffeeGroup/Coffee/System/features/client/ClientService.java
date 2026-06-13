@@ -1,11 +1,20 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
-import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.mapper.ClientMapper;
@@ -13,17 +22,9 @@ import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
 
 
 @Service
@@ -63,7 +64,10 @@ public class ClientService implements IClientService {
                 .totalPrice(BigDecimal.ZERO)
                 .build();
 
-        cartRepository.save(cart);
+        CartEntity cartSaved = cartRepository.save(cart);
+
+        clientSaved.setCart(cartSaved);
+        clientRepository.save(clientSaved);
 
         return clientSaved;
     }

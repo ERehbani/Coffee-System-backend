@@ -1,9 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.tier.domain.mapper;
 
+import org.mapstruct.Mapper;
+
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.CreateTierRequest;
-import org.mapstruct.Mapper;
 
 
 @Mapper(componentModel = "spring")

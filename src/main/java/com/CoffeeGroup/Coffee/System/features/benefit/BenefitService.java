@@ -1,5 +1,14 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
@@ -14,16 +23,8 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -45,17 +46,17 @@ public class BenefitService implements IBenefitService {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
 
         if (isCafeteria && benefitCreate.cafeId() == null) {
-            throw new IllegalArgumentException("Una cafetería no puede crear un beneficio global");
+            throw new IllegalArgumentException("A cafe cannot create a global benefit");
         }
 
         TierEntity tierEntity = tierRepository.findByExternalId(benefitCreate.tierId())
-                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(benefitCreate.typeId())
-                .orElseThrow(() -> new EntityNotFoundException("Tipo de beneficio no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
         CafeEntity cafeEntity = null;
         if (benefitCreate.cafeId() != null) {
             cafeEntity = cafeRepository.findByExternalId(benefitCreate.cafeId())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe no encontrado"));
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
         }
 
         BenefitEntity benefit = createMapper.toEntity(benefitCreate);
@@ -79,7 +80,7 @@ public class BenefitService implements IBenefitService {
         boolean isCafeteria = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
         if (isCafeteria && benefit.getIsGlobal().equals(GlobalBenefit.GLOBAL_BENEFIT)) {
-            throw new IllegalArgumentException("Una cafetería no puede elimnar un beneficio global");
+            throw new IllegalArgumentException("A cafe cannot delete a global benefit");
         }
         benefitRepository.delete(benefit);
     }
