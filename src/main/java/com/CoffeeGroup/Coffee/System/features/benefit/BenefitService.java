@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -182,6 +183,37 @@ public class BenefitService implements IBenefitService {
 
 
         return responseMapper.toDto(benefit);
+    }
+
+    public List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean status, Boolean isPublic, BenefitType type) {
+        CafeEntity cafe;
+
+        if (securityUtils.isAdmin()) {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to filter benefits of this cafe"));
+        }
+
+        List<BenefitEntity> filteredBenefits;
+
+        if (type != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndBenefitType_Name(cafe, type);
+        } else if (name != null && status != null && isPublic != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCaseAndStatusAndIsPublic(cafe, name, status, isPublic);
+        } else if (name != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCase(cafe, name);
+        } else if (status != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndStatus(cafe, status);
+        } else if (isPublic != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndIsPublic(cafe, isPublic);
+        } else {
+            filteredBenefits = benefitRepository.findByCafeEntity(cafe);
+        }
+
+        return filteredBenefits.stream().map(responseMapper::toDto).toList();
     }
 
 
