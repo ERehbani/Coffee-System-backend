@@ -15,8 +15,8 @@ public record ProductRequest(
         @NotBlank(message = "The name is required")
         @Size(min = 2, max = 50, message = "The name must be between 2 and 50 characters long")
         @Pattern(
-                regexp = "^\\p{L}+$",
-                message = "The name can only contain letters, with no numbers, symbols, or spaces."
+                regexp = "^[\\p{L}\\s]+$",
+                message = "The name can only contain letters and spaces."
         )
         String name,
 

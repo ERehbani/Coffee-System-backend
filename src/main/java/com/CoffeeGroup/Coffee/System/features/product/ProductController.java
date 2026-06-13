@@ -29,7 +29,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+   // @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
     ResponseEntity<List<ProductResponse>> getAll(){
         return ResponseEntity.ok(productService.getAll());

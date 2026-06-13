@@ -71,9 +71,9 @@ public class PurchaseEntity {
     @JoinColumn(name = "client_id")
     private ClientEntity client;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cafe_id", nullable = false)
-    private CafeEntity cafe;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "cafe_id")
+//    private CafeEntity cafe;
 
     @Builder.Default
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
