@@ -15,7 +15,7 @@ public interface ICartService {
 
     CartResponse create(CreateCartRequest request);
 
-    CartResponse update(UUID externalId, UpdateCartRequest request);
+    CartResponse update(UpdateCartRequest request);
 
     void delete(UUID externalId);
 

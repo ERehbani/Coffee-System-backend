@@ -43,9 +43,9 @@ public class CartController {
         return new ResponseEntity<>(cartService.create(request), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{externalId}")
-    ResponseEntity<CartResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCartRequest request) {
-        return ResponseEntity.ok(cartService.update(externalId, request));
+    @PostMapping("/items")
+    ResponseEntity<CartResponse> update(@Valid @RequestBody UpdateCartRequest request) {
+        return ResponseEntity.ok(cartService.update(request));
     }
 
     @DeleteMapping("/{externalId}")

@@ -6,10 +6,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.CartHasNoProductsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
@@ -27,8 +28,6 @@ import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -62,9 +61,6 @@ public class PurchaseService implements IPurchaseService{
             throw new EntityNotFoundException("Client not found");
         }
 
-        CafeEntity cafe = cafeRepository.findByExternalId(request.cafeId())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
         CartEntity cart = client.getCart();
         if (cart == null) {
             throw new EntityNotFoundException("Cart not found");
@@ -76,7 +72,7 @@ public class PurchaseService implements IPurchaseService{
 
         RedemptionEntity redemption = findRedemptionByExternalIdOrNull(request.redemptionId());
 
-        PurchaseEntity purchase = buildPurchase(client, cafe, cart, redemption);
+        PurchaseEntity purchase = buildPurchase(client, cart, redemption);
 
         List<PurchaseDetailEntity> details = cart.getItems().stream()
                 .map(cartItem -> {
@@ -108,6 +104,7 @@ public class PurchaseService implements IPurchaseService{
         }
 
         cart.getItems().clear();
+        cart.setTotalPrice(BigDecimal.ZERO);
         cartRepository.save(cart);
 
         return purchaseMapper.toResponse(savedPurchase);
@@ -164,14 +161,13 @@ public class PurchaseService implements IPurchaseService{
         return purchaseMapper.toResponse(updatedPurchase);
     }
 
-    private PurchaseEntity buildPurchase(ClientEntity client, CafeEntity cafe, CartEntity cart, RedemptionEntity redemption) {
+    private PurchaseEntity buildPurchase(ClientEntity client, CartEntity cart, RedemptionEntity redemption) {
         return PurchaseEntity.builder()
                 .externalId(UUID.randomUUID())
                 .date(new Date())
                 .price(BigDecimal.ZERO)
                 .status(PurchaseStatus.CONFIRMED)
                 .client(client)
-                .cafe(cafe)
                 .cart(cart)
                 .redemption(redemption)
                 .build();
