@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.client;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
@@ -60,6 +61,10 @@ public class ClientEntity {
 
     @OneToMany(mappedBy = "client")
     private List<PurchaseEntity> listPurchase;
+
+    @OneToOne
+    @JoinColumn(name = "cart_id")
+    private CartEntity cart;
 
     // Tier id Relation
     @ManyToOne
