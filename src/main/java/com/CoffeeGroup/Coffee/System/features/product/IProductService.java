@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,5 +19,7 @@ public interface IProductService {
     void delete(UUID productId);
 
     List<ProductResponse> getAllByCafe(UUID cafeExternalId);
+
+    List<ProductResponse>filterProductsByCafe(UUID cafeExternalId, String name, BigDecimal price, Integer awardedPoints);
 
 }

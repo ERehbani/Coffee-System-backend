@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -113,6 +114,72 @@ public class ProductService implements IProductService{
                 .map(productMapper::toDto)
                 .toList();
     }
+
+    @Override
+    public List<ProductResponse> filterProductsByCafe(UUID cafeExternalId, String name, BigDecimal price, Integer awardedPoints) {
+
+        CafeEntity cafe;
+        if (securityUtils.isAdmin()) {
+            cafe = cafeRepository.findByExternalId(cafeExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the products of this coffee shop"));
+        }
+
+        List<ProductEntity> filteredProducts = getFilteredProducts(cafe, name, price, awardedPoints);
+
+
+        return filteredProducts.stream()
+                .map(productMapper::toDto)
+                .toList();
+    }
+
+
+    private List<ProductEntity> getFilteredProducts(CafeEntity cafe, String name, BigDecimal price, Integer awardedPoints) {
+
+
+        if (name != null && price != null && awardedPoints != null) {
+            return productRepository.findByCafeAndNameContainingIgnoreCaseAndPriceAndAwardedPoints(cafe, name, price, awardedPoints);
+        }
+
+        if (name != null && price != null) {
+            return productRepository.findByCafeAndNameContainingIgnoreCaseAndPrice(cafe, name, price);
+        }
+
+        if (name != null && awardedPoints != null) {
+            return productRepository.findByCafeAndNameContainingIgnoreCaseAndAwardedPoints(cafe, name, awardedPoints);
+        }
+
+        if (price != null && awardedPoints != null) {
+            return productRepository.findByCafeAndPriceAndAwardedPoints(cafe, price, awardedPoints);
+        }
+
+        if (name != null) {
+            return productRepository.findByCafeAndNameContainingIgnoreCase(cafe, name);
+        }
+
+        if (price != null) {
+            return productRepository.findByCafeAndPrice(cafe, price);
+        }
+
+        if (awardedPoints != null) {
+            return productRepository.findByCafeAndAwardedPoints(cafe, awardedPoints);
+        }
+
+        return productRepository.findByCafe(cafe);
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 }
