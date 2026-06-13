@@ -64,7 +64,10 @@ public class ClientService implements IClientService {
                 .totalPrice(BigDecimal.ZERO)
                 .build();
 
-        cartRepository.save(cart);
+        CartEntity cartSaved = cartRepository.save(cart);
+
+        clientSaved.setCart(cartSaved);
+        clientRepository.save(clientSaved);
 
         return clientSaved;
     }
