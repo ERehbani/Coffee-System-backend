@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.client;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,6 +52,12 @@ public class ClientController {
     public ResponseEntity<Void> delete(@PathVariable UUID externalId) {
         clientService.delete(externalId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @GetMapping("/ViewMyPoints")
+    public  ResponseEntity<ClientPointsResponse> viewMyPoints(){
+        return ResponseEntity.ok(clientService.viewMyPoints());
     }
 
 }

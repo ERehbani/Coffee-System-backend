@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +39,7 @@ public class ClientService implements IClientService {
     private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
     private final SecurityUtils securityUtils;
+    private final CredentialsRepository credentialsRepository;
 
 
 
@@ -148,17 +152,15 @@ public class ClientService implements IClientService {
         client.getUser().setState(false);
         clientRepository.save(client);
     }
-    /*
-    public ClientPointsResponse viewMyPoints(UUID externalId) {
-            ClientEntity client = clientRepository.findByExternalId(externalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cliente not found"));
 
-            if (securityUtils.isCliente() && !client.getExternalId().equals(securityUtils.getCurrentUserExternalId())) {
-                throw new AccessDeniedException("No podés ver los puntos de otro cliente");
-            }
+    @Override
+    public ClientPointsResponse viewMyPoints() {
+        String username = SecurityContextHolder.getContext()
+                .getAuthentication().getName();
 
-            return clientMapper.toResponsePoints(client);
+        ClientEntity client = clientRepository.findByUser_Credentials_Username(username)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+
+        return clientMapper.toResponsePoints(client);
     }
-
-    */
 }
