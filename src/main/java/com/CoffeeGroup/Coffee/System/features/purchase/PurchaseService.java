@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
@@ -183,5 +184,34 @@ public class PurchaseService implements IPurchaseService{
                 .unitPrice(product.getPrice())
                 .generatedPoints(calculateGeneratedPoints(product, amount))
                 .build();
+    }
+
+    @Override
+    public List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to) {
+        CafeEntity cafe;
+
+        if (securityUtils.isAdmin()) {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new org.springframework.security.access.AccessDeniedException(
+                            "Access denied: You do not have permission to view purchases of this cafe"));
+        }
+
+        List<PurchaseEntity> purchases;
+
+        if (status != null && from != null && to != null) {
+            purchases = purchaseRepository.findByCafeAndStatusAndDateBetween(cafe, status, from, to);
+        } else if (status != null) {
+            purchases = purchaseRepository.findByCafeAndStatus(cafe, status);
+        } else if (from != null && to != null) {
+            purchases = purchaseRepository.findByCafeAndDateBetween(cafe, from, to);
+        } else {
+            purchases = purchaseRepository.findByCafe(cafe);
+        }
+
+        return purchases.stream().map(purchaseMapper::toResponse).toList();
     }
 }
