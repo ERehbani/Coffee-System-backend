@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
@@ -85,4 +86,7 @@ public class CafeEntity {
 
     @OneToMany(mappedBy = "cafe")
     private List<ReviewEntity> review;
+
+    @OneToMany(mappedBy = "cafeEntity")
+    private List<RedemptionEntity> redemptionList;
 }

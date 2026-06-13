@@ -65,6 +65,7 @@ public class BenefitService implements IBenefitService {
         benefit.setTierEntity(tierEntity);
         benefit.setCafeEntity(cafeEntity);
         benefit.setIsPublic(false);
+        benefit.setStatus(false);
         benefit.setIsGlobal(cafeEntity == null
                 ? GlobalBenefit.GLOBAL_BENEFIT
                 : GlobalBenefit.CAFFETERIA_BENEFIT);
