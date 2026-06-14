@@ -238,4 +238,70 @@ public class BenefitService implements IBenefitService {
 
         return filteredBenefits.stream().map(responseMapper::toDto).toList();
     }
+
+    public List<BenefitResponse> filterAvailableBenefits(UUID cafeId, String name, BenefitType type, Integer maxPoints) {
+
+        CafeEntity cafe;
+
+        if (securityUtils.isCafeteria()) {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view benefits of this cafe"));
+        } else {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }
+
+        List<BenefitEntity> benefits;
+
+        if (name != null && type != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(cafe, name, type, maxPoints);
+        } else if (name != null && type != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(cafe, name, type);
+        } else if (name != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(cafe, name, maxPoints);
+        } else if (type != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(cafe, type, maxPoints);
+        } else if (name != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(cafe, name);
+        } else if (type != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_Name(cafe, type);
+        } else if (maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(cafe, maxPoints);
+        } else {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrue(cafe);
+        }
+
+        return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BenefitResponse> filterAvailableGlobalBenefits(String name, BenefitType type, Integer maxPoints) {
+        GlobalBenefit global = GlobalBenefit.GLOBAL_BENEFIT;
+        List<BenefitEntity> benefits;
+
+        if (name != null && type != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(global, name, type, maxPoints);
+        } else if (name != null && type != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(global, name, type);
+        } else if (name != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(global, name, maxPoints);
+        } else if (type != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(global, type, maxPoints);
+        } else if (name != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(global, name);
+        } else if (type != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_Name(global, type);
+        } else if (maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(global, maxPoints);
+        } else {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrue(global);
+        }
+
+        return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
 }
