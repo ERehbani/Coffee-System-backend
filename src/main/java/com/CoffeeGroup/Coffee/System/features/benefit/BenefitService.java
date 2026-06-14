@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
@@ -38,6 +40,7 @@ public class BenefitService implements IBenefitService {
     private final IBenefitCreateMapper createMapper;
     private final IBenefitResponseMapper responseMapper;
     private final SecurityUtils securityUtils;
+    private final CredentialsRepository credentialsRepository;
 
     @Transactional
     @Override
@@ -89,27 +92,44 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public List<BenefitResponse> getAll() {
-       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
-        if (isAdmin){
-            return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
-            /*
-            return benefitRepository.findByIsGlobal(GlobalBenefit.GLOBAL_BENEFIT).stream()
-                    .map(responseMapper::toDto).toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCafeteria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
 
-             */
+        if (isCafeteria) {
+            String currentUser = securityUtils.getCurrentUsername();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+            return benefitRepository.findByCafeEntity(cafe).stream()
+                    .map(responseMapper::toDto)
+                    .toList();
         }
+
         return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 
-    @Override
-    public BenefitResponse getByBenefit(UUID externalId) {
-        return null;
-    }
 
-    public BenefitResponse findByBenefit(UUID externalId){
+    public BenefitResponse findById(UUID externalId){
         BenefitEntity benefit = getBenefit(externalId);
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCafeteria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
+
+        if (isCafeteria) {
+            String currentUser = securityUtils.getCurrentUsername();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+            
+            if (!benefit.getCafeEntity().equals(cafe)) {
+                throw new AccessDeniedException("Access denied: You do not have permission to view this benefit");
+            }
+        }
+
         return responseMapper.toDto(benefit);
     }
 

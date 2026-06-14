@@ -17,6 +17,7 @@ public interface IProductRepository extends JpaRepository<ProductEntity, Long> {
     boolean existsByExternalId(UUID externalId);
     Optional<ProductEntity> findByExternalIdAndCafeExternalId(UUID externalId, UUID cafeExternalId);
     List<ProductEntity> findByCafe(CafeEntity Cafe);
+    List<ProductEntity> findByState(Boolean state);
     Optional<ProductEntity> findByExternalIdAndCafe(UUID externalId, CafeEntity Cafe);
 
     // Query params para filtrar

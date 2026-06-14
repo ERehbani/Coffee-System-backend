@@ -28,38 +28,57 @@ public class ProductService implements IProductService{
 
     @Override
     public List<ProductResponse> getAll() {
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toDto)
-                .toList();
+        if (securityUtils.isAdmin()) {
+            return productRepository.findAll()
+                    .stream()
+                    .map(productMapper::toDto)
+                    .toList();
+        } else if (securityUtils.isCliente()) {
+            return productRepository.findByState(true)
+                    .stream()
+                    .map(productMapper::toDto)
+                    .toList();
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            CafeEntity cafe = cafeRepository.findByUser_Credentials_Username(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found for current user"));
+            return productRepository.findByCafe(cafe)
+                    .stream()
+                    .map(productMapper::toDto)
+                    .toList();
+        }
     }
 
 
     @Override
-    public ProductResponse getById(UUID productExternalId, UUID cafeExternalId) {
+    public ProductResponse getById(UUID productExternalId) {
+        ProductEntity entity = productRepository.findByExternalId(productExternalId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        CafeEntity cafe;
+        CafeEntity cafe = entity.getCafe();
 
-        if(securityUtils.isAdmin()){
-            cafe = cafeRepository.findByExternalId(cafeExternalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        }else {
+        if (securityUtils.isAdmin()) {
+            return productMapper.toDto(entity);
+        } else if (securityUtils.isCliente()) {
+            if (!entity.getState()) {
+                throw new AccessDeniedException("Access denied: Product is not active");
+            }
+            return productMapper.toDto(entity);
+        } else {
             String currentUser = securityUtils.getCurrentUsername();
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+            CafeEntity userCafe = cafeRepository.findByUser_Credentials_Username(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found for current user"));
+            if (!cafe.getExternalId().equals(userCafe.getExternalId())) {
+                throw new AccessDeniedException("Access denied: You do not have permission to view the products of this coffee shop");
+            }
+            return productMapper.toDto(entity);
         }
-
-
-         ProductEntity entity = productRepository.findByExternalIdAndCafe(productExternalId,cafe)
-                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-
-        return productMapper.toDto(entity);
     }
 
     @Override
     public ProductResponse create(ProductRequest productRequest) {
         CafeEntity cafe = cafeRepository.findByExternalId(productRequest.cafe())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe no encontrado"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
         ProductEntity entity = ProductEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name(productRequest.name())
@@ -91,10 +110,7 @@ public class ProductService implements IProductService{
                 .orElseThrow(() -> new EntityNotFoundException("Product", "Product not found", "productId", productId));
 
         productRepository.delete(entity);
-
     }
-
-
 
     @Override
     public List<ProductResponse> getAllByCafe(UUID cafeExternalId) {

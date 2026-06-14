@@ -10,7 +10,7 @@ import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse
 public interface IProductService {
     List<ProductResponse> getAll();
 
-    ProductResponse getById(UUID productExternalId, UUID cafeExternalId);
+    ProductResponse getById(UUID productExternalId);
 
     ProductResponse create(ProductRequest productRequest);
 

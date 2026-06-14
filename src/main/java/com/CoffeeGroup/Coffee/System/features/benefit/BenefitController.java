@@ -44,7 +44,7 @@ public class BenefitController {
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{externalId}")
     ResponseEntity<BenefitResponse> getById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(benefitService.getByBenefit(externalId));
+        return ResponseEntity.ok(benefitService.findById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
@@ -74,6 +74,18 @@ public class BenefitController {
             @RequestParam(required = false) Boolean isPublic,
             @RequestParam(required = false) BenefitType type) {
         return ResponseEntity.ok(benefitService.filterBenefitsByCafe(cafeId, name, status, isPublic, type));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}")
+    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@PathVariable UUID cafeId){
+        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/{benefitId}")
+    ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
+        return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
 
 }
