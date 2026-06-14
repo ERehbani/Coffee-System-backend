@@ -6,7 +6,8 @@ import java.util.UUID;
 
 public record CartResponse(
         UUID externalId,
-        UUID clientId,
+        UUID clientid,
+        UUID cafeid,
         BigDecimal totalPrice,
         List<CartItemResponse> products
 ) {

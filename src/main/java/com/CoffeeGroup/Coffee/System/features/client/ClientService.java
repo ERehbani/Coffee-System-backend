@@ -55,17 +55,6 @@ public class ClientService implements IClientService {
                 .build();
 
         ClientEntity clientSaved = clientRepository.save(client);
-
-        CartEntity cart = CartEntity.builder()
-                .externalId(UUID.randomUUID())
-                .clientId(clientSaved.getExternalId())
-                .items(List.of())
-                .totalPrice(BigDecimal.ZERO)
-                .build();
-
-        CartEntity cartSaved = cartRepository.save(cart);
-
-        clientSaved.setCart(cartSaved);
         clientRepository.save(clientSaved);
 
         return clientSaved;

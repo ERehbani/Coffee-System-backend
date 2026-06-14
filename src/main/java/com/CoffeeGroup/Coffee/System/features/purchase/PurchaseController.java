@@ -24,38 +24,41 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/purchases")
 public class PurchaseController {
 
-    private final PurchaseService purchaseService;
+    private final IPurchaseService purchaseService;
 
     @PostMapping
-    public ResponseEntity<PurchaseResponse> create(@Valid @RequestBody CreatePurchaseRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(purchaseService.create(request));
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    ResponseEntity<PurchaseResponse> create(@Valid @RequestBody CreatePurchaseRequest request) {
+        return new ResponseEntity<>(purchaseService.create(request), HttpStatus.CREATED);
     }
 
     @GetMapping
-    public ResponseEntity<List<PurchaseResponse>> findAll() {
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    ResponseEntity<List<PurchaseResponse>> findAll() {
         return ResponseEntity.ok(purchaseService.findAll());
     }
 
     @GetMapping("/{externalId}")
-    public ResponseEntity<PurchaseResponse> getById(@PathVariable UUID externalId) {
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
+    ResponseEntity<PurchaseResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(purchaseService.getById(externalId));
     }
 
     @PatchMapping("/{externalId}/status")
-    public ResponseEntity<PurchaseResponse> updateStatus(@PathVariable UUID externalId, @Valid @RequestBody UpdatePurchaseStatusRequest request
-    ) {
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    ResponseEntity<PurchaseResponse> updateStatus(
+            @PathVariable UUID externalId,
+            @Valid @RequestBody UpdatePurchaseStatusRequest request) {
         return ResponseEntity.ok(purchaseService.updateStatus(externalId, request));
     }
 
-
-    //el traductor del orto me traduce "historial" a "record", pense que era history la traduccion
-    @GetMapping("/cafes/{cafeId}/record")
+    @GetMapping("/cafe/{cafeId}/history")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    public ResponseEntity<List<PurchaseResponse>> getHistorialByCafe(
+    ResponseEntity<List<PurchaseResponse>> getHistorialByCafe(
             @PathVariable UUID cafeId,
             @RequestParam(required = false) PurchaseStatus status,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date from,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date to) {
+            @RequestParam(required = false) Date from,
+            @RequestParam(required = false) Date to) {
         return ResponseEntity.ok(purchaseService.getHistorialByCafe(cafeId, status, from, to));
     }
 }

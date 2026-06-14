@@ -24,7 +24,7 @@ public class CartMapper implements IMapper<CartEntity, CartResponse> {
 
     @Override
     public CartEntity toEntity(CartResponse cartResponse) {
-        if (cartResponse == null) return null;
+        /*if (cartResponse == null) return null;
 
         List<CartItem> items = cartResponse.products() != null
                 ? cartResponse.products().stream()
@@ -34,30 +34,15 @@ public class CartMapper implements IMapper<CartEntity, CartResponse> {
 
         return CartEntity.builder()
                 .externalId(cartResponse.externalId() != null ? cartResponse.externalId() : UUID.randomUUID())
-                .clientId(cartResponse.clientId())
+                .client(cartResponse.clientid())
+                .cafeEntity(cartResponse.cafeid())
                 .totalPrice(cartResponse.totalPrice())
                 .items(items)
                 .build();
+
+         */
+        return null;
     }
-
-    @Override
-    public CartResponse toDto(CartEntity entity) {
-        if (entity == null) return null;
-
-        List<CartItemResponse> products = entity.getItems() != null
-                ? entity.getItems().stream()
-                        .map(this::toCartItemResponse)
-                        .collect(Collectors.toList())
-                : List.of();
-
-        return new CartResponse(
-                entity.getExternalId(),
-                entity.getClientId(),
-                entity.getTotalPrice(),
-                products
-        );
-    }
-
     private CartItem toCartItem(CartItemResponse response) {
         return CartItem.builder()
                 .productId(response.productId())
@@ -74,6 +59,25 @@ public class CartMapper implements IMapper<CartEntity, CartResponse> {
                 item.getProductId(),
                 productName,
                 item.getQuantity()
+        );
+    }
+
+    @Override
+    public CartResponse toDto(CartEntity entity) {
+        if (entity == null) return null;
+
+        List<CartItemResponse> products = entity.getItems() != null
+                ? entity.getItems().stream()
+                .map(this::toCartItemResponse)
+                .collect(Collectors.toList())
+                : List.of();
+
+        return new CartResponse(
+                entity.getExternalId(),
+                entity.getClient() != null ? entity.getClient().getExternalId() : null,
+                entity.getCafeEntity() != null ? entity.getCafeEntity().getExternalId() : null,
+                entity.getTotalPrice(),
+                products
         );
     }
 

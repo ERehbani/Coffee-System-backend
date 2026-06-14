@@ -52,7 +52,7 @@ public class CafeController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping
     ResponseEntity<List<CafeResponse>> getAll(){
         return ResponseEntity.ok(service.getAll());
