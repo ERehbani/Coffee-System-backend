@@ -129,6 +129,23 @@ public class PurchaseService implements IPurchaseService{
     public PurchaseResponse getById(UUID externalId) {
         PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+
+        if (!securityUtils.isAdmin()) {
+            if (securityUtils.isCliente()) {
+                ClientEntity currentClient = securityUtils.getCurrentClient();
+                if (currentClient == null || !currentClient.getExternalId().equals(purchase.getClient().getExternalId())) {
+                    throw new AccessDeniedException("You can only view your own purchases");
+                }
+            } else if (securityUtils.isCafeteria()) {
+                String currentUser = securityUtils.getCurrentUsername();
+                CafeEntity cafe = cafeRepository.findByUser_Credentials_Username(currentUser)
+                        .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                if (!cafe.getExternalId().equals(purchase.getCafe().getExternalId())) {
+                    throw new AccessDeniedException("You can only view purchases from your own cafe");
+                }
+            }
+        }
+
         return purchaseMapper.toResponse(purchase);
     }
 
