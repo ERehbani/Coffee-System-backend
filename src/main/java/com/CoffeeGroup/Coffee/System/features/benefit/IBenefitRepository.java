@@ -29,4 +29,23 @@ public interface IBenefitRepository extends JpaRepository<BenefitEntity, Long> {
             CafeEntity cafe, String name, Boolean status, Boolean isPublic);
 
     List<BenefitEntity> findDistinctByRedemptionListClient(ClientEntity client);
+
+    // Metodos para filtrar
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndNameContainingIgnoreCaseAndStatusAndBenefitType_Name(ClientEntity client, String name, Boolean status, BenefitType type);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndNameContainingIgnoreCaseAndStatus(ClientEntity client, String name, Boolean status);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndNameContainingIgnoreCaseAndBenefitType_Name(ClientEntity client, String name, BenefitType type);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndStatusAndBenefitType_Name(ClientEntity client, Boolean status, BenefitType type);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndNameContainingIgnoreCase(ClientEntity client, String name);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndStatus(ClientEntity client, Boolean status);
+
+    List<BenefitEntity> findDistinctByRedemptionList_ClientAndBenefitType_Name(ClientEntity client, BenefitType type);
+
+    List<BenefitEntity> findDistinctByRedemptionList_Client(ClientEntity client);
+
+
 }
