@@ -18,4 +18,6 @@ public interface IRedemptionService {
 
     RedemptionResponse cancel(String validationCode);
 
+    List<RedemptionResponse> getAllByClient(UUID clientExternalId);
+
 }

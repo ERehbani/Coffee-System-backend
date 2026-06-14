@@ -11,14 +11,14 @@ import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionRe
 @Mapper(componentModel = "spring")
 public interface IRedemptionResponseMapper extends IMapper<RedemptionEntity, RedemptionResponse> {
 
-
     @Mapping(target = "client", ignore = true)
     @Mapping(target = "benefit", ignore = true)
     @Mapping(target = "purchase", ignore = true)
+    @Mapping(target = "cafeEntity", ignore = true)
     @Mapping(target = "id", ignore = true)
     RedemptionEntity toEntity(RedemptionResponse redemptionResponse);
 
-    @Mapping(target = "client", source = "client.externalId")
-    @Mapping(target = "benefit", source = "benefit.externalId")
+    @Mapping(target = "benefitName", source = "benefit.name")
+    @Mapping(target = "cafeName", source = "cafeEntity.name", defaultValue = "Global")
     RedemptionResponse toDto(RedemptionEntity redemptionEntity);
 }

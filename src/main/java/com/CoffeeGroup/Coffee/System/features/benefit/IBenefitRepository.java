@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;

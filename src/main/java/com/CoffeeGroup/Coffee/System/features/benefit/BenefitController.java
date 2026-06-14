@@ -87,5 +87,4 @@ public class BenefitController {
     ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
         return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
-
 }

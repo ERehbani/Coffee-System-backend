@@ -1,10 +1,14 @@
 package com.CoffeeGroup.Coffee.System.features.redemption.domain.dto;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-//Faltaria agregar el dto de Cliente, compra, Beneficio,.
 public record RedemptionResponse(
+        UUID externalId,
+        LocalDateTime date,
+        Integer usedPoints,
+        Boolean state,
         String validationCode,
-        UUID benefit,
-        UUID client
-){ }
+        String benefitName,
+        String cafeName
+) {}

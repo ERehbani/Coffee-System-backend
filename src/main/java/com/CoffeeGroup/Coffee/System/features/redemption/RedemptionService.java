@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -169,4 +170,30 @@ public class RedemptionService implements IRedemptionService {
         redemptionRepository.save(redemption);
         return responseMapper.toDto(redemption);
     }
+
+    @Override
+    public List<RedemptionResponse> getAllByClient(UUID clientExternalId) {
+
+        ClientEntity client;
+
+
+        if(securityUtils.isAdmin()){
+            client = clientRepository.findByExternalId(clientExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(clientExternalId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the history of this client"));
+        }
+
+        return redemptionRepository.findByClientOrderByDateDesc(client).stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+
+
+
+
+
 }
