@@ -87,4 +87,27 @@ public class BenefitController {
     ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
         return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
+
+    /*la diferencia de este y el de 2 endpoints mas arriba
+     es que este lo usan los clientes y muestra los disponibles
+     el otro lo utiliza solo la cafeteria para poder ver absolutamente todos*/
+
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/available/filter")
+    ResponseEntity<List<BenefitResponse>> filterAvailableBenefits(
+            @PathVariable UUID cafeId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BenefitType type,
+            @RequestParam(required = false) Integer maxPoints) {
+        return ResponseEntity.ok(benefitService.filterAvailableBenefits(cafeId, name, type, maxPoints));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/global/filter")
+    ResponseEntity<List<BenefitResponse>> filterAvailableGlobalBenefits(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BenefitType type,
+            @RequestParam(required = false) Integer maxPoints) {
+        return ResponseEntity.ok(benefitService.filterAvailableGlobalBenefits(name, type, maxPoints));
+    }
 }

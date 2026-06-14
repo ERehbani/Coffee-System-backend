@@ -22,4 +22,7 @@ public interface IBenefitService {
     BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId);
 
     List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean status, Boolean isPublic, BenefitType type);
+
+    List<BenefitResponse> filterAvailableBenefits(UUID cafeId, String name, BenefitType type, Integer maxPoints);
+    List<BenefitResponse> filterAvailableGlobalBenefits(String name, BenefitType type, Integer maxPoints);
 }
