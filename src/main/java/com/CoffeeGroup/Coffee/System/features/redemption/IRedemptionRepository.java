@@ -15,4 +15,5 @@ public interface IRedemptionRepository extends JpaRepository <RedemptionEntity, 
     boolean existsByExternalId(UUID externalId);
     Optional<RedemptionEntity> findByValidationCode(String validationCode);
     List<RedemptionEntity> findByClientAndState(ClientEntity client, boolean state);
+    List<RedemptionEntity> findByClientOrderByDateDesc(ClientEntity client);
 }

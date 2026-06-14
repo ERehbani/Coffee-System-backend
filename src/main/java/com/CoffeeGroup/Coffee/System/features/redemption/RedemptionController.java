@@ -45,4 +45,11 @@ public class RedemptionController {
         return ResponseEntity.ok(redemptionService.validate(validationCode));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
+    @GetMapping("/{clientId}")
+    ResponseEntity<List<RedemptionResponse>> getAllByClient(@PathVariable UUID clientId){
+        return ResponseEntity.ok(redemptionService.getAllByClient(clientId));
+    }
+
+
 }
