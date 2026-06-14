@@ -25,4 +25,6 @@ public interface IPurchaseRepository extends JpaRepository<PurchaseEntity, Long>
     List<PurchaseEntity> findByCafeAndDateBetween(CafeEntity cafe, Date from, Date to);
 
     List<PurchaseEntity> findByCafeAndStatusAndDateBetween(CafeEntity cafe, PurchaseStatus status, Date from, Date to);
+
+    List<PurchaseEntity> findByClient(ClientEntity client);
 }

@@ -61,4 +61,10 @@ public class PurchaseController {
             @RequestParam(required = false) Date to) {
         return ResponseEntity.ok(purchaseService.getHistorialByCafe(cafeId, status, from, to));
     }
+
+    @GetMapping("/client/{clientId}/history")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
+    ResponseEntity<List<PurchaseResponse>> getClientPurchaseHistory(@PathVariable UUID clientId) {
+        return ResponseEntity.ok(purchaseService.getHistorialByCliente(clientId));
+    }
 }
