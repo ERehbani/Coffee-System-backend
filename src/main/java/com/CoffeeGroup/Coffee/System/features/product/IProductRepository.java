@@ -20,7 +20,7 @@ public interface IProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByState(Boolean state);
     Optional<ProductEntity> findByExternalIdAndCafe(UUID externalId, CafeEntity Cafe);
 
-    // Query params para filtrar
+
     List<ProductEntity> findByCafeAndNameContainingIgnoreCaseAndPriceAndAwardedPoints(CafeEntity cafe, String name, BigDecimal price, Integer awardedPoints);
     List<ProductEntity> findByCafeAndNameContainingIgnoreCaseAndPrice(CafeEntity cafe, String name, BigDecimal price);
     List<ProductEntity> findByCafeAndNameContainingIgnoreCaseAndAwardedPoints(CafeEntity cafe, String name, Integer awardedPoints);
@@ -28,10 +28,4 @@ public interface IProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByCafeAndNameContainingIgnoreCase(CafeEntity cafe, String name);
     List<ProductEntity> findByCafeAndPrice(CafeEntity cafe, BigDecimal price);
     List<ProductEntity> findByCafeAndAwardedPoints(CafeEntity cafe, Integer awardedPoints);
-    //
-
-
-
-
-
 }

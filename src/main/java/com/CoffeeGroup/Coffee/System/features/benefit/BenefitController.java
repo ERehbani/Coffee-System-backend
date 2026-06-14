@@ -87,23 +87,4 @@ public class BenefitController {
     ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
         return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
-    @GetMapping("/{clientId}")
-    ResponseEntity<List<BenefitResponse>> getAllByClient(@PathVariable UUID clientId){
-        return ResponseEntity.ok(benefitService.getAllByClient(clientId));
-    }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
-    @GetMapping("/{clientId}/filter")
-    ResponseEntity<List<BenefitResponse>> filterBenefitsByClient(
-            @PathVariable UUID cafeId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean status,
-            @RequestParam(required = false) BenefitType type){
-        return ResponseEntity.ok(benefitService.filterBenefitsByClient(cafeId, name, status, type));
-    }
-
-
-
 }
