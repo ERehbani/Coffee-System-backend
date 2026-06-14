@@ -53,12 +53,10 @@ public class CartService implements ICartService {
         CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        // Validar que el producto pertenece a esa cafetería
         ProductEntity product = productRepository
                 .findByExternalIdAndCafeExternalId(request.productId(), cafeExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
 
-        // Buscar carrito existente o crear uno nuevo
         CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
                 .orElseGet(() -> CartEntity.builder()
                         .externalId(UUID.randomUUID())
@@ -68,7 +66,6 @@ public class CartService implements ICartService {
                         .totalPrice(BigDecimal.ZERO)
                         .build());
 
-        // Agregar o sumar cantidad si ya existe
         List<CartItem> items = cart.getItems();
         boolean exists = false;
         for (CartItem item : items) {
