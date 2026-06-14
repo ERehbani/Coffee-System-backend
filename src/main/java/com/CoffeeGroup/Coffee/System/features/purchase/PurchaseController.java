@@ -39,7 +39,7 @@ public class PurchaseController {
     }
 
     @GetMapping("/{externalId}")
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CLIENTE', 'ROLE_CLIENTE')")
     ResponseEntity<PurchaseResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(purchaseService.getById(externalId));
     }
