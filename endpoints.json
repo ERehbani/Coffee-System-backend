@@ -1,0 +1,1457 @@
+{
+  "info": {
+    "name": "Coffee System API",
+    "description": "Complete API collection for Coffee System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"string\",\n  \"password\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register Client",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"email\": \"string\",\n  \"password\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Benefits",
+      "item": [
+        {
+          "name": "Create Benefit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"description\": \"string\",\n  \"pointsRequired\": 0,\n  \"startDate\": \"2024-01-01\",\n  \"endDate\": \"2024-12-31\",\n  \"type\": \"DISCOUNT\",\n  \"cafeId\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/benefits",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits"]
+            }
+          }
+        },
+        {
+          "name": "Delete Benefit",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Benefits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits"]
+            }
+          }
+        },
+        {
+          "name": "Get Benefit By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Publish Benefit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/:externalId/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", ":externalId", "publish"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Benefit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/:externalId/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", ":externalId", "cancel"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Change End Date",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"endDate\": \"2024-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/benefits/:externalId/changeEndDate",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", ":externalId", "changeEndDate"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Benefits By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/cafes/:cafeId/filter?name=string&status=true&isPublic=true&type=DISCOUNT",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", "cafes", ":cafeId", "filter"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "status",
+                  "value": "true",
+                  "description": "optional"
+                },
+                {
+                  "key": "isPublic",
+                  "value": "true",
+                  "description": "optional"
+                },
+                {
+                  "key": "type",
+                  "value": "DISCOUNT",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Benefits By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/cafes/:cafeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", "cafes", ":cafeId"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Benefit By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/cafes/:cafeId/:benefitId",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", "cafes", ":cafeId", ":benefitId"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                },
+                {
+                  "key": "benefitId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Available Benefits By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/cafes/:cafeId/available/filter?name=string&type=DISCOUNT&maxPoints=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", "cafes", ":cafeId", "available", "filter"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "type",
+                  "value": "DISCOUNT",
+                  "description": "optional"
+                },
+                {
+                  "key": "maxPoints",
+                  "value": "100",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Available Global Benefits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefits/global/filter?name=string&type=DISCOUNT&maxPoints=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefits", "global", "filter"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "type",
+                  "value": "DISCOUNT",
+                  "description": "optional"
+                },
+                {
+                  "key": "maxPoints",
+                  "value": "100",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Benefit Types",
+      "item": [
+        {
+          "name": "Create Benefit Type",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"description\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/benefittypes",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefittypes"]
+            }
+          }
+        },
+        {
+          "name": "Get All Benefit Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/benefittypes",
+              "host": ["{{baseUrl}}"],
+              "path": ["benefittypes"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cafes",
+      "item": [
+        {
+          "name": "Register Cafe",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"email\": \"string\",\n  \"password\": \"string\",\n  \"address\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"description\": \"string\",\n  \"schedule\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cafes/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes", "register"]
+            }
+          }
+        },
+        {
+          "name": "Update Cafe",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"address\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"description\": \"string\",\n  \"schedule\": \"string\",\n  \"image\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/cafes/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Cafe",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cafes/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Cafes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cafes",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes"]
+            }
+          }
+        },
+        {
+          "name": "Get Cafe By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cafes/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Cafes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cafes/filter?name=string&address=string&state=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["cafes", "filter"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "address",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "state",
+                  "value": "true",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Carts",
+      "item": [
+        {
+          "name": "Get My Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts/:cafeExternalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":cafeExternalId"],
+              "variable": [
+                {
+                  "key": "cafeExternalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Item To Cart",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"uuid\",\n  \"quantity\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/carts/:cafeExternalId/items",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":cafeExternalId", "items"],
+              "variable": [
+                {
+                  "key": "cafeExternalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Item From Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts/:cafeExternalId/items/:productExternalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":cafeExternalId", "items", ":productExternalId"],
+              "variable": [
+                {
+                  "key": "cafeExternalId",
+                  "value": "uuid"
+                },
+                {
+                  "key": "productExternalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carts/:cafeExternalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["carts", ":cafeExternalId"],
+              "variable": [
+                {
+                  "key": "cafeExternalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category",
+              "host": ["{{baseUrl}}"],
+              "path": ["category"]
+            }
+          }
+        },
+        {
+          "name": "Get Category By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/category",
+              "host": ["{{baseUrl}}"],
+              "path": ["category"]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/category/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["category", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "Get All Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients"]
+            }
+          }
+        },
+        {
+          "name": "Get Client By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"profilePhoto\": \"string\",\n  \"tierExternalId\": \"uuid\",\n  \"userExternalId\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/clients/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "View My Points",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/clients/ViewMyPoints",
+              "host": ["{{baseUrl}}"],
+              "path": ["clients", "ViewMyPoints"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Get Product By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"description\": \"string\",\n  \"price\": 0,\n  \"awardedPoints\": 0,\n  \"cafe\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"description\": \"string\",\n  \"price\": 0,\n  \"awardedPoints\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Product By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/cafes/:cafeId/:productId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "cafes", ":cafeId", ":productId"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                },
+                {
+                  "key": "productId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Products By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/cafes/:cafeId",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "cafes", ":cafeId"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Products By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/cafes/:cafeId/filter?name=string&price=0&awardedPoints=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "cafes", ":cafeId", "filter"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "string",
+                  "description": "optional"
+                },
+                {
+                  "key": "price",
+                  "value": "0",
+                  "description": "optional"
+                },
+                {
+                  "key": "awardedPoints",
+                  "value": "0",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Purchases",
+      "item": [
+        {
+          "name": "Create Purchase",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cafeId\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchases",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases"]
+            }
+          }
+        },
+        {
+          "name": "Get All Purchases",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases"]
+            }
+          }
+        },
+        {
+          "name": "Get Purchase By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Purchase Status",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PENDING\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/purchases/:externalId/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", ":externalId", "status"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Purchase History By Cafe",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases/cafe/:cafeId/history?status=PENDING&from=2024-01-01&to=2024-12-31",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "cafe", ":cafeId", "history"],
+              "variable": [
+                {
+                  "key": "cafeId",
+                  "value": "uuid"
+                }
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "optional"
+                },
+                {
+                  "key": "from",
+                  "value": "2024-01-01",
+                  "description": "optional"
+                },
+                {
+                  "key": "to",
+                  "value": "2024-12-31",
+                  "description": "optional"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Client Purchase History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/purchases/client/:clientId/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["purchases", "client", ":clientId", "history"],
+              "variable": [
+                {
+                  "key": "clientId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Redemptions",
+      "item": [
+        {
+          "name": "Create Redemption",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"benefitId\": \"uuid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/redemption",
+              "host": ["{{baseUrl}}"],
+              "path": ["redemption"]
+            }
+          }
+        },
+        {
+          "name": "Get All Redemptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/redemption/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["redemption", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Redemption",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/redemption/:validationCode",
+              "host": ["{{baseUrl}}"],
+              "path": ["redemption", ":validationCode"],
+              "variable": [
+                {
+                  "key": "validationCode",
+                  "value": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Redemptions By Client",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/redemption/:clientId",
+              "host": ["{{baseUrl}}"],
+              "path": ["redemption", ":clientId"],
+              "variable": [
+                {
+                  "key": "clientId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cafeId\": \"uuid\",\n  \"message\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            }
+          }
+        },
+        {
+          "name": "Get All Reviews",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews"]
+            }
+          }
+        },
+        {
+          "name": "Get Review By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"externalId\": \"uuid\",\n  \"message\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reviews/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reviews/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["reviews", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tiers",
+      "item": [
+        {
+          "name": "Get All Tiers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tiers",
+              "host": ["{{baseUrl}}"],
+              "path": ["tiers"]
+            }
+          }
+        },
+        {
+          "name": "Get Tier By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tiers/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["tiers", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Tier",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"requiredPoints\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tiers",
+              "host": ["{{baseUrl}}"],
+              "path": ["tiers"]
+            }
+          }
+        },
+        {
+          "name": "Update Tier",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"requiredPoints\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tiers/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["tiers", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Tier",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tiers/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["tiers", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Get User By Id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"string\",\n  \"state\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/:externalId",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", ":externalId"],
+              "variable": [
+                {
+                  "key": "externalId",
+                  "value": "uuid"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

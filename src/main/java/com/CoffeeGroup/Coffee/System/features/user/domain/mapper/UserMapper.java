@@ -28,4 +28,12 @@ public class UserMapper {
                 user.getState()
         );
     }
+
+    public UserResponse toResponse(UserEntity user, UUID customExternalId) {
+        return new UserResponse(
+                customExternalId,
+                user.getEmail().value(),
+                user.getState()
+        );
+    }
 }
