@@ -19,4 +19,6 @@ public interface IPurchaseService {
     PurchaseResponse updateStatus(UUID externalId, UpdatePurchaseStatusRequest request);
 
     List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to);
+
+    List<PurchaseResponse> getHistorialByCliente(UUID clientId);
 }

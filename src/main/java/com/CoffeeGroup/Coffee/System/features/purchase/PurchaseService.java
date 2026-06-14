@@ -210,4 +210,27 @@ public class PurchaseService implements IPurchaseService{
     private Integer calculateGeneratedPoints(ProductEntity product, Integer amount) {
         return product.getAwardedPoints() * amount;
     }
+
+    public List<PurchaseResponse> getHistorialByCliente(UUID clientId) {
+        ClientEntity client;
+
+        if (securityUtils.isAdmin()) {
+            client = clientRepository.findByExternalId(clientId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            ClientEntity currentClient = securityUtils.getCurrentClient();
+            if (currentClient == null) {
+                throw new EntityNotFoundException("Client not found");
+            }
+
+            if (!currentClient.getExternalId().equals(clientId)) {
+                throw new AccessDeniedException("You can only view your own purchase history");
+            }
+
+            client = currentClient;
+        }
+
+        List<PurchaseEntity> purchases = purchaseRepository.findByClient(client);
+        return purchases.stream().map(purchaseMapper::toResponse).toList();
+    }
 }
