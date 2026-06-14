@@ -32,23 +32,25 @@ public class UserController {
         return ResponseEntity.ok(userService.getAll());
     }
 
-    @GetMapping ("/{externalId}")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
+    @GetMapping("/{externalId}")
     public ResponseEntity<UserResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(userService.getById(externalId));
     }
 
-
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{externalId}")
-    public ResponseEntity<UserResponse> update(@Valid @PathVariable UUID externalId, @RequestBody UpdateUserRequest request){
+    public ResponseEntity<UserResponse> update(@Valid @PathVariable UUID externalId,
+            @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.update(externalId, request));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
     public ResponseEntity<UserResponse> delete(@PathVariable UUID externalId) {
         userService.delete(externalId);
 
         return ResponseEntity.ok().build();
     }
-
 
 }

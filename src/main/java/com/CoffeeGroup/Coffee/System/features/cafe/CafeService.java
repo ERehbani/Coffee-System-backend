@@ -67,7 +67,7 @@ public class CafeService implements ICafeService {
     }
 
 
-    public CafeEntity create(CreateCafeAccountRequest request, UserEntity user) {
+    public CafeResponse create(CreateCafeAccountRequest request, UserEntity user) {
 
         Email cafeEmail = new Email(request.email());
 
@@ -88,7 +88,8 @@ public class CafeService implements ICafeService {
                 .user(user)
                 .build();
 
-        return cafeRepository.save(cafe);
+        CafeEntity savedCafe = cafeRepository.save(cafe);
+        return mapper.toResponse(savedCafe);
     }
 
     @Override

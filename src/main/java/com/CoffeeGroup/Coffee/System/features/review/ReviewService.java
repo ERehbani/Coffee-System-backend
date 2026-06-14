@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
@@ -24,9 +24,9 @@ import lombok.AllArgsConstructor;
 public class ReviewService implements IReviewService {
 
 
-    private final ClientRepository clientRepository;
     private final CafeRepository cafeRepository;
     private final IReviewRepository reviewRepository;
+    private final SecurityUtils securityUtils;
 
     private final IReviewCreateRequest MapReviewCreateRequest;
     private final IReviewResponse MapReviewResponse;
@@ -36,8 +36,10 @@ public class ReviewService implements IReviewService {
     @Override
     public ReviewResponse create(ReviewCreateRequest reviewCreateRequest) {
 
-        ClientEntity clientAux = clientRepository.findByExternalId(reviewCreateRequest.clientId()).
-                orElseThrow(()-> new EntityNotFoundException("Client not found"));
+        ClientEntity clientAux = securityUtils.getCurrentClient();
+        if (clientAux == null) {
+            throw new EntityNotFoundException("Client not found for current user");
+        }
         CafeEntity cafeAux = cafeRepository.findByExternalId(reviewCreateRequest.cafeId()).
                 orElseThrow(() ->  new EntityNotFoundException("Cafe not found"));
 

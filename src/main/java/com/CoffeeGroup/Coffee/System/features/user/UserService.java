@@ -19,6 +19,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsExcept
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeService;
+import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.client.ClientService;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UpdateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
@@ -122,9 +123,9 @@ public class UserService implements IUserService {
 
         credentialsRepository.save(credentials);
 
-        cafeService.create(request, savedUser);
+        CafeResponse cafeResponse = cafeService.create(request, savedUser);
 
-        return userMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser, cafeResponse.externalId());
     }
 
     @Override
