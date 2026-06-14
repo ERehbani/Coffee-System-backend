@@ -19,9 +19,8 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsExcept
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeService;
-import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.client.ClientService;
-import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UpdateUserRequest;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
 import com.CoffeeGroup.Coffee.System.features.user.domain.mapper.UserMapper;
@@ -37,8 +36,6 @@ public class UserService implements IUserService {
     private final RoleRepository roleRepository;
     private final CredentialsRepository credentialsRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ClientRepository clientRepository;
-    private final TierRepository tierRepository;
     private final ClientService clientService;
     private final CafeService cafeService;
 
@@ -126,9 +123,9 @@ public class UserService implements IUserService {
 
         credentialsRepository.save(credentials);
 
-        cafeService.create(request, savedUser);
+        CafeResponse cafeResponse = cafeService.create(request, savedUser);
 
-        return userMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser, cafeResponse.externalId());
     }
 
     @Override

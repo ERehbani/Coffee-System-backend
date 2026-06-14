@@ -79,7 +79,7 @@ public class BenefitEntity {
     private BenefitTypeEntity benefitType;
 
     @ManyToOne
-    @JoinColumn(name = "tier_id")
+    @JoinColumn(name = "tier_id", nullable = true)
     private TierEntity tierEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,4 +17,8 @@ public interface IPurchaseService {
     PurchaseResponse getById(UUID externalId);
 
     PurchaseResponse updateStatus(UUID externalId, UpdatePurchaseStatusRequest request);
+
+    List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to);
+
+    List<PurchaseResponse> getHistorialByCliente(UUID clientId);
 }

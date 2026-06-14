@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.client;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
@@ -10,16 +11,7 @@ import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -72,5 +64,8 @@ public class ClientEntity {
 
     @OneToMany(mappedBy = "client")
     private List<ReviewEntity> review;
+
+    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    private List<CartEntity> carts;
 
 }

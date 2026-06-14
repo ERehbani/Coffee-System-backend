@@ -36,11 +36,11 @@ public class BenefitTypeService implements IBenefitTypeService {
 
     @Override
     public BenefitTypeResponse create(BenefitTypeCreate benefitTypeCreate){
-
         if (securityUtils.isCafeteria() &&
                 benefitTypeCreate.benefitType().equals(BenefitType.PRODUCTO_GRATIS_SOCIO)) {
             throw new IllegalArgumentException("A cafe cannot create this type of benefit");
         }
+
         BenefitTypeEntity type = new BenefitTypeEntity();
         type.setExternalId(UUID.randomUUID());
         type.setName(benefitTypeCreate.benefitType());
@@ -51,21 +51,23 @@ public class BenefitTypeService implements IBenefitTypeService {
             type.setCafeEntity(cafe);
         }
 
-        if (benefitTypeCreate.benefitType().equals(BenefitType.CODIGO_DESCUENTO)) {
-            if (benefitTypeCreate.porcentajeDescuento() == null) {
-                throw new IllegalArgumentException("Discount percentage must be specified");
+        switch (benefitTypeCreate.benefitType()) {
+            case CODIGO_DESCUENTO -> {
+                if (benefitTypeCreate.porcentajeDescuento() == null)
+                    throw new IllegalArgumentException("Discount percentage must be specified");
+                type.setPorcentajeDescuento(benefitTypeCreate.porcentajeDescuento());
             }
-            type.setPorcentajeDescuento(benefitTypeCreate.porcentajeDescuento());
-
-        } else {
-            if (benefitTypeCreate.product() == null) {
-                throw new IllegalArgumentException("A product must be specified");
+            case PRODUCTO_POR_PUNTOS, PRODUCTO_GRATIS_SOCIO, DOS_POR_UNO -> {
+                if (benefitTypeCreate.cafeEntity() == null)
+                    throw new IllegalArgumentException("Cafe must be specified for product benefits");
+                if (benefitTypeCreate.product() == null)
+                    throw new IllegalArgumentException("A product must be specified");
+                ProductEntity producto = productRepository
+                        .findByExternalIdAndCafeExternalId(benefitTypeCreate.product(), benefitTypeCreate.cafeEntity())
+                        .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                type.setProduct(producto);
             }
-            ProductEntity producto = productRepository.findByExternalIdAndCafeExternalId(benefitTypeCreate.product(),benefitTypeCreate.cafeEntity())
-                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-            type.setProduct(producto);
         }
-
         benefitTypeRepository.save(type);
         return responseMapper.toDto(type);
     }

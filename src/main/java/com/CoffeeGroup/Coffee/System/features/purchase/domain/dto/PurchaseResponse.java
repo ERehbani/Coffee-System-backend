@@ -18,7 +18,6 @@ public record PurchaseResponse(
         BigDecimal price,
         PurchaseStatus status,
         UUID clientId,
-        UUID cafeId,
         UUID redemptionId,
         List<PurchaseDetailResponse> details
 ) {

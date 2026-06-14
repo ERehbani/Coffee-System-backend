@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 
@@ -59,11 +60,12 @@ public class RedemptionEntity {
     @JoinColumn(name = "client_id")
     private ClientEntity client;
 
-    // --- Relacion Beneficio ---
     @ManyToOne
     @JoinColumn(name = "benefit_id")
     private BenefitEntity benefit;
 
-
+    @ManyToOne
+    @JoinColumn(name = "cafe_id", nullable = true)
+    private CafeEntity cafeEntity;
 
 }

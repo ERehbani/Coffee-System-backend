@@ -72,7 +72,7 @@ public class PurchaseEntity {
     private ClientEntity client;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cafe_id", nullable = false)
+    @JoinColumn(name = "cafe_id")
     private CafeEntity cafe;
 
     @Builder.Default

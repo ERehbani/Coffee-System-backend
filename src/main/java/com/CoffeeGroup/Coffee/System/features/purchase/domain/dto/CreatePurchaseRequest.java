@@ -1,20 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
 
-import java.util.UUID;
-
 import jakarta.validation.constraints.NotNull;
 
+import java.util.UUID;
+
 public record CreatePurchaseRequest(
-
-        @NotNull(message = "Client id is required")
-        UUID clientId,
-
-        @NotNull(message = "Cafe id is required")
+        @NotNull(message = "Cafe ID is required")
         UUID cafeId,
 
-        @NotNull(message = "Cart id is required")
-        UUID cartId,
-
-        UUID redemptionId
+        String validationCode
 ) {
 }

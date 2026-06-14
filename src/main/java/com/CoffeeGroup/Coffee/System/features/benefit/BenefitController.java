@@ -3,16 +3,11 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
@@ -49,7 +44,7 @@ public class BenefitController {
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{externalId}")
     ResponseEntity<BenefitResponse> getById(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(benefitService.getByBenefit(externalId));
+        return ResponseEntity.ok(benefitService.findById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
@@ -70,4 +65,49 @@ public class BenefitController {
        return ResponseEntity.ok(benefitService.changeEndDate(externalId,newEndDate));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/filter")
+    ResponseEntity<List<BenefitResponse>> filterBenefits(
+            @PathVariable UUID cafeId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Boolean status,
+            @RequestParam(required = false) Boolean isPublic,
+            @RequestParam(required = false) BenefitType type) {
+        return ResponseEntity.ok(benefitService.filterBenefitsByCafe(cafeId, name, status, isPublic, type));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}")
+    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@PathVariable UUID cafeId){
+        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/{benefitId}")
+    ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
+        return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
+    }
+
+    /*la diferencia de este y el de 2 endpoints mas arriba
+     es que este lo usan los clientes y muestra los disponibles
+     el otro lo utiliza solo la cafeteria para poder ver absolutamente todos*/
+
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/available/filter")
+    ResponseEntity<List<BenefitResponse>> filterAvailableBenefits(
+            @PathVariable UUID cafeId,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BenefitType type,
+            @RequestParam(required = false) Integer maxPoints) {
+        return ResponseEntity.ok(benefitService.filterAvailableBenefits(cafeId, name, type, maxPoints));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/global/filter")
+    ResponseEntity<List<BenefitResponse>> filterAvailableGlobalBenefits(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BenefitType type,
+            @RequestParam(required = false) Integer maxPoints) {
+        return ResponseEntity.ok(benefitService.filterAvailableGlobalBenefits(name, type, maxPoints));
+    }
 }

@@ -4,23 +4,14 @@ import java.util.List;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -79,10 +70,16 @@ public class CafeEntity {
     @ToString.Exclude
     private List<ProductEntity> products;
 
-    @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<PurchaseEntity> purchases;
+//    @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
+//    @ToString.Exclude
+//    private List<PurchaseEntity> purchases;
 
     @OneToMany(mappedBy = "cafe")
     private List<ReviewEntity> review;
+
+    @OneToMany(mappedBy = "cafeEntity")
+    private List<RedemptionEntity> redemptionList;
+
+    @OneToMany(mappedBy = "cafeEntity", cascade = CascadeType.ALL)
+    private List<CartEntity> carts;
 }

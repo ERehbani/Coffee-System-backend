@@ -3,6 +3,9 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
+import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
@@ -37,6 +42,8 @@ public class BenefitService implements IBenefitService {
     private final IBenefitCreateMapper createMapper;
     private final IBenefitResponseMapper responseMapper;
     private final SecurityUtils securityUtils;
+    private final CredentialsRepository credentialsRepository;
+    private final ClientRepository clientRepository;
 
     @Transactional
     @Override
@@ -65,6 +72,7 @@ public class BenefitService implements IBenefitService {
         benefit.setTierEntity(tierEntity);
         benefit.setCafeEntity(cafeEntity);
         benefit.setIsPublic(false);
+        benefit.setStatus(false);
         benefit.setIsGlobal(cafeEntity == null
                 ? GlobalBenefit.GLOBAL_BENEFIT
                 : GlobalBenefit.CAFFETERIA_BENEFIT);
@@ -87,30 +95,55 @@ public class BenefitService implements IBenefitService {
 
     @Override
     public List<BenefitResponse> getAll() {
-       Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
-        if (isAdmin){
-            return benefitRepository.findByIsGlobal(GlobalBenefit.GLOBAL_BENEFIT).stream()
-                    .map(responseMapper::toDto).toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCafeteria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
+
+        if (isCafeteria) {
+            String currentUser = securityUtils.getCurrentUsername();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+            return benefitRepository.findByCafeEntity(cafe).stream()
+                    .map(responseMapper::toDto)
+                    .toList();
         }
+
         return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
     }
 
-    @Override
-    public BenefitResponse getByBenefit(UUID externalId){
+
+    public BenefitResponse findById(UUID externalId){
         BenefitEntity benefit = getBenefit(externalId);
+        
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCafeteria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
+
+        if (isCafeteria) {
+            String currentUser = securityUtils.getCurrentUsername();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+            
+            if (!benefit.getCafeEntity().equals(cafe)) {
+                throw new AccessDeniedException("Access denied: You do not have permission to view this benefit");
+            }
+        }
+
         return responseMapper.toDto(benefit);
     }
 
     @Transactional
     public BenefitResponse confirmBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,true, true);
     }
 
     @Transactional
     public BenefitResponse cancelBenefit(UUID externalId){
-        return setVisibility(externalId,false);
+        return setVisibility(externalId,false, false);
     }
 
     @Transactional
@@ -127,12 +160,12 @@ public class BenefitService implements IBenefitService {
         return benefitEntity;
     }
 
-     private BenefitResponse setVisibility(UUID externalId, boolean isPublic){
+    private BenefitResponse setVisibility(UUID externalId, boolean isPublic, boolean status){
         BenefitEntity benefit = getBenefit(externalId);
         benefit.setIsPublic(isPublic);
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
-     }
+    }
 
 
     @Override
@@ -175,5 +208,100 @@ public class BenefitService implements IBenefitService {
         return responseMapper.toDto(benefit);
     }
 
+    public List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean status, Boolean isPublic, BenefitType type) {
+        CafeEntity cafe;
 
+        if (securityUtils.isAdmin()) {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to filter benefits of this cafe"));
+        }
+
+        List<BenefitEntity> filteredBenefits;
+
+        if (type != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndBenefitType_Name(cafe, type);
+        } else if (name != null && status != null && isPublic != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCaseAndStatusAndIsPublic(cafe, name, status, isPublic);
+        } else if (name != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCase(cafe, name);
+        } else if (status != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndStatus(cafe, status);
+        } else if (isPublic != null) {
+            filteredBenefits = benefitRepository.findByCafeEntityAndIsPublic(cafe, isPublic);
+        } else {
+            filteredBenefits = benefitRepository.findByCafeEntity(cafe);
+        }
+
+        return filteredBenefits.stream().map(responseMapper::toDto).toList();
+    }
+
+    public List<BenefitResponse> filterAvailableBenefits(UUID cafeId, String name, BenefitType type, Integer maxPoints) {
+
+        CafeEntity cafe;
+
+        if (securityUtils.isCafeteria()) {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view benefits of this cafe"));
+        } else {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        }
+
+        List<BenefitEntity> benefits;
+
+        if (name != null && type != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(cafe, name, type, maxPoints);
+        } else if (name != null && type != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(cafe, name, type);
+        } else if (name != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(cafe, name, maxPoints);
+        } else if (type != null && maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(cafe, type, maxPoints);
+        } else if (name != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(cafe, name);
+        } else if (type != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_Name(cafe, type);
+        } else if (maxPoints != null) {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(cafe, maxPoints);
+        } else {
+            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrue(cafe);
+        }
+
+        return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BenefitResponse> filterAvailableGlobalBenefits(String name, BenefitType type, Integer maxPoints) {
+        GlobalBenefit global = GlobalBenefit.GLOBAL_BENEFIT;
+        List<BenefitEntity> benefits;
+
+        if (name != null && type != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(global, name, type, maxPoints);
+        } else if (name != null && type != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(global, name, type);
+        } else if (name != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(global, name, maxPoints);
+        } else if (type != null && maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(global, type, maxPoints);
+        } else if (name != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(global, name);
+        } else if (type != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_Name(global, type);
+        } else if (maxPoints != null) {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(global, maxPoints);
+        } else {
+            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrue(global);
+        }
+
+        return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
 }

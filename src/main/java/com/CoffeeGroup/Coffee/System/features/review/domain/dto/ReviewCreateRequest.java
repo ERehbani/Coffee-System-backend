@@ -5,8 +5,6 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 public record ReviewCreateRequest(
-        @NotNull(message = "the customer not found")
-        UUID clientId,
         @NotNull(message = "the cafe not found")
         UUID cafeId,
         @NotNull(message = "the message is null")

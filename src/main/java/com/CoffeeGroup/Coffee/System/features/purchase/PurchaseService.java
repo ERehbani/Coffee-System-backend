@@ -2,14 +2,20 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cart.CartItem;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.common.exceptions.CartHasNoProductsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
@@ -39,59 +45,79 @@ public class PurchaseService implements IPurchaseService{
     private final IProductRepository productRepository;
     private final IRedemptionRepository redemptionRepository;
     private final PurchaseMapper purchaseMapper;
-
-
-
-    private RedemptionEntity findRedemptionByExternalIdOrNull(UUID externalId) {
-        if (externalId == null) {
-            return null;
-        }
-
-        return redemptionRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
-    }
+    private final SecurityUtils securityUtils;
 
     @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
-
-        ClientEntity client = clientRepository.findByExternalId(request.clientId())
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client = securityUtils.getCurrentClient();
+        if (client == null) throw new EntityNotFoundException("Client not found");
 
         CafeEntity cafe = cafeRepository.findByExternalId(request.cafeId())
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        CartEntity cart = cartRepository.findByExternalId(request.cartId())
+        CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
 
-        RedemptionEntity redemption = findRedemptionByExternalIdOrNull(request.redemptionId());
+        if (cart.getItems() == null || cart.getItems().isEmpty())
+            throw new CartHasNoProductsException("Cart cannot be empty");
 
-        PurchaseEntity purchase = buildPurchase(client, cafe, cart, redemption);
+        PurchaseEntity purchase = buildPurchase(client, cart, cafe);
 
-        List<PurchaseDetailEntity> details = cart.getItems().stream()
-                .map(cartItem -> {
-                    ProductEntity product = productRepository.findByExternalId(cartItem.getProductId())
-                            .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-                    return buildPurchaseDetail(purchase, product, cartItem.getQuantity());
-                })
-                .toList();
+        List<PurchaseDetailEntity> details = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.ZERO;
 
-        purchase.getPurchaseDetails().addAll(details);
+        for (CartItem cartItem : cart.getItems()) {
+            ProductEntity product = productRepository.findByExternalId(cartItem.getProductId())
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            details.add(buildPurchaseDetail(purchase, product, cartItem.getQuantity()));
+            totalPrice = totalPrice.add(calculateSubtotal(product, cartItem.getQuantity()));
+        }
 
-        BigDecimal totalPrice = cart.getItems().stream()
-                .map(cartItem -> {
-                    ProductEntity product = productRepository.findByExternalId(cartItem.getProductId())
-                            .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-                    return calculateSubtotal(product, cartItem.getQuantity());
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        RedemptionEntity redemption = null;
+        if (request.validationCode() != null) {
+            redemption = redemptionRepository.findByValidationCode(request.validationCode())
+                    .orElseThrow(() -> new EntityNotFoundException("Invalid code"));
+
+            if (!redemption.getState())
+                throw new IllegalStateException("Code already used");
+
+            if (redemption.getBenefit().getCafeEntity() == null ||
+                    !redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId()))
+                throw new IllegalArgumentException("This code does not belong to this cafe");
+
+            BenefitTypeEntity type = redemption.getBenefit().getBenefitType();
+
+            switch (type.getName()) {
+                case CODIGO_DESCUENTO -> {
+                    double descuento = type.getPorcentajeDescuento() / 100.0;
+                    totalPrice = totalPrice.multiply(BigDecimal.valueOf(1 - descuento));
+                }
+                case DOS_POR_UNO -> {
+                    ProductEntity freeProduct = type.getProduct();
+                    details.add(buildPurchaseDetail(purchase, freeProduct, 1));
+                }
+                default -> throw new IllegalArgumentException("This benefit type cannot be applied to a purchase");
+            }
+
+            redemption.setState(false);
+            redemptionRepository.save(redemption);
+        }
 
         purchase.setPrice(totalPrice);
+        purchase.setRedemption(redemption);
+        purchase.getPurchaseDetails().addAll(details);
+        purchaseRepository.save(purchase);
 
-        PurchaseEntity savedPurchase = purchaseRepository.save(purchase);
+        updateClientPoints(client, details);
 
-        return purchaseMapper.toResponse(savedPurchase);
+        cart.getItems().clear();
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
+
+        return purchaseMapper.toResponse(purchase);
     }
 
+    @Override
     public List<PurchaseResponse> findAll() {
         return purchaseRepository.findAll()
                 .stream()
@@ -99,11 +125,99 @@ public class PurchaseService implements IPurchaseService{
                 .toList();
     }
 
+    @Override
     public PurchaseResponse getById(UUID externalId) {
         PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
 
+        if (!securityUtils.isAdmin()) {
+            if (securityUtils.isCliente()) {
+                ClientEntity currentClient = securityUtils.getCurrentClient();
+                if (currentClient == null || !currentClient.getExternalId().equals(purchase.getClient().getExternalId())) {
+                    throw new AccessDeniedException("You can only view your own purchases");
+                }
+            } else if (securityUtils.isCafeteria()) {
+                String currentUser = securityUtils.getCurrentUsername();
+                CafeEntity cafe = cafeRepository.findByUser_Credentials_Username(currentUser)
+                        .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                if (!cafe.getExternalId().equals(purchase.getCafe().getExternalId())) {
+                    throw new AccessDeniedException("You can only view purchases from your own cafe");
+                }
+            }
+        }
+
         return purchaseMapper.toResponse(purchase);
+    }
+
+    @Transactional
+    @Override
+    public PurchaseResponse updateStatus(UUID externalId, UpdatePurchaseStatusRequest request) {
+        PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+        purchase.setStatus(request.status());
+        return purchaseMapper.toResponse(purchaseRepository.save(purchase));
+    }
+
+    @Override
+    public List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to) {
+        CafeEntity cafe;
+
+        if (securityUtils.isAdmin()) {
+            cafe = cafeRepository.findByExternalId(cafeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            String currentUser = securityUtils.getCurrentUsername();
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
+                    .orElseThrow(() -> new AccessDeniedException(
+                            "Access denied: You do not have permission to view purchases of this cafe"));
+        }
+
+        List<PurchaseEntity> purchases;
+
+        if (status != null && from != null && to != null) {
+            purchases = purchaseRepository.findByCafeAndStatusAndDateBetween(cafe, status, from, to);
+        } else if (status != null) {
+            purchases = purchaseRepository.findByCafeAndStatus(cafe, status);
+        } else if (from != null && to != null) {
+            purchases = purchaseRepository.findByCafeAndDateBetween(cafe, from, to);
+        } else {
+            purchases = purchaseRepository.findByCafe(cafe);
+        }
+
+        return purchases.stream().map(purchaseMapper::toResponse).toList();
+    }
+
+    private void updateClientPoints(ClientEntity client, List<PurchaseDetailEntity> details) {
+        Integer totalGeneratedPoints = details.stream()
+                .map(PurchaseDetailEntity::getGeneratedPoints)
+                .reduce(0, Integer::sum);
+
+        client.setCurrentPoints(client.getCurrentPoints() + totalGeneratedPoints);
+        client.setHistoricalPoints(client.getHistoricalPoints() + totalGeneratedPoints);
+        clientRepository.save(client);
+    }
+
+    private PurchaseEntity buildPurchase(ClientEntity client, CartEntity cart, CafeEntity cafe) {
+        return PurchaseEntity.builder()
+                .externalId(UUID.randomUUID())
+                .date(new Date())
+                .price(BigDecimal.ZERO)
+                .status(PurchaseStatus.CONFIRMED)
+                .client(client)
+                .cart(cart)
+                .cafe(cafe)
+                .build();
+    }
+
+    private PurchaseDetailEntity buildPurchaseDetail(PurchaseEntity purchase, ProductEntity product, Integer amount) {
+        return PurchaseDetailEntity.builder()
+                .externalId(UUID.randomUUID())
+                .purchase(purchase)
+                .product(product)
+                .amount(amount)
+                .unitPrice(product.getPrice())
+                .generatedPoints(calculateGeneratedPoints(product, amount))
+                .build();
     }
 
     private BigDecimal calculateSubtotal(ProductEntity product, Integer amount) {
@@ -114,41 +228,26 @@ public class PurchaseService implements IPurchaseService{
         return product.getAwardedPoints() * amount;
     }
 
+    public List<PurchaseResponse> getHistorialByCliente(UUID clientId) {
+        ClientEntity client;
 
-    @Transactional
-    public PurchaseResponse updateStatus(UUID externalId, UpdatePurchaseStatusRequest request) {
-        PurchaseEntity purchase = purchaseRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+        if (securityUtils.isAdmin()) {
+            client = clientRepository.findByExternalId(clientId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            ClientEntity currentClient = securityUtils.getCurrentClient();
+            if (currentClient == null) {
+                throw new EntityNotFoundException("Client not found");
+            }
 
-        purchase.setStatus(request.status());
+            if (!currentClient.getExternalId().equals(clientId)) {
+                throw new AccessDeniedException("You can only view your own purchase history");
+            }
 
-        PurchaseEntity updatedPurchase = purchaseRepository.save(purchase);
+            client = currentClient;
+        }
 
-        return purchaseMapper.toResponse(updatedPurchase);
-    }
-
-    private PurchaseEntity buildPurchase(ClientEntity client, CafeEntity cafe, CartEntity cart, RedemptionEntity redemption) {
-        return PurchaseEntity.builder()
-                .externalId(UUID.randomUUID())
-                .date(new Date())
-                .price(BigDecimal.ZERO)
-                .status(PurchaseStatus.CONFIRMED)
-                .client(client)
-                .cafe(cafe)
-                .cart(cart)
-                .redemption(redemption)
-                .build();
-    }
-
-    private PurchaseDetailEntity buildPurchaseDetail(PurchaseEntity purchase, ProductEntity product, Integer amount
-    ) {
-        return PurchaseDetailEntity.builder()
-                .externalId(UUID.randomUUID())
-                .purchase(purchase)
-                .product(product)
-                .amount(amount)
-                .unitPrice(product.getPrice())
-                .generatedPoints(calculateGeneratedPoints(product, amount))
-                .build();
+        List<PurchaseEntity> purchases = purchaseRepository.findByClient(client);
+        return purchases.stream().map(purchaseMapper::toResponse).toList();
     }
 }
