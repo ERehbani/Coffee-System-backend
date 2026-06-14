@@ -36,11 +36,13 @@ public class ClientController {
         return ResponseEntity.ok(clientService.findAll());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
     public ResponseEntity<ClientResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(clientService.getById(externalId));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @PutMapping("/{externalId}")
     public ResponseEntity<ClientResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateClientRequest request
     ) {

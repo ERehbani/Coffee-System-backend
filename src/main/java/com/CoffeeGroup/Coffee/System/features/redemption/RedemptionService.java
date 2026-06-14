@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
@@ -92,7 +92,7 @@ public class RedemptionService implements IRedemptionService {
     }
 
     @Override
-    public List<RedemptionResponse> findByClients(UUID externalId) {
+    public List<RedemptionResponse> findAll(UUID externalId) {
         ClientEntity client = clientRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
         return redemptionRepository.findByClientAndState(client, true)
@@ -138,7 +138,6 @@ public class RedemptionService implements IRedemptionService {
         RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
 
-
         if (!redemption.getState()) {
             throw new IllegalStateException("This code has already been used");
         }
@@ -155,7 +154,7 @@ public class RedemptionService implements IRedemptionService {
                     .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
             if (!redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new IllegalArgumentException("this redemption does not belong to your cafe");
+                throw new IllegalArgumentException("This redemption does not belong to your cafe");
             }
         }
         ClientEntity client = redemption.getClient();

@@ -29,26 +29,19 @@ public class RedemptionController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
-    ResponseEntity<RedemptionResponse> create(@Valid @RequestBody RedemptionCreateRequest redemptionCreateRequest){
+    ResponseEntity<RedemptionResponse> create(@Valid @RequestBody RedemptionCreateRequest redemptionCreateRequest) {
         return new ResponseEntity<>(redemptionService.create(redemptionCreateRequest), HttpStatus.CREATED);
     }
 
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
     public ResponseEntity<List<RedemptionResponse>> getAll(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(redemptionService.findByClients(externalId));
-    }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
-    @DeleteMapping("/{externalId}")
-    ResponseEntity<Void> delete(@PathVariable UUID externalId) {
-        redemptionService.deleteById(externalId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(redemptionService.findAll(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_SUPERADMIN')")
     @PostMapping("/{validationCode}")
-    ResponseEntity<RedemptionResponse> confirmRedemption(@PathVariable String validationCode){
+    ResponseEntity<RedemptionResponse> confirmRedemption(@PathVariable String validationCode) {
         return ResponseEntity.ok(redemptionService.validate(validationCode));
     }
 

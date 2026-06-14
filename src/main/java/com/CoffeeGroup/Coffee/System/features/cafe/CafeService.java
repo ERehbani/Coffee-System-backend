@@ -31,8 +31,19 @@ public class CafeService implements ICafeService {
 
     @Override
     public List<CafeResponse> getAll() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
 
-        return cafeRepository.findAll().stream()
+        List<CafeEntity> cafes;
+        if (isAdmin) {
+            cafes = cafeRepository.findAll();
+        } else {
+            cafes = cafeRepository.findByState(true);
+        }
+
+        return cafes.stream()
                 .map(mapper::toResponse)
                 .toList();
     }
@@ -83,9 +94,19 @@ public class CafeService implements ICafeService {
     @Override
     @Transactional
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
 
-        CafeEntity cafe = cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        CafeEntity cafe;
+        if (isAdmin) {
+            cafe = cafeRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        } else {
+            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
+                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+        }
          cafe.setAddress(request.address());
          cafe.setPhoneNumber(request.phoneNumber());
          cafe.setDescription(request.description());
@@ -105,6 +126,16 @@ public class CafeService implements ICafeService {
 
     @Override
     public List<CafeResponse> filterCafes(String name, String address, Boolean state) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+
+        // If not admin and state is not provided, default to active cafes only
+        if (!isAdmin && state == null) {
+            state = true;
+        }
+
         List<CafeEntity> filteredCafes;
 
         if (name != null && address != null && state != null) {

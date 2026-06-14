@@ -23,6 +23,7 @@ public interface CafeRepository extends JpaRepository <CafeEntity, Long> {
     boolean existsByEmail(Email email);
 
     Optional<CafeEntity> findByUser(UserEntity user);
+    Optional<CafeEntity> findByUser_Credentials_Username(String username);
     Optional<CafeEntity> findByExternalIdAndUser_Credentials_Username(UUID externalId, String username);
 
     List<CafeEntity> findByNameContainingIgnoreCase(String name);

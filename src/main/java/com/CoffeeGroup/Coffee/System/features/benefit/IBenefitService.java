@@ -13,7 +13,7 @@ public interface IBenefitService {
     BenefitResponse save(BenefitCreateRequest benefitCreate);
     void delete(UUID externalId);
     List<BenefitResponse> getAll();
-    BenefitResponse getByBenefit(UUID externalId);
+    BenefitResponse findById(UUID externalId);
     BenefitResponse confirmBenefit(UUID externalId);
     BenefitResponse cancelBenefit(UUID externalId);
     BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest);

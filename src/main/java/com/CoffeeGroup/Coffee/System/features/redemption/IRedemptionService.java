@@ -12,7 +12,7 @@ public interface IRedemptionService {
 
     void deleteById(UUID id);
 
-    List<RedemptionResponse> findByClients(UUID client);
+    List<RedemptionResponse> findAll(UUID client);
 
     RedemptionResponse validate(String validationCode);
 

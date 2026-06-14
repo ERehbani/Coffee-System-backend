@@ -1,6 +1,5 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,12 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
-import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitService;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
-import com.CoffeeGroup.Coffee.System.features.product.IProductService;
-import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 import com.CoffeeGroup.Coffee.System.features.user.IUserService;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
 
@@ -37,8 +32,6 @@ public class CafeController {
 
     private final ICafeService service;
     private final IUserService userService;
-    private final IBenefitService benefitService;
-    private final IProductService productService;
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/register")
@@ -46,7 +39,7 @@ public class CafeController {
      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
     }
 
-
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @PutMapping("/{externalId}")
     ResponseEntity<CafeResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateCafeRequest request){
       return ResponseEntity.ok(service.update(externalId,request));
@@ -59,15 +52,17 @@ public class CafeController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping
-    ResponseEntity<List<CafeResponse>> getAll(){return ResponseEntity.ok(service.getAll());}
+    ResponseEntity<List<CafeResponse>> getAll(){
+        return ResponseEntity.ok(service.getAll());
+    }
 
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{externalId}")
     ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
         return ResponseEntity.ok(service.getById(externalId));
     }
-
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/filter")
@@ -76,41 +71,4 @@ public class CafeController {
                                                    @RequestParam(required = false) Boolean state){
         return ResponseEntity.ok(service.filterCafes(name, address, state));
     }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/{cafeId}/benefits")
-    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@PathVariable UUID cafeId){
-        return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
-    }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/{cafeId}/benefits/{benefitId}")
-    ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
-        return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
-    }
-
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/{cafeId}/products/{productId}")
-    ResponseEntity<ProductResponse> getProductByCafe(@PathVariable UUID productId, @PathVariable UUID cafeId){
-        return ResponseEntity.ok(productService.getById(productId,cafeId));
-    }
-
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/{cafeId}/products")
-    ResponseEntity<List<ProductResponse>> getAllProductsByCafe(@PathVariable UUID cafeId){
-        return ResponseEntity.ok(productService.getAllByCafe(cafeId));
-    }
-
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/{cafeId}/products/filter")
-    ResponseEntity<List<ProductResponse>> filterProductsByCafe(@PathVariable UUID cafeId, @RequestParam(required = false) String name, @RequestParam(required = false) BigDecimal price, @RequestParam(required = false) Integer awardedPoints){
-        return ResponseEntity.ok(productService.filterProductsByCafe(cafeId,name,price,awardedPoints));
-    }
-
-
-
-
-
 }

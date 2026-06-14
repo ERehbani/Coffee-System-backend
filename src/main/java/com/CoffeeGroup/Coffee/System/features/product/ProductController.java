@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,17 +30,14 @@ public class ProductController {
 
     private final ProductService productService;
 
-   // @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
     ResponseEntity<List<ProductResponse>> getAll(){
         return ResponseEntity.ok(productService.getAll());
     }
 
     @GetMapping("/{productId}")
-    ResponseEntity<ProductResponse> getById(
-            @RequestParam(required = false) UUID productId,
-            @RequestParam(required = false) UUID cafe){
-        return ResponseEntity.ok(productService.getById(productId,cafe));
+    ResponseEntity<ProductResponse> getById(@PathVariable UUID productId){
+        return ResponseEntity.ok(productService.getById(productId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_SUPERADMIN')")
@@ -61,5 +59,20 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @GetMapping("/cafes/{cafeId}/{productId}")
+    ResponseEntity<ProductResponse> getProductByCafe(@PathVariable UUID productId, @PathVariable UUID cafeId){
+        return ResponseEntity.ok(productService.getById(productId));
+    }
+
+    @GetMapping("/cafes/{cafeId}")
+    ResponseEntity<List<ProductResponse>> getAllProductsByCafe(@PathVariable UUID cafeId){
+        return ResponseEntity.ok(productService.getAllByCafe(cafeId));
+    }
+
+    @GetMapping("/cafes/{cafeId}/filter")
+    ResponseEntity<List<ProductResponse>> filterProductsByCafe(@PathVariable UUID cafeId, @RequestParam(required = false) String name, @RequestParam(required = false) BigDecimal price, @RequestParam(required = false) Integer awardedPoints){
+        return ResponseEntity.ok(productService.filterProductsByCafe(cafeId,name,price,awardedPoints));
+    }
 
 }

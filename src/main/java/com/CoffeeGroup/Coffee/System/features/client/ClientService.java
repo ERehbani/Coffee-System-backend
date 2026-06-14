@@ -6,18 +6,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
-import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import com.CoffeeGroup.Coffee.System.features.client.mapper.ClientMapper;
@@ -38,8 +35,6 @@ public class ClientService implements IClientService {
     private final UserRepository userRepository;
     private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
-    private final SecurityUtils securityUtils;
-    private final CredentialsRepository credentialsRepository;
 
 
 
@@ -102,9 +97,19 @@ public class ClientService implements IClientService {
 
     @Transactional
     public ClientResponse update(UUID externalId, UpdateClientRequest request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
 
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client;
+        if (isAdmin) {
+            client = clientRepository.findByExternalId(externalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        } else {
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
+                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+        }
 
         if (request.name() != null) {
             client.setName(request.name());
@@ -112,14 +117,6 @@ public class ClientService implements IClientService {
 
         if (request.profilePhoto() != null) {
             client.setProfilePhoto(request.profilePhoto());
-        }
-
-        if (request.currentPoints() != null) {
-            client.setCurrentPoints(request.currentPoints());
-        }
-
-        if (request.historicalPoints() != null) {
-            client.setHistoricalPoints(request.historicalPoints());
         }
 
         if (request.tierExternalId() != null) {
