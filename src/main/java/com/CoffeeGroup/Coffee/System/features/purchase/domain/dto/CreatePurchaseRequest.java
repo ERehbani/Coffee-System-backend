@@ -1,8 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.purchase.domain.dto;
 
+import jakarta.validation.constraints.NotNull;
+
 import java.util.UUID;
 
 public record CreatePurchaseRequest(
-        UUID redemptionId
+        @NotNull(message = "Cafe ID is required")
+        UUID cafeId,
+
+        String validationCode
 ) {
 }
