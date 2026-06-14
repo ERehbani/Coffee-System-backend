@@ -22,4 +22,6 @@ public interface IBenefitService {
     BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId);
 
     List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean status, Boolean isPublic, BenefitType type);
+    List<BenefitResponse> getAllByClient(UUID clientExternalId);
+
 }

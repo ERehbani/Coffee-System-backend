@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,6 +43,7 @@ public class BenefitService implements IBenefitService {
     private final IBenefitResponseMapper responseMapper;
     private final SecurityUtils securityUtils;
     private final CredentialsRepository credentialsRepository;
+    private final ClientRepository clientRepository;
 
     @Transactional
     @Override
@@ -235,6 +238,27 @@ public class BenefitService implements IBenefitService {
 
         return filteredBenefits.stream().map(responseMapper::toDto).toList();
     }
+
+
+    @Override
+    public List<BenefitResponse> getAllByClient(UUID clientExternalId) {
+
+        ClientEntity client;
+
+        if(securityUtils.isAdmin()){
+            client = clientRepository.findByExternalId(clientExternalId)
+                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        }else {
+            String currentUser = securityUtils.getCurrentUsername();
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(clientExternalId,currentUser)
+                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this client"));
+        }
+
+        return benefitRepository.findDistinctByRedemptionListClient(client).stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
 
 
 }

@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
@@ -26,4 +27,6 @@ public interface IBenefitRepository extends JpaRepository<BenefitEntity, Long> {
 
     List<BenefitEntity> findByCafeEntityAndNameContainingIgnoreCaseAndStatusAndIsPublic(
             CafeEntity cafe, String name, Boolean status, Boolean isPublic);
+
+    List<BenefitEntity> findDistinctByRedemptionListClient(ClientEntity client);
 }
