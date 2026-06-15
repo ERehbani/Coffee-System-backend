@@ -1,7 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product.domain.dto;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -38,10 +37,7 @@ public record ProductRequest(
         @Min(value = 50, message = "Awarded points must be bigger than 50")
         @Max(value = 3000, message = "Awarded points must be smaller than 3000")
         @Positive(message = "Awarded points must be bigger than 0")
-        Integer awardedPoints,
-
-        @NotNull
-        UUID cafe
+        Integer awardedPoints
 
 ) {
 

@@ -7,10 +7,6 @@ import java.util.UUID;
 public record UpdateClientRequest (
         String name,
 
-        String profilePhoto,
-
-        UUID tierExternalId,
-
-        UUID userExternalId
+        String profilePhoto
 ){
 }

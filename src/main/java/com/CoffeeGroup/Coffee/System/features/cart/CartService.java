@@ -32,16 +32,13 @@ public class CartService implements ICartService {
     private final CafeRepository cafeRepository;
 
     @Override
-    public CartResponse getMyCart(UUID cafeExternalId) {
+    public List<CartResponse> getMyCart() {
         ClientEntity client = securityUtils.getCurrentClient();
         if (client == null) throw new EntityNotFoundException("Client not found");
 
-        CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        return cartRepository.findByClientAndCafeEntity(client, cafe)
+        return cartRepository.findByClient(client).stream()
                 .map(cartMapper::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+                .toList();
     }
 
     @Override
@@ -88,15 +85,15 @@ public class CartService implements ICartService {
 
     @Override
     @Transactional
-    public CartResponse removeItem(UUID cafeExternalId, UUID productExternalId) {
+    public CartResponse removeItem(UUID productExternalId) {
         ClientEntity client = securityUtils.getCurrentClient();
         if (client == null) throw new EntityNotFoundException("Client not found");
 
-        CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+        List<CartEntity> carts = cartRepository.findByClient(client);
+        CartEntity cart = carts.stream()
+                .filter(c -> c.getItems().stream().anyMatch(item -> item.getProductId().equals(productExternalId)))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
 
         boolean removed = cart.getItems()
                 .removeIf(item -> item.getProductId().equals(productExternalId));
@@ -109,19 +106,16 @@ public class CartService implements ICartService {
 
     @Override
     @Transactional
-    public void clearCart(UUID cafeExternalId) {
+    public void clearCart() {
         ClientEntity client = securityUtils.getCurrentClient();
         if (client == null) throw new EntityNotFoundException("Client not found");
 
-        CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
-
-        cart.getItems().clear();
-        cart.setTotalPrice(BigDecimal.ZERO);
-        cartRepository.save(cart);
+        List<CartEntity> carts = cartRepository.findByClient(client);
+        carts.forEach(cart -> {
+            cart.getItems().clear();
+            cart.setTotalPrice(BigDecimal.ZERO);
+        });
+        cartRepository.saveAll(carts);
     }
 
     private BigDecimal calculateTotalPrice(List<CartItem> items) {

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
@@ -33,23 +34,28 @@ public class RedemptionController {
         return new ResponseEntity<>(redemptionService.create(redemptionCreateRequest), HttpStatus.CREATED);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
+    public ResponseEntity<List<RedemptionResponse>> getAll(
+            @RequestParam(required = false) Boolean state) {
+        return ResponseEntity.ok(redemptionService.findAll(state));
+    }
+
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
-    public ResponseEntity<List<RedemptionResponse>> getAll(@PathVariable UUID externalId) {
-        return ResponseEntity.ok(redemptionService.findAll(externalId));
+    public ResponseEntity<RedemptionResponse> getById(@PathVariable UUID externalId) {
+        return ResponseEntity.ok(redemptionService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_SUPERADMIN')")
-    @PostMapping("/{validationCode}")
+    @PostMapping("/validate/{validationCode}")
     ResponseEntity<RedemptionResponse> confirmRedemption(@PathVariable String validationCode) {
         return ResponseEntity.ok(redemptionService.validate(validationCode));
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
-    @GetMapping("/{clientId}")
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @GetMapping("/client/{clientId}")
     ResponseEntity<List<RedemptionResponse>> getAllByClient(@PathVariable UUID clientId){
         return ResponseEntity.ok(redemptionService.getAllByClient(clientId));
     }
-
-
 }

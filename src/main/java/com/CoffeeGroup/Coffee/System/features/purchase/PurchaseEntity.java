@@ -62,7 +62,7 @@ public class PurchaseEntity {
     @JoinColumn(name = "redemption_id")
     private RedemptionEntity redemption;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "cart_id")
     @ToString.Exclude
     private CartEntity cart;
