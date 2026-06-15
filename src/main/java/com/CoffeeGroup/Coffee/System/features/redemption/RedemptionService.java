@@ -43,10 +43,12 @@ public class RedemptionService implements IRedemptionService {
     @Override
     @Transactional
     public RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest) {
-        ClientEntity client = clientRepository.findByExternalId(redemptionCreateRequest.client())
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        ClientEntity client = securityUtils.getCurrentClient();
+        if (client == null) {
+            throw new EntityNotFoundException("Client not found");
+        }
 
-        BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefit())
+        BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefitId())
                 .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
 
         CafeEntity cafe = benefit.getCafeEntity();
@@ -93,11 +95,46 @@ public class RedemptionService implements IRedemptionService {
     }
 
     @Override
-    public List<RedemptionResponse> findAll(UUID externalId) {
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-        return redemptionRepository.findByClientAndState(client, true)
-                .stream().map(responseMapper::toDto).toList();
+    public List<RedemptionResponse> findAll(Boolean state) {
+        List<RedemptionEntity> redemptions;
+
+        if (securityUtils.isAdmin()) {
+            redemptions = (state != null)
+                    ? redemptionRepository.findByStateOrderByDateDesc(state)
+                    : redemptionRepository.findAllByOrderByDateDesc();
+        } else if (securityUtils.isCliente()) {
+            ClientEntity client = securityUtils.getCurrentClient();
+            if (client == null) {
+                throw new EntityNotFoundException("Client not found");
+            }
+            redemptions = (state != null)
+                    ? redemptionRepository.findByClientAndState(client, state)
+                    : redemptionRepository.findByClientOrderByDateDesc(client);
+        } else {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        return redemptions.stream().map(responseMapper::toDto).toList();
+    }
+
+    @Override
+    public RedemptionResponse getById(UUID externalId) {
+        RedemptionEntity redemption = redemptionRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
+
+        if (securityUtils.isAdmin()) {
+            return responseMapper.toDto(redemption);
+        }
+
+        if (securityUtils.isCliente()) {
+            ClientEntity client = securityUtils.getCurrentClient();
+            if (client == null || !client.getExternalId().equals(redemption.getClient().getExternalId())) {
+                throw new AccessDeniedException("You can only view your own redemptions");
+            }
+            return responseMapper.toDto(redemption);
+        }
+
+        throw new AccessDeniedException("Access denied");
     }
 
     @Override
@@ -174,26 +211,12 @@ public class RedemptionService implements IRedemptionService {
     @Override
     public List<RedemptionResponse> getAllByClient(UUID clientExternalId) {
 
-        ClientEntity client;
-
-
-        if(securityUtils.isAdmin()){
-            client = clientRepository.findByExternalId(clientExternalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-        } else {
-            String currentUser = securityUtils.getCurrentUsername();
-            client = clientRepository.findByExternalIdAndUser_Credentials_Username(clientExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the history of this client"));
-        }
+        ClientEntity client = clientRepository.findByExternalId(clientExternalId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         return redemptionRepository.findByClientOrderByDateDesc(client).stream()
                 .map(responseMapper::toDto)
                 .toList();
     }
-
-
-
-
-
 
 }

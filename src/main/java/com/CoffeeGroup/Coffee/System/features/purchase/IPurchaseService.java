@@ -12,7 +12,7 @@ import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchase
 public interface IPurchaseService {
     PurchaseResponse create(CreatePurchaseRequest request);
 
-    List<PurchaseResponse> findAll();
+    List<PurchaseResponse> findAll(PurchaseStatus status, Date from, Date to);
 
     PurchaseResponse getById(UUID externalId);
 

@@ -27,10 +27,10 @@ public class CartController {
 
     private final ICartService cartService;
 
-    @GetMapping("/{cafeExternalId}")
+    @GetMapping("/myCart")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    ResponseEntity<CartResponse> getMyCart(@PathVariable UUID cafeExternalId) {
-        return ResponseEntity.ok(cartService.getMyCart(cafeExternalId));
+    ResponseEntity<List<CartResponse>> getMyCart() {
+        return ResponseEntity.ok(cartService.getMyCart());
     }
 
     @PostMapping("/{cafeExternalId}/items")
@@ -41,18 +41,16 @@ public class CartController {
         return new ResponseEntity<>(cartService.addItem(cafeExternalId, request), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{cafeExternalId}/items/{productExternalId}")
+    @DeleteMapping("/items/{productExternalId}")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    ResponseEntity<CartResponse> removeItem(
-            @PathVariable UUID cafeExternalId,
-            @PathVariable UUID productExternalId) {
-        return ResponseEntity.ok(cartService.removeItem(cafeExternalId, productExternalId));
+    ResponseEntity<CartResponse> removeItem(@PathVariable UUID productExternalId) {
+        return ResponseEntity.ok(cartService.removeItem(productExternalId));
     }
 
-    @DeleteMapping("/{cafeExternalId}")
+    @DeleteMapping("/clear")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    ResponseEntity<Void> clearCart(@PathVariable UUID cafeExternalId) {
-        cartService.clearCart(cafeExternalId);
+    ResponseEntity<Void> clearCart() {
+        cartService.clearCart();
         return ResponseEntity.noContent().build();
     }
 

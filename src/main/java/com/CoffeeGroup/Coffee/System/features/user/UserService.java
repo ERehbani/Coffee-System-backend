@@ -83,9 +83,9 @@ public class UserService implements IUserService {
 
         credentialsRepository.save(credentials);
 
-        clientService.create(request.name(), savedUser);
+        var clientEntity = clientService.create(request.name(), savedUser);
 
-        return userMapper.toResponse(savedUser);
+        return userMapper.toResponse(savedUser, clientEntity.getExternalId());
     }
 
     @Override
