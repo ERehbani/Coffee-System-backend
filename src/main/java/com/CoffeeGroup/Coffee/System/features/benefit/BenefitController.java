@@ -41,7 +41,6 @@ public class BenefitController {
         return ResponseEntity.ok(benefitService.getAll());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{externalId}")
     ResponseEntity<BenefitResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(benefitService.findById(externalId));

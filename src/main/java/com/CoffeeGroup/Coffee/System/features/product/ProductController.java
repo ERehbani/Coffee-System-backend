@@ -59,12 +59,6 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @GetMapping("/cafes/{cafeId}/{productId}")
-    ResponseEntity<ProductResponse> getProductByCafe(@PathVariable UUID productId, @PathVariable UUID cafeId){
-        return ResponseEntity.ok(productService.getById(productId));
-    }
-
     @GetMapping("/cafes/{cafeId}")
     ResponseEntity<List<ProductResponse>> getAllProductsByCafe(@PathVariable UUID cafeId){
         return ResponseEntity.ok(productService.getAllByCafe(cafeId));

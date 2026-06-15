@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
-import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.UpdatePurchaseStatusRequest;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -38,9 +36,12 @@ public class PurchaseController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
-    ResponseEntity<List<PurchaseResponse>> findAll() {
-        return ResponseEntity.ok(purchaseService.findAll());
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
+    ResponseEntity<List<PurchaseResponse>> findAll(
+            @RequestParam(required = false) PurchaseStatus status,
+            @RequestParam(required = false) Date from,
+            @RequestParam(required = false) Date to) {
+        return ResponseEntity.ok(purchaseService.findAll(status, from, to));
     }
 
     @GetMapping("/{externalId}")
@@ -49,13 +50,6 @@ public class PurchaseController {
         return ResponseEntity.ok(purchaseService.getById(externalId));
     }
 
-    @PatchMapping("/{externalId}/status")
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    ResponseEntity<PurchaseResponse> updateStatus(
-            @PathVariable UUID externalId,
-            @Valid @RequestBody UpdatePurchaseStatusRequest request) {
-        return ResponseEntity.ok(purchaseService.updateStatus(externalId, request));
-    }
 
     @GetMapping("/cafe/{cafeId}/history")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")

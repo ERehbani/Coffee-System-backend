@@ -52,15 +52,17 @@ public class PurchaseService implements IPurchaseService{
         ClientEntity client = securityUtils.getCurrentClient();
         if (client == null) throw new EntityNotFoundException("Client not found");
 
-        CafeEntity cafe = cafeRepository.findByExternalId(request.cafeId())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
+        CartEntity cart = cartRepository.findByExternalId(request.cartId())
                 .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+
+        if (!cart.getClient().getExternalId().equals(client.getExternalId())) {
+            throw new AccessDeniedException("Access denied: You can only create purchases from your own cart");
+        }
 
         if (cart.getItems() == null || cart.getItems().isEmpty())
             throw new CartHasNoProductsException("Cart cannot be empty");
 
+        CafeEntity cafe = cart.getCafeEntity();
         PurchaseEntity purchase = buildPurchase(client, cart, cafe);
 
         List<PurchaseDetailEntity> details = new ArrayList<>();
@@ -118,11 +120,63 @@ public class PurchaseService implements IPurchaseService{
     }
 
     @Override
-    public List<PurchaseResponse> findAll() {
-        return purchaseRepository.findAll()
-                .stream()
+    public List<PurchaseResponse> findAll(PurchaseStatus status, Date from, Date to) {
+        List<PurchaseEntity> purchases;
+
+        if (securityUtils.isAdmin()) {
+            purchases = findAllFiltered(status, from, to);
+        } else if (securityUtils.isCafeteria()) {
+            CafeEntity cafe = securityUtils.getCurrentCafe();
+            if (cafe == null) {
+                throw new EntityNotFoundException("Cafe not found for current user");
+            }
+            purchases = findByCafeFiltered(cafe, status, from, to);
+        } else if (securityUtils.isCliente()) {
+            ClientEntity client = securityUtils.getCurrentClient();
+            if (client == null) {
+                throw new EntityNotFoundException("Client not found");
+            }
+            purchases = findByClientFiltered(client, status, from, to);
+        } else {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        return purchases.stream()
                 .map(purchaseMapper::toResponse)
                 .toList();
+    }
+
+    private List<PurchaseEntity> findAllFiltered(PurchaseStatus status, Date from, Date to) {
+        if (status != null && from != null && to != null) {
+            return purchaseRepository.findByStatusAndDateBetween(status, from, to);
+        } else if (status != null) {
+            return purchaseRepository.findByStatus(status);
+        } else if (from != null && to != null) {
+            return purchaseRepository.findByDateBetween(from, to);
+        }
+        return purchaseRepository.findAll();
+    }
+
+    private List<PurchaseEntity> findByCafeFiltered(CafeEntity cafe, PurchaseStatus status, Date from, Date to) {
+        if (status != null && from != null && to != null) {
+            return purchaseRepository.findByCafeAndStatusAndDateBetween(cafe, status, from, to);
+        } else if (status != null) {
+            return purchaseRepository.findByCafeAndStatus(cafe, status);
+        } else if (from != null && to != null) {
+            return purchaseRepository.findByCafeAndDateBetween(cafe, from, to);
+        }
+        return purchaseRepository.findByCafe(cafe);
+    }
+
+    private List<PurchaseEntity> findByClientFiltered(ClientEntity client, PurchaseStatus status, Date from, Date to) {
+        if (status != null && from != null && to != null) {
+            return purchaseRepository.findByClientAndStatusAndDateBetween(client, status, from, to);
+        } else if (status != null) {
+            return purchaseRepository.findByClientAndStatus(client, status);
+        } else if (from != null && to != null) {
+            return purchaseRepository.findByClientAndDateBetween(client, from, to);
+        }
+        return purchaseRepository.findByClient(client);
     }
 
     @Override
@@ -137,12 +191,15 @@ public class PurchaseService implements IPurchaseService{
                     throw new AccessDeniedException("You can only view your own purchases");
                 }
             } else if (securityUtils.isCafeteria()) {
-                String currentUser = securityUtils.getCurrentUsername();
-                CafeEntity cafe = cafeRepository.findByUser_Credentials_Username(currentUser)
-                        .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                CafeEntity cafe = securityUtils.getCurrentCafe();
+                if (cafe == null) {
+                    throw new EntityNotFoundException("Cafe not found for current user");
+                }
                 if (!cafe.getExternalId().equals(purchase.getCafe().getExternalId())) {
                     throw new AccessDeniedException("You can only view purchases from your own cafe");
                 }
+            } else {
+                throw new AccessDeniedException("Access denied");
             }
         }
 

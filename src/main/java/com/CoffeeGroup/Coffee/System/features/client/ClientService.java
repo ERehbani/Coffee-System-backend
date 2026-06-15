@@ -3,7 +3,6 @@ package com.CoffeeGroup.Coffee.System.features.client;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -71,7 +70,7 @@ public class ClientService implements IClientService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assert auth != null;
         boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
 
         ClientEntity client;
         if (isAdmin) {
@@ -89,15 +88,25 @@ public class ClientService implements IClientService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assert auth != null;
         boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
 
         ClientEntity client;
         if (isAdmin) {
             client = clientRepository.findByExternalId(externalId)
                     .orElseThrow(() -> new EntityNotFoundException("Client not found"));
         } else {
-            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
-                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+            String username = auth.getName();
+            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, username)
+                    .orElse(null);
+            
+            if (client == null) {
+                // Try to find client by externalId first to see if it exists
+                var clientById = clientRepository.findByExternalId(externalId);
+                if (clientById.isPresent()) {
+                    throw new AccessDeniedException("Access denied: You can only update your own client data");
+                }
+                throw new EntityNotFoundException("Client not found with externalId: " + externalId);
+            }
         }
 
         if (request.name() != null) {
@@ -106,20 +115,6 @@ public class ClientService implements IClientService {
 
         if (request.profilePhoto() != null) {
             client.setProfilePhoto(request.profilePhoto());
-        }
-
-        if (request.tierExternalId() != null) {
-            TierEntity tier = tierRepository.findByExternalId(request.tierExternalId())
-                    .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
-
-            client.setTier(tier);
-        }
-
-        if (request.userExternalId() != null) {
-            UserEntity user = userRepository.findByExternalId(request.userExternalId())
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-            client.setUser(user);
         }
 
         ClientEntity clientUpdated = clientRepository.save(client);

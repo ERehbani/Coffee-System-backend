@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.auth.config.securityconfig;
 
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
 
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SecurityUtils {
         private final ClientRepository clientRepository;
+        private final CafeRepository cafeRepository;
 
         public boolean isAdmin() {
             return hasRole("ROLE_SUPERADMIN");
@@ -34,6 +37,12 @@ public class SecurityUtils {
         public ClientEntity getCurrentClient() {
             String username = getCurrentUsername();
             return clientRepository.findByUser_Credentials_Username(username)
+                    .orElse(null);
+        }
+
+        public CafeEntity getCurrentCafe() {
+            String username = getCurrentUsername();
+            return cafeRepository.findByUser_Credentials_Username(username)
                     .orElse(null);
         }
 

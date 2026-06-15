@@ -52,17 +52,17 @@ public class CafeService implements ICafeService {
     public CafeResponse getById(UUID externalId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+        boolean isCafe = auth.getAuthorities().stream()
+                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_CAFETERIA"));
 
         CafeEntity cafe;
-        if (isAdmin) {
-            cafe = cafeRepository.findByExternalId(externalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        } else {
+        if (isCafe) {
             cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
                     .orElseThrow(() -> new AccessDeniedException("Access denied"));
+            return mapper.toResponse(cafe);
         }
+        cafe = cafeRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
         return mapper.toResponse(cafe);
     }
 
@@ -132,8 +132,8 @@ public class CafeService implements ICafeService {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
 
-        // If not admin and state is not provided, default to active cafes only
-        if (!isAdmin && state == null) {
+        // If not admin, ignore state parameter and default to active cafes only
+        if (!isAdmin) {
             state = true;
         }
 

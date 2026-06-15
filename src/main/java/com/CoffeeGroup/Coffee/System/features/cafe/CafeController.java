@@ -58,13 +58,13 @@ public class CafeController {
         return ResponseEntity.ok(service.getAll());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+//    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{externalId}")
     ResponseEntity<CafeResponse> getByExternalId(@PathVariable UUID externalId){
         return ResponseEntity.ok(service.getById(externalId));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping("/filter")
     ResponseEntity<List<CafeResponse>> filterCafes(@RequestParam(required = false) String name,
                                                    @RequestParam(required = false) String address,

@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreatePurchaseRequest(
-        @NotNull(message = "Cafe ID is required")
-        UUID cafeId,
+        @NotNull(message = "Cart ID is required")
+        UUID cartId,
 
         String validationCode
 ) {
