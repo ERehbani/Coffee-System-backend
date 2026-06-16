@@ -15,75 +15,102 @@ import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateReque
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/benefits")
 @RequiredArgsConstructor
+@Tag(name = "Benefits", description = "Endpoints for managing benefits and rewards")
 public class BenefitController {
 
     private final IBenefitService benefitService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping
+    @Operation(summary = "Create benefit", description = "Creates a new benefit for a cafeteria")
+    @ApiResponses
     ResponseEntity<BenefitResponse> create(@Valid @RequestBody BenefitCreateRequest CreateRequest){
         return new ResponseEntity<>(benefitService.save(CreateRequest),HttpStatus.CREATED);
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @DeleteMapping("/{externalId}")
-    ResponseEntity<BenefitResponse> delete(@PathVariable UUID externalId){
+    @Operation(summary = "Delete benefit", description = "Deletes a benefit by its external ID")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> delete(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId){
         benefitService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA','ROLE_CLIENTE')")
     @GetMapping
+    @Operation(summary = "List all benefits", description = "Retrieves all benefits in the system")
+    @ApiResponses
     ResponseEntity<List<BenefitResponse>> listAll(){
         return ResponseEntity.ok(benefitService.getAll());
     }
 
     @GetMapping("/{externalId}")
-    ResponseEntity<BenefitResponse> getById(@PathVariable UUID externalId) {
+    @Operation(summary = "Get benefit by ID", description = "Retrieves a specific benefit by its external ID")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> getById(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId) {
         return ResponseEntity.ok(benefitService.findById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/publish")
-    ResponseEntity<BenefitResponse> publishBenefit(@PathVariable UUID externalId){
+    @Operation(summary = "Publish benefit", description = "Publishes a benefit making it available to clients")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> publishBenefit(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId){
         return ResponseEntity.ok(benefitService.confirmBenefit(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/cancel")
-    ResponseEntity<BenefitResponse> cancelBenefit(@PathVariable UUID externalId){
+    @Operation(summary = "Cancel benefit", description = "Cancels a benefit making it unavailable")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> cancelBenefit(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId){
         return ResponseEntity.ok(benefitService.cancelBenefit(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @PostMapping("/{externalId}/changeEndDate")
-    ResponseEntity<BenefitResponse> changeEnd(@PathVariable UUID externalId, @Valid @RequestBody NewEndDateRequest newEndDate){
+    @Operation(summary = "Change benefit end date", description = "Updates the end date of a benefit")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> changeEnd(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId, @Valid @RequestBody NewEndDateRequest newEndDate){
        return ResponseEntity.ok(benefitService.changeEndDate(externalId,newEndDate));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/cafes/{cafeId}/filter")
+    @Operation(summary = "Filter benefits by cafe", description = "Filters benefits for a specific cafeteria by various criteria")
+    @ApiResponses
     ResponseEntity<List<BenefitResponse>> filterBenefits(
-            @PathVariable UUID cafeId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) Boolean status,
-            @RequestParam(required = false) Boolean isPublic,
-            @RequestParam(required = false) BenefitType type) {
+            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
+            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) Boolean status,
+            @Parameter(description = "Filter by public visibility") @RequestParam(required = false) Boolean isPublic,
+            @Parameter(description = "Filter by benefit type") @RequestParam(required = false) BenefitType type) {
         return ResponseEntity.ok(benefitService.filterBenefitsByCafe(cafeId, name, status, isPublic, type));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/cafes/{cafeId}")
-    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@PathVariable UUID cafeId){
+    @Operation(summary = "Get benefits by cafe", description = "Retrieves all benefits for a specific cafeteria")
+    @ApiResponses
+    ResponseEntity<List<BenefitResponse>> getBenefitsByCafe(@Parameter(description = "Cafe external ID") @PathVariable UUID cafeId){
         return ResponseEntity.ok(benefitService.getAllByCafe(cafeId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/cafes/{cafeId}/{benefitId}")
-    ResponseEntity<BenefitResponse> getBenefitByCafe(@PathVariable UUID cafeId, @PathVariable UUID benefitId){
+    @Operation(summary = "Get specific benefit by cafe", description = "Retrieves a specific benefit for a cafeteria")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> getBenefitByCafe(@Parameter(description = "Cafe external ID") @PathVariable UUID cafeId, @Parameter(description = "Benefit external ID") @PathVariable UUID benefitId){
         return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
 
@@ -93,20 +120,24 @@ public class BenefitController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/cafes/{cafeId}/available/filter")
+    @Operation(summary = "Filter available benefits", description = "Filters available benefits for clients by various criteria")
+    @ApiResponses
     ResponseEntity<List<BenefitResponse>> filterAvailableBenefits(
-            @PathVariable UUID cafeId,
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) BenefitType type,
-            @RequestParam(required = false) Integer maxPoints) {
+            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
+            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
+            @Parameter(description = "Filter by benefit type") @RequestParam(required = false) BenefitType type,
+            @Parameter(description = "Filter by maximum points required") @RequestParam(required = false) Integer maxPoints) {
         return ResponseEntity.ok(benefitService.filterAvailableBenefits(cafeId, name, type, maxPoints));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/global/filter")
+    @Operation(summary = "Filter global benefits", description = "Filters available global benefits across all cafeterias")
+    @ApiResponses
     ResponseEntity<List<BenefitResponse>> filterAvailableGlobalBenefits(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) BenefitType type,
-            @RequestParam(required = false) Integer maxPoints) {
+            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
+            @Parameter(description = "Filter by benefit type") @RequestParam(required = false) BenefitType type,
+            @Parameter(description = "Filter by maximum points required") @RequestParam(required = false) Integer maxPoints) {
         return ResponseEntity.ok(benefitService.filterAvailableGlobalBenefits(name, type, maxPoints));
     }
 }

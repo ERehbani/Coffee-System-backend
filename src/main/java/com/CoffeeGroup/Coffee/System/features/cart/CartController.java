@@ -20,35 +20,49 @@ import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/carts")
+@Tag(name = "Cart", description = "Endpoints for managing shopping cart")
 public class CartController {
 
     private final ICartService cartService;
 
     @GetMapping("/myCart")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @Operation(summary = "Get my cart", description = "Retrieves the current user's shopping cart")
+    @ApiResponses
     ResponseEntity<List<CartResponse>> getMyCart() {
         return ResponseEntity.ok(cartService.getMyCart());
     }
 
     @PostMapping("/{cafeExternalId}/items")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @Operation(summary = "Add item to cart", description = "Adds a product to the user's shopping cart")
+    @ApiResponses
     ResponseEntity<CartResponse> addItem(
-            @PathVariable UUID cafeExternalId,
+            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeExternalId,
             @Valid @RequestBody CartItemRequest request) {
         return new ResponseEntity<>(cartService.addItem(cafeExternalId, request), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/items/{productExternalId}")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    ResponseEntity<CartResponse> removeItem(@PathVariable UUID productExternalId) {
+    @Operation(summary = "Remove item from cart", description = "Removes a product from the user's shopping cart")
+    @ApiResponses
+    ResponseEntity<CartResponse> removeItem(@Parameter(description = "Product external ID") @PathVariable UUID productExternalId) {
         return ResponseEntity.ok(cartService.removeItem(productExternalId));
     }
 
     @DeleteMapping("/clear")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @Operation(summary = "Clear cart", description = "Clears all items from the user's shopping cart")
+    @ApiResponses
     ResponseEntity<Void> clearCart() {
         cartService.clearCart();
         return ResponseEntity.noContent().build();
