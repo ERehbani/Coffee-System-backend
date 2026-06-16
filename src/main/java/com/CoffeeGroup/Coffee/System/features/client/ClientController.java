@@ -20,9 +20,15 @@ import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/clients")
 @RequiredArgsConstructor
+@Tag(name = "Clients", description = "Endpoints for managing client profiles")
 public class ClientController {
     private final IClientService clientService;
 
@@ -32,32 +38,42 @@ public class ClientController {
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
+    @Operation(summary = "List all clients", description = "Retrieves all client profiles")
+    @ApiResponses
     public ResponseEntity<List<ClientResponse>> getAll() {
         return ResponseEntity.ok(clientService.findAll());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
-    public ResponseEntity<ClientResponse> getById(@PathVariable UUID externalId) {
+    @Operation(summary = "Get client by ID", description = "Retrieves a specific client by its external ID")
+    @ApiResponses
+    public ResponseEntity<ClientResponse> getById(@Parameter(description = "Client external ID") @PathVariable UUID externalId) {
         return ResponseEntity.ok(clientService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @PutMapping("/{externalId}")
-    public ResponseEntity<ClientResponse> update(@PathVariable UUID externalId, @Valid @RequestBody UpdateClientRequest request
+    @Operation(summary = "Update client", description = "Updates client profile information")
+    @ApiResponses
+    public ResponseEntity<ClientResponse> update(@Parameter(description = "Client external ID") @PathVariable UUID externalId, @Valid @RequestBody UpdateClientRequest request
     ) {
         return ResponseEntity.ok(clientService.update(externalId, request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    public ResponseEntity<Void> delete(@PathVariable UUID externalId) {
+    @Operation(summary = "Delete client", description = "Deletes a client by its external ID")
+    @ApiResponses
+    public ResponseEntity<Void> delete(@Parameter(description = "Client external ID") @PathVariable UUID externalId) {
         clientService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
     @GetMapping("/ViewMyPoints")
+    @Operation(summary = "View my points", description = "Retrieves the current user's loyalty points")
+    @ApiResponses
     public  ResponseEntity<ClientPointsResponse> viewMyPoints(){
         return ResponseEntity.ok(clientService.viewMyPoints());
     }
