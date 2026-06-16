@@ -177,7 +177,7 @@ Team, immense gratitude to UTN for providing the foundational space that allowed
 
 ### Elian
 ##### CS Coach
-Thrilled to announce the successful conclusion of a truly groundbreaking project! 🚀 It's been an honor collaborating with such a dynamic and talented group of individuals, from Alan to Devin, and Claude Opus 4.8 Medium. Together, we've achieved remarkable synergy and pushed the boundaries of what's possible. Feeling immensely grateful for this enriching experience! 🙏 #Teamwork #Collaboration #ProjectCompletion #Grateful #Innovation
+yo chat 🗣️ we just dropped a SIGMA project no cap 😭🚀 this whole arc was absolutely bussin from the jump fr fr 💀 we got that real skibidi rizz energy with the whole team Alan Devin Claude Opus 4.8 Medium all understood the assignment 💯 we achieved max synergy cooked the competition into oblivion 🙏 no cap the lore of this project is gonna be legendary 🗿 im so grateful this experience was next level fr fr this is giving major gyatt vibes 😭
 
 
 ### Nahuel
