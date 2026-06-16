@@ -257,6 +257,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         BenefitTypeEntity pointsType = createBenefitType(
                 BenefitType.PRODUCTO_POR_PUNTOS, null, cafeCentral, capuccino);
 
+        ProductEntity medialuna = productRepository.findByName("Medialuna").orElse(null);
+
         createBenefit(
                 "Descuento 15% bienvenida", "Descuento de bienvenida para socios",
                 500, discountType, bronceTier, null,
@@ -266,6 +268,15 @@ public class DatabaseInitializer implements CommandLineRunner {
                 "Capuccino por puntos", "Cambia tus puntos por un capuccino",
                 300, pointsType, bronceTier, cafeCentral,
                 GlobalBenefit.CAFFETERIA_BENEFIT);
+
+        if (medialuna != null) {
+            BenefitTypeEntity dosPorUnoType = createBenefitType(
+                    BenefitType.DOS_POR_UNO, null, null, medialuna);
+            createBenefit(
+                    "2x1 Medialunas", "Lleva 2 medialunas y paga solo 1",
+                    200, dosPorUnoType, bronceTier, null,
+                    GlobalBenefit.GLOBAL_BENEFIT);
+        }
     }
 
     private CafeEntity createCafeIfNotExists(
