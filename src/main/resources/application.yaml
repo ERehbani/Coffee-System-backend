@@ -22,3 +22,6 @@ app:
   superadmin:
     email: ${SUPERADMIN_EMAIL}
     password: ${SUPERADMIN_PASSWORD}
+
+resend:
+  apikey: ${RESEND_APIKEY}

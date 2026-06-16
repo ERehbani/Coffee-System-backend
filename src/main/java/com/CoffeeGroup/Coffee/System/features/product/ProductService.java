@@ -1,6 +1,5 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.common.email.EmailService;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ProductService implements IProductService{
+public class ProductService implements IProductService {
     private final IProductRepository productRepository;
     private final IMapper<ProductEntity, ProductResponse> productMapper;
     private final CafeRepository cafeRepository;
@@ -49,7 +49,6 @@ public class ProductService implements IProductService{
         }
     }
 
-
     @Override
     public ProductResponse getById(UUID productExternalId) {
         ProductEntity entity = productRepository.findByExternalId(productExternalId)
@@ -69,7 +68,8 @@ public class ProductService implements IProductService{
             CafeEntity userCafe = cafeRepository.findByUser_Credentials_Username(currentUser)
                     .orElseThrow(() -> new EntityNotFoundException("Cafe not found for current user"));
             if (!cafe.getExternalId().equals(userCafe.getExternalId())) {
-                throw new AccessDeniedException("Access denied: You do not have permission to view the products of this coffee shop");
+                throw new AccessDeniedException(
+                        "Access denied: You do not have permission to view the products of this coffee shop");
             }
             return productMapper.toDto(entity);
         }
@@ -98,13 +98,16 @@ public class ProductService implements IProductService{
         ProductEntity product = productRepository.findByExternalId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product", "Product not found", "productId", productId));
 
-        if(requestBody.name() != null && !requestBody.name().isBlank()) product.setName(requestBody.name());
-        if(requestBody.description() != null && !requestBody.description().isBlank()) product.setDescription(requestBody.description());
-        if(requestBody.price() != null) product.setPrice(requestBody.price());
-        if (requestBody.awardedPoints() != null && requestBody.awardedPoints() >= 50) product.setAwardedPoints(requestBody.awardedPoints());
+        if (requestBody.name() != null && !requestBody.name().isBlank())
+            product.setName(requestBody.name());
+        if (requestBody.description() != null && !requestBody.description().isBlank())
+            product.setDescription(requestBody.description());
+        if (requestBody.price() != null)
+            product.setPrice(requestBody.price());
+        if (requestBody.awardedPoints() != null && requestBody.awardedPoints() >= 50)
+            product.setAwardedPoints(requestBody.awardedPoints());
         return productMapper.toDto(productRepository.save(product));
     }
-
 
     @Override
     public void delete(UUID productId) {
@@ -135,7 +138,8 @@ public class ProductService implements IProductService{
         } else if (securityUtils.isCafeteria()) {
             String currentUser = securityUtils.getCurrentUsername();
             cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You can only view products from your own cafe"));
+                    .orElseThrow(() -> new AccessDeniedException(
+                            "Access denied: You can only view products from your own cafe"));
         } else {
             throw new AccessDeniedException("Access denied");
         }
@@ -146,7 +150,8 @@ public class ProductService implements IProductService{
     }
 
     @Override
-    public List<ProductResponse> filterProductsByCafe(UUID cafeExternalId, String name, BigDecimal price, Integer awardedPoints) {
+    public List<ProductResponse> filterProductsByCafe(UUID cafeExternalId, String name, BigDecimal price,
+            Integer awardedPoints) {
 
         CafeEntity cafe;
         if (securityUtils.isAdmin() || securityUtils.isCliente()) {
@@ -155,7 +160,8 @@ public class ProductService implements IProductService{
         } else if (securityUtils.isCafeteria()) {
             String currentUser = securityUtils.getCurrentUsername();
             cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You can only view products from your own cafe"));
+                    .orElseThrow(() -> new AccessDeniedException(
+                            "Access denied: You can only view products from your own cafe"));
         } else {
             throw new AccessDeniedException("Access denied");
         }
@@ -167,12 +173,12 @@ public class ProductService implements IProductService{
                 .toList();
     }
 
-
-    private List<ProductEntity> getFilteredProducts(CafeEntity cafe, String name, BigDecimal price, Integer awardedPoints) {
-
+    private List<ProductEntity> getFilteredProducts(CafeEntity cafe, String name, BigDecimal price,
+            Integer awardedPoints) {
 
         if (name != null && price != null && awardedPoints != null) {
-            return productRepository.findByCafeAndNameContainingIgnoreCaseAndPriceAndAwardedPoints(cafe, name, price, awardedPoints);
+            return productRepository.findByCafeAndNameContainingIgnoreCaseAndPriceAndAwardedPoints(cafe, name, price,
+                    awardedPoints);
         }
 
         if (name != null && price != null) {
@@ -201,16 +207,5 @@ public class ProductService implements IProductService{
 
         return productRepository.findByCafe(cafe);
     }
-
-
-
-
-
-
-
-
-
-
-
 
 }

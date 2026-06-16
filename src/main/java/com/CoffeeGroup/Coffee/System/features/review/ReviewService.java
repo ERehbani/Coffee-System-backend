@@ -81,4 +81,10 @@ public class ReviewService implements IReviewService {
     public List<ReviewResponse> getAll() {
         return reviewRepository.findAll().stream().map(MapReviewResponse::toDto).toList();
     }
+
+    @Override
+    public List<ReviewResponse> getByCafe(UUID cafeExternalId) {
+        return reviewRepository.findByCafeExternalId(cafeExternalId).stream()
+                .map(MapReviewResponse::toDto).toList();
+    }
 }

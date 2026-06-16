@@ -40,6 +40,11 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAll());
     }
 
+    @GetMapping("/cafe/{cafeExternalId}")
+    ResponseEntity<List<ReviewResponse>> getByCafe(@PathVariable UUID cafeExternalId) {
+        return ResponseEntity.ok(reviewService.getByCafe(cafeExternalId));
+    }
+
     @GetMapping("/{externalId}")
     ResponseEntity<ReviewResponse> getById(@PathVariable UUID externalId) {
         return ResponseEntity.ok(reviewService.getById(externalId));
