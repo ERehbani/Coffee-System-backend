@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.CartItem;
@@ -14,6 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.common.email.EmailService;
 import com.CoffeeGroup.Coffee.System.common.exceptions.CartHasNoProductsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
@@ -46,6 +48,7 @@ public class PurchaseService implements IPurchaseService{
     private final IRedemptionRepository redemptionRepository;
     private final PurchaseMapper purchaseMapper;
     private final SecurityUtils securityUtils;
+    private final EmailService emailService;
 
     @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
@@ -83,9 +86,11 @@ public class PurchaseService implements IPurchaseService{
             if (!redemption.getState())
                 throw new IllegalStateException("Code already used");
 
-            if (redemption.getBenefit().getCafeEntity() == null ||
-                    !redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId()))
-                throw new IllegalArgumentException("This code does not belong to this cafe");
+            if (!redemption.getBenefit().getIsGlobal().equals(GlobalBenefit.GLOBAL_BENEFIT)) {
+                if (redemption.getBenefit().getCafeEntity() == null ||
+                        !redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId()))
+                    throw new IllegalArgumentException("This code does not belong to this cafe");
+            }
 
             BenefitTypeEntity type = redemption.getBenefit().getBenefitType();
 
@@ -94,7 +99,7 @@ public class PurchaseService implements IPurchaseService{
                     double descuento = type.getPorcentajeDescuento() / 100.0;
                     totalPrice = totalPrice.multiply(BigDecimal.valueOf(1 - descuento));
                 }
-                case DOS_POR_UNO -> {
+                case DOS_POR_UNO, PRODUCTO_POR_PUNTOS, PRODUCTO_GRATIS_SOCIO -> {
                     ProductEntity freeProduct = type.getProduct();
                     details.add(buildPurchaseDetail(purchase, freeProduct, 1));
                 }
@@ -115,7 +120,7 @@ public class PurchaseService implements IPurchaseService{
         cart.getItems().clear();
         cart.setTotalPrice(BigDecimal.ZERO);
         cartRepository.save(cart);
-
+        emailService.sendPurchaseConfirmation("Purchase created", client.getName(), purchase.getExternalId(), totalPrice, details);
         return purchaseMapper.toResponse(purchase);
     }
 

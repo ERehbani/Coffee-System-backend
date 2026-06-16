@@ -18,4 +18,6 @@ public interface IReviewService {
     void deleteById(UUID externalId);
 
     List<ReviewResponse> getAll();
+
+    List<ReviewResponse> getByCafe(UUID cafeExternalId);
 }
