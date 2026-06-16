@@ -94,12 +94,22 @@ public class PurchaseService implements IPurchaseService{
 
             BenefitTypeEntity type = redemption.getBenefit().getBenefitType();
 
+
             switch (type.getName()) {
                 case CODIGO_DESCUENTO -> {
                     double descuento = type.getPorcentajeDescuento() / 100.0;
                     totalPrice = totalPrice.multiply(BigDecimal.valueOf(1 - descuento));
                 }
-                case DOS_POR_UNO, PRODUCTO_POR_PUNTOS, PRODUCTO_GRATIS_SOCIO -> {
+                case DOS_POR_UNO -> {
+                    ProductEntity targetProduct = type.getProduct();
+                    int freeUnits = details.stream()
+                            .filter(d -> d.getProduct().getExternalId().equals(targetProduct.getExternalId()))
+                            .mapToInt(d -> d.getAmount() / 2)
+                            .sum();
+                    BigDecimal discount = targetProduct.getPrice().multiply(BigDecimal.valueOf(freeUnits));
+                    totalPrice = totalPrice.subtract(discount);
+                }
+                case PRODUCTO_POR_PUNTOS, PRODUCTO_GRATIS_SOCIO -> {
                     ProductEntity freeProduct = type.getProduct();
                     details.add(buildPurchaseDetail(purchase, freeProduct, 1));
                 }
