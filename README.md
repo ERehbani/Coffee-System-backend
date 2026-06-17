@@ -11,7 +11,7 @@ Coffee System es una API REST construida con Spring Boot. El flujo principal es 
 - Cada compra otorga puntos al cliente segun los productos adquiridos.
 - Los puntos acumulados ubican al cliente en un nivel de fidelizacion (tier).
 - Los clientes canjean sus puntos por beneficios, que pueden ser globales o propios de una cafeteria.
-- Los clientes pueden dejar resenas sobre las cafeterias.
+- Los clientes pueden dejar reseñas sobre las cafeterias.
 
 ## Tecnologias
 
