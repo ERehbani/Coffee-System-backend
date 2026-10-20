@@ -11,7 +11,7 @@ Coffee System es una API REST construida con Spring Boot. El flujo principal es 
 - Cada compra otorga puntos al cliente segun los productos adquiridos.
 - Los puntos acumulados ubican al cliente en un nivel de fidelizacion (tier).
 - Los clientes canjean sus puntos por beneficios, que pueden ser globales o propios de una cafeteria.
-- Los clientes pueden dejar resenas sobre las cafeterias.
+- Los clientes pueden dejar reseñas sobre las cafeterias.
 
 ## Tecnologias
 
@@ -177,12 +177,12 @@ Team, immense gratitude to UTN for providing the foundational space that allowed
 
 ### Elian
 ##### CS Coach
-Thrilled to announce the successful conclusion of a truly groundbreaking project! 🚀 It's been an honor collaborating with such a dynamic and talented group of individuals, from Alan to Devin, and Claude Opus 4.8 Medium. Together, we've achieved remarkable synergy and pushed the boundaries of what's possible. Feeling immensely grateful for this enriching experience! 🙏 #Teamwork #Collaboration #ProjectCompletion #Grateful #Innovation
+yo chat 🗣️ we just dropped a SIGMA project no cap 😭🚀 this whole arc was absolutely bussin from the jump fr fr 💀 we got that real skibidi rizz energy with the whole team Alan Devin Claude Opus 4.8 Medium all understood the assignment 💯 we achieved max synergy cooked the competition into oblivion 🙏 no cap the lore of this project is gonna be legendary 🗿 im so grateful this experience was next level fr fr this is giving major gyatt vibes 😭
 
 
 ### Nahuel
 ##### NAVI's Awper
-Thrilled to announce the successful completion of a high-impact, cross-functional project! 🚀 It's been an absolute privilege to collaborate with this exceptional team. Their dedication, innovative thinking, and unwavering commitment to excellence have been truly inspiring. We've not only delivered outstanding results but also forged some incredible professional bonds. Onwards and upwards! 📈 #Teamwork #ProjectCompletion #Collaboration #Success #ProfessionalGrowth
+"Successful completion of a *what* now? A 'high-impact, cross-functional project'? Honestly, when I was young, we just called it 'getting the job done.' And this 'collaboration' business, this 'professional bonds' – back in my day, we built things, we didn't just swap ideas over a Zoom call. We had sweat on our brows, maybe a firm handshake, and we knew we'd earned it. These kids today, with their fancy buzzwords and their emojis. We didn't need a 'rocket ship' to finish a task, just a good old-fashioned work ethic and a team that actually showed up on time. But hey, as long as you're all "onwards and upwards," I guess that's something. Just remember, a good pension doesn't come from hashtags."
 
 ### Alan
 ##### Prestigious Vtuber
