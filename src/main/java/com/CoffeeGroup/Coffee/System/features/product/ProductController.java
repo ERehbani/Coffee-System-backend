@@ -69,7 +69,7 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @DeleteMapping("/{productId}")
-    @Operation(summary = "Delete product", description = "Deletes a product by its ID")
+    @Operation(summary = "Delete product", description = "Deactivates a product by its ID (logical delete, the product is kept for purchase history)")
     @ApiResponses
     public ResponseEntity<Void> delete(@Parameter(description = "Product external ID") @PathVariable UUID productId){
         productService.delete(productId);

@@ -154,7 +154,9 @@ public class ProductService implements IProductService {
             }
         }
 
-        productRepository.delete(entity);
+        // Logical delete: purchase_details.product_id is a NOT NULL FK, so sold products cannot be removed
+        entity.setState(false);
+        productRepository.save(entity);
     }
 
     @Override
@@ -174,9 +176,7 @@ public class ProductService implements IProductService {
             throw new AccessDeniedException("Access denied");
         }
 
-        return productRepository.findByCafe(cafe).stream()
-                .map(productMapper::toDto)
-                .toList();
+        return toVisibleResponses(productRepository.findByCafe(cafe));
     }
 
     @Override
@@ -196,9 +196,14 @@ public class ProductService implements IProductService {
             throw new AccessDeniedException("Access denied");
         }
 
-        List<ProductEntity> filteredProducts = getFilteredProducts(cafe, name, price, awardedPoints);
+        return toVisibleResponses(getFilteredProducts(cafe, name, price, awardedPoints));
+    }
 
-        return filteredProducts.stream()
+    /** Clients only see active products; admins and the owning cafe see everything. */
+    private List<ProductResponse> toVisibleResponses(List<ProductEntity> products) {
+        boolean onlyActive = securityUtils.isCliente();
+        return products.stream()
+                .filter(product -> !onlyActive || Boolean.TRUE.equals(product.getState()))
                 .map(productMapper::toDto)
                 .toList();
     }

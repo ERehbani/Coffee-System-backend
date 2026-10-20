@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -230,5 +231,158 @@ class ProductServiceTest {
                 .isInstanceOf(EntityNotFoundException.class);
 
         verify(productRepository, never()).save(any());
+    }
+
+    // --- logical delete ---
+
+    @Test
+    void deleteByOwnerCafeDeactivatesTheProductInsteadOfRemovingIt() {
+        ProductEntity product = existingProduct(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(securityUtils.isCafeteria()).thenReturn(true);
+        when(securityUtils.getCurrentCafe()).thenReturn(cafe);
+
+        service.delete(product.getExternalId());
+
+        assertThat(product.getState()).isFalse();
+        verify(productRepository).save(product);
+        verify(productRepository, never()).delete(any(ProductEntity.class));
+    }
+
+    @Test
+    void deleteByAnotherCafeIsDeniedAndKeepsTheProductActive() {
+        CafeEntity otherCafe = CafeEntity.builder().externalId(UUID.randomUUID()).build();
+        ProductEntity product = existingProduct(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(securityUtils.isCafeteria()).thenReturn(true);
+        when(securityUtils.getCurrentCafe()).thenReturn(otherCafe);
+
+        assertThatThrownBy(() -> service.delete(product.getExternalId()))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessage("Access denied: You can only delete products from your own cafe");
+
+        assertThat(product.getState()).isTrue();
+        verify(productRepository, never()).save(any());
+        verify(productRepository, never()).delete(any(ProductEntity.class));
+    }
+
+    @Test
+    void deleteWithoutCurrentCafeIsDenied() {
+        ProductEntity product = existingProduct(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(securityUtils.isCafeteria()).thenReturn(true);
+        when(securityUtils.getCurrentCafe()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.delete(product.getExternalId()))
+                .isInstanceOf(AccessDeniedException.class);
+
+        assertThat(product.getState()).isTrue();
+        verify(productRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteByAdminDeactivatesWithoutOwnershipCheck() {
+        ProductEntity product = existingProduct(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(securityUtils.isCafeteria()).thenReturn(false);
+
+        service.delete(product.getExternalId());
+
+        assertThat(product.getState()).isFalse();
+        verify(productRepository).save(product);
+        verify(securityUtils, never()).getCurrentCafe();
+        verify(productRepository, never()).delete(any(ProductEntity.class));
+    }
+
+    @Test
+    void deleteOfUnknownProductThrowsEntityNotFound() {
+        UUID unknownProduct = UUID.randomUUID();
+        when(productRepository.findByExternalId(unknownProduct)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.delete(unknownProduct)).isInstanceOf(EntityNotFoundException.class);
+
+        verify(productRepository, never()).save(any());
+        verify(productRepository, never()).delete(any(ProductEntity.class));
+    }
+
+    // --- listing by cafe hides inactive products from clients ---
+
+    private ProductEntity inactiveProduct(CafeEntity owner) {
+        ProductEntity product = existingProduct(owner);
+        product.setState(false);
+        return product;
+    }
+
+    @Test
+    void getAllByCafeForClientReturnsOnlyActiveProducts() {
+        ProductEntity active = existingProduct(cafe);
+        ProductEntity inactive = inactiveProduct(cafe);
+        when(securityUtils.isCliente()).thenReturn(true);
+        when(cafeRepository.findByExternalId(cafe.getExternalId())).thenReturn(Optional.of(cafe));
+        when(productRepository.findByCafe(cafe)).thenReturn(List.of(active, inactive));
+
+        List<ProductResponse> result = service.getAllByCafe(cafe.getExternalId());
+
+        assertThat(result).extracting(ProductResponse::externalId).containsExactly(active.getExternalId());
+    }
+
+    @Test
+    void getAllByCafeForOwnerCafeIncludesInactiveProducts() {
+        ProductEntity active = existingProduct(cafe);
+        ProductEntity inactive = inactiveProduct(cafe);
+        when(securityUtils.isCafeteria()).thenReturn(true);
+        when(securityUtils.getCurrentUsername()).thenReturn("owner");
+        when(cafeRepository.findByExternalIdAndUser_Credentials_Username(cafe.getExternalId(), "owner"))
+                .thenReturn(Optional.of(cafe));
+        when(productRepository.findByCafe(cafe)).thenReturn(List.of(active, inactive));
+
+        List<ProductResponse> result = service.getAllByCafe(cafe.getExternalId());
+
+        assertThat(result).extracting(ProductResponse::externalId)
+                .containsExactly(active.getExternalId(), inactive.getExternalId());
+        assertThat(result).extracting(ProductResponse::state).containsExactly(true, false);
+    }
+
+    @Test
+    void getAllByCafeForAdminIncludesInactiveProducts() {
+        ProductEntity active = existingProduct(cafe);
+        ProductEntity inactive = inactiveProduct(cafe);
+        when(securityUtils.isAdmin()).thenReturn(true);
+        when(cafeRepository.findByExternalId(cafe.getExternalId())).thenReturn(Optional.of(cafe));
+        when(productRepository.findByCafe(cafe)).thenReturn(List.of(active, inactive));
+
+        List<ProductResponse> result = service.getAllByCafe(cafe.getExternalId());
+
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    void filterProductsByCafeForClientReturnsOnlyActiveProducts() {
+        ProductEntity active = existingProduct(cafe);
+        ProductEntity inactive = inactiveProduct(cafe);
+        when(securityUtils.isCliente()).thenReturn(true);
+        when(cafeRepository.findByExternalId(cafe.getExternalId())).thenReturn(Optional.of(cafe));
+        when(productRepository.findByCafeAndNameContainingIgnoreCase(cafe, "cap"))
+                .thenReturn(List.of(active, inactive));
+
+        List<ProductResponse> result = service.filterProductsByCafe(cafe.getExternalId(), "cap", null, null);
+
+        assertThat(result).extracting(ProductResponse::externalId).containsExactly(active.getExternalId());
+    }
+
+    @Test
+    void filterProductsByCafeForOwnerCafeIncludesInactiveProducts() {
+        ProductEntity active = existingProduct(cafe);
+        ProductEntity inactive = inactiveProduct(cafe);
+        when(securityUtils.isCafeteria()).thenReturn(true);
+        when(securityUtils.getCurrentUsername()).thenReturn("owner");
+        when(cafeRepository.findByExternalIdAndUser_Credentials_Username(cafe.getExternalId(), "owner"))
+                .thenReturn(Optional.of(cafe));
+        when(productRepository.findByCafeAndNameContainingIgnoreCase(cafe, "cap"))
+                .thenReturn(List.of(active, inactive));
+
+        List<ProductResponse> result = service.filterProductsByCafe(cafe.getExternalId(), "cap", null, null);
+
+        assertThat(result).hasSize(2);
     }
 }
