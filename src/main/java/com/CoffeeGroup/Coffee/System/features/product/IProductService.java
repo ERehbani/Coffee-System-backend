@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.UpdateProductRequest;
 
 public interface IProductService {
     List<ProductResponse> getAll();
@@ -14,7 +15,7 @@ public interface IProductService {
 
     ProductResponse create(ProductRequest productRequest);
 
-    ProductResponse update(ProductRequest productResponse, UUID productId);
+    ProductResponse update(UpdateProductRequest productRequest, UUID productId);
 
     void delete(UUID productId);
 

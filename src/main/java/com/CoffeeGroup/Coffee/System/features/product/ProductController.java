@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.UpdateProductRequest;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -62,7 +63,7 @@ public class ProductController {
     @PutMapping("/{productId}")
     @Operation(summary = "Update product", description = "Updates product information")
     @ApiResponses
-    ResponseEntity<ProductResponse> update(@RequestBody ProductRequest productBody, @Parameter(description = "Product external ID") @PathVariable UUID productId){
+    ResponseEntity<ProductResponse> update(@RequestBody @Valid UpdateProductRequest productBody, @Parameter(description = "Product external ID") @PathVariable UUID productId){
         return ResponseEntity.ok(productService.update(productBody, productId));
     }
 

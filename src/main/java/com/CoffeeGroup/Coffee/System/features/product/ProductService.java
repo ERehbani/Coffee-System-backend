@@ -17,6 +17,7 @@ import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
 import com.CoffeeGroup.Coffee.System.features.category.ICategoryRepository;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.UpdateProductRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -105,18 +106,36 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public ProductResponse update(ProductRequest requestBody, UUID productId) {
+    public ProductResponse update(UpdateProductRequest requestBody, UUID productId) {
+        CafeEntity currentCafe = securityUtils.getCurrentCafe();
+        if (currentCafe == null) {
+            throw new AccessDeniedException("Access denied: Cafe not found for current user");
+        }
+
         ProductEntity product = productRepository.findByExternalId(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product", "Product not found", "productId", productId));
 
-        if (requestBody.name() != null && !requestBody.name().isBlank())
+        if (!product.getCafe().getExternalId().equals(currentCafe.getExternalId())) {
+            throw new AccessDeniedException("Access denied: You can only update products from your own cafe");
+        }
+
+        // Resolved before mutating anything so a missing category leaves the product untouched
+        CategoryEntity category = requestBody.categoryId() != null
+                ? resolveCategory(requestBody.categoryId())
+                : null;
+
+        if (requestBody.name() != null)
             product.setName(requestBody.name());
-        if (requestBody.description() != null && !requestBody.description().isBlank())
+        if (requestBody.description() != null)
             product.setDescription(requestBody.description());
         if (requestBody.price() != null)
             product.setPrice(requestBody.price());
-        if (requestBody.awardedPoints() != null && requestBody.awardedPoints() >= 50)
+        if (requestBody.awardedPoints() != null)
             product.setAwardedPoints(requestBody.awardedPoints());
+        if (requestBody.image() != null)
+            product.setImage(requestBody.image());
+        if (category != null)
+            product.setCategory(category);
         return productMapper.toDto(productRepository.save(product));
     }
 
