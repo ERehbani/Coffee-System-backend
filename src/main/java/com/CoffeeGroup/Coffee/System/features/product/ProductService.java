@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -93,6 +94,7 @@ public class ProductService implements IProductService {
                 .price(productRequest.price())
                 .awardedPoints(productRequest.awardedPoints())
                 .image(productRequest.image())
+                .tags(productRequest.tags() != null ? new ArrayList<>(productRequest.tags()) : new ArrayList<>())
                 .state(true)
                 .cafe(cafe)
                 .category(category)
@@ -136,6 +138,8 @@ public class ProductService implements IProductService {
             product.setImage(requestBody.image());
         if (category != null)
             product.setCategory(category);
+        if (requestBody.tags() != null)
+            product.setTags(new ArrayList<>(requestBody.tags()));
         return productMapper.toDto(productRepository.save(product));
     }
 

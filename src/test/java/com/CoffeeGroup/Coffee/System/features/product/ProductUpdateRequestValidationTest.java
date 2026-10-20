@@ -3,9 +3,11 @@ package com.CoffeeGroup.Coffee.System.features.product;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,7 +29,11 @@ class ProductUpdateRequestValidationTest {
 
     private static UpdateProductRequest request(String name, String description, BigDecimal price,
             Integer awardedPoints, UUID categoryId, String image) {
-        return new UpdateProductRequest(name, description, price, awardedPoints, categoryId, image);
+        return new UpdateProductRequest(name, description, price, awardedPoints, categoryId, image, null);
+    }
+
+    private static UpdateProductRequest requestWithTags(List<String> tags) {
+        return new UpdateProductRequest(null, null, null, null, null, null, tags);
     }
 
     private static Set<String> invalidProperties(UpdateProductRequest request) {
@@ -96,5 +102,29 @@ class ProductUpdateRequestValidationTest {
     void imageLongerThan500CharactersIsInvalid() {
         assertThat(invalidProperties(request(null, null, null, null, null, "x".repeat(501))))
                 .containsExactly("image");
+    }
+
+    @Test
+    void emptyTagListIsValid() {
+        assertThat(validator.validate(requestWithTags(List.of()))).isEmpty();
+    }
+
+    @Test
+    void moreThanTenTagsAreInvalid() {
+        List<String> tags = IntStream.rangeClosed(1, 11).mapToObj(i -> "tag" + i).toList();
+
+        assertThat(invalidProperties(requestWithTags(tags))).containsExactly("tags");
+    }
+
+    @Test
+    void blankTagIsInvalid() {
+        assertThat(invalidProperties(requestWithTags(List.of("vegan", "   "))))
+                .singleElement().asString().startsWith("tags[1]");
+    }
+
+    @Test
+    void tagLongerThan30CharactersIsInvalid() {
+        assertThat(invalidProperties(requestWithTags(List.of("x".repeat(31)))))
+                .singleElement().asString().startsWith("tags[0]");
     }
 }

@@ -3,6 +3,8 @@ package com.CoffeeGroup.Coffee.System.features.product;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -57,5 +59,32 @@ class ProductMapperTest {
         assertThat(response.categoryId()).isNull();
         assertThat(response.category()).isNull();
         assertThat(response.image()).isNull();
+    }
+
+    @Test
+    void toDtoReturnsAnEmptyListWhenProductHasNoTags() {
+        CafeEntity cafe = CafeEntity.builder().externalId(UUID.randomUUID()).build();
+
+        assertThat(mapper.toDto(productBuilder(cafe).build()).tags()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void toDtoReturnsAnEmptyListWhenTagsAreNull() {
+        CafeEntity cafe = CafeEntity.builder().externalId(UUID.randomUUID()).build();
+        ProductEntity entity = productBuilder(cafe).build();
+        entity.setTags(null);
+
+        assertThat(mapper.toDto(entity).tags()).isNotNull().isEmpty();
+    }
+
+    @Test
+    void toDtoCopiesTagsSoLaterChangesToTheEntityDoNotLeakIntoTheResponse() {
+        CafeEntity cafe = CafeEntity.builder().externalId(UUID.randomUUID()).build();
+        ProductEntity entity = productBuilder(cafe).tags(new ArrayList<>(List.of("vegan", "cold"))).build();
+
+        ProductResponse response = mapper.toDto(entity);
+        entity.getTags().add("sugar-free");
+
+        assertThat(response.tags()).containsExactly("vegan", "cold");
     }
 }

@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.product.domain.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.constraints.Max;
@@ -43,7 +44,11 @@ public record ProductRequest(
         UUID categoryId,
 
         @Size(max = 500, message = "The image must be at most 500 characters long")
-        String image
+        String image,
+
+        @Size(max = 10, message = "A product can have at most 10 tags")
+        List<@NotBlank(message = "Tags must not be blank")
+             @Size(max = 30, message = "Each tag must be at most 30 characters long") String> tags
 
 ) {
 

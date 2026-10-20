@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -59,7 +60,12 @@ class ProductServiceTest {
     }
 
     private static ProductRequest createRequest(UUID categoryId, String image) {
-        return new ProductRequest("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), 100, categoryId, image);
+        return createRequest(categoryId, image, null);
+    }
+
+    private static ProductRequest createRequest(UUID categoryId, String image, List<String> tags) {
+        return new ProductRequest("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), 100, categoryId, image,
+                tags);
     }
 
     // --- create ---
@@ -84,6 +90,35 @@ class ProductServiceTest {
         assertThat(response.image()).isEqualTo("https://img/c.png");
         assertThat(response.state()).isTrue();
         assertThat(response.cafe()).isEqualTo(cafe.getExternalId());
+    }
+
+    @Test
+    void createStoresTheProvidedTags() {
+        when(securityUtils.getCurrentCafe()).thenReturn(cafe);
+        when(categoryRepository.findByExternalId(category.getExternalId())).thenReturn(Optional.of(category));
+        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductResponse response = service.create(
+                createRequest(category.getExternalId(), null, List.of("vegan", "cold")));
+
+        ArgumentCaptor<ProductEntity> saved = ArgumentCaptor.forClass(ProductEntity.class);
+        verify(productRepository).save(saved.capture());
+        assertThat(saved.getValue().getTags()).containsExactly("vegan", "cold");
+        assertThat(response.tags()).containsExactly("vegan", "cold");
+    }
+
+    @Test
+    void createWithoutTagsStoresAnEmptyList() {
+        when(securityUtils.getCurrentCafe()).thenReturn(cafe);
+        when(categoryRepository.findByExternalId(category.getExternalId())).thenReturn(Optional.of(category));
+        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductResponse response = service.create(createRequest(category.getExternalId(), null, null));
+
+        ArgumentCaptor<ProductEntity> saved = ArgumentCaptor.forClass(ProductEntity.class);
+        verify(productRepository).save(saved.capture());
+        assertThat(saved.getValue().getTags()).isNotNull().isEmpty();
+        assertThat(response.tags()).isNotNull().isEmpty();
     }
 
     @Test
@@ -123,12 +158,17 @@ class ProductServiceTest {
                 .cafe(owner)
                 .category(category)
                 .image("https://img/old.png")
+                .tags(new ArrayList<>(List.of("old")))
                 .build();
     }
 
     private static UpdateProductRequest updateRequest(String name, String description, BigDecimal price,
             Integer awardedPoints, UUID categoryId, String image) {
-        return new UpdateProductRequest(name, description, price, awardedPoints, categoryId, image);
+        return new UpdateProductRequest(name, description, price, awardedPoints, categoryId, image, null);
+    }
+
+    private static UpdateProductRequest updateTagsRequest(List<String> tags) {
+        return new UpdateProductRequest(null, null, null, null, null, null, tags);
     }
 
     @Test
@@ -173,7 +213,35 @@ class ProductServiceTest {
         assertThat(product.getAwardedPoints()).isEqualTo(100);
         assertThat(product.getCategory()).isSameAs(category);
         assertThat(product.getImage()).isEqualTo("https://img/old.png");
+        assertThat(product.getTags()).containsExactly("old");
         verifyNoInteractions(categoryRepository);
+    }
+
+    @Test
+    void updateReplacesTagsWhenProvided() {
+        ProductEntity product = existingProduct(cafe);
+        when(securityUtils.getCurrentCafe()).thenReturn(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductResponse response = service.update(updateTagsRequest(List.of("vegan", "cold")),
+                product.getExternalId());
+
+        assertThat(product.getTags()).containsExactly("vegan", "cold");
+        assertThat(response.tags()).containsExactly("vegan", "cold");
+    }
+
+    @Test
+    void updateWithAnEmptyTagListClearsTheTags() {
+        ProductEntity product = existingProduct(cafe);
+        when(securityUtils.getCurrentCafe()).thenReturn(cafe);
+        when(productRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(productRepository.save(any(ProductEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductResponse response = service.update(updateTagsRequest(List.of()), product.getExternalId());
+
+        assertThat(product.getTags()).isEmpty();
+        assertThat(response.tags()).isEmpty();
     }
 
     @Test

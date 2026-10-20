@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.product.domain.mapper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ public class ProductMapper implements IMapper<ProductEntity, ProductResponse> {
                 .price(productResponse.price())
                 .awardedPoints(productResponse.awardedPoints())
                 .image(productResponse.image())
+                .tags(productResponse.tags() != null ? new ArrayList<>(productResponse.tags()) : new ArrayList<>())
                 .state(productResponse.state() != null ? productResponse.state() : true)
                 .build();
     }
@@ -38,7 +41,8 @@ public class ProductMapper implements IMapper<ProductEntity, ProductResponse> {
                 category != null ? category.getExternalId() : null,
                 category != null ? category.getName() : null,
                 entity.getImage(),
-                entity.getState()
+                entity.getState(),
+                entity.getTags() != null ? List.copyOf(entity.getTags()) : List.of()
         );
     }
 }
