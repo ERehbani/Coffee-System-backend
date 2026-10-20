@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
+import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 
@@ -19,19 +20,25 @@ public class ProductMapper implements IMapper<ProductEntity, ProductResponse> {
                 .description(productResponse.description())
                 .price(productResponse.price())
                 .awardedPoints(productResponse.awardedPoints())
-                .state(true)
+                .image(productResponse.image())
+                .state(productResponse.state() != null ? productResponse.state() : true)
                 .build();
     }
 
     @Override
     public ProductResponse toDto(ProductEntity entity) {
+        CategoryEntity category = entity.getCategory();
         return new ProductResponse(
                 entity.getExternalId(),
                 entity.getName(),
                 entity.getDescription(),
                 entity.getPrice(),
                 entity.getAwardedPoints(),
-                entity.getCafe().getExternalId()
+                entity.getCafe().getExternalId(),
+                category != null ? category.getExternalId() : null,
+                category != null ? category.getName() : null,
+                entity.getImage(),
+                entity.getState()
         );
     }
 }

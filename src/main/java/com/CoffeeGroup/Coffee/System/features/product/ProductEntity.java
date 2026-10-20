@@ -63,6 +63,9 @@ public class ProductEntity {
     @Column(nullable = false,name = "state")
     private Boolean state;
 
+    @Column(name = "image", length = 500)
+    private String image;
+
 
     // --- Relacion Categoria ---
     @ManyToOne(fetch = FetchType.LAZY)

@@ -13,6 +13,8 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
+import com.CoffeeGroup.Coffee.System.features.category.ICategoryRepository;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
 
@@ -25,6 +27,7 @@ public class ProductService implements IProductService {
     private final IMapper<ProductEntity, ProductResponse> productMapper;
     private final CafeRepository cafeRepository;
     private final SecurityUtils securityUtils;
+    private final ICategoryRepository categoryRepository;
 
     @Override
     public List<ProductResponse> getAll() {
@@ -81,16 +84,24 @@ public class ProductService implements IProductService {
         if (cafe == null) {
             throw new AccessDeniedException("Access denied: Cafe not found for current user");
         }
+        CategoryEntity category = resolveCategory(productRequest.categoryId());
         ProductEntity entity = ProductEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name(productRequest.name())
                 .description(productRequest.description())
                 .price(productRequest.price())
                 .awardedPoints(productRequest.awardedPoints())
+                .image(productRequest.image())
                 .state(true)
                 .cafe(cafe)
+                .category(category)
                 .build();
         return productMapper.toDto(productRepository.save(entity));
+    }
+
+    private CategoryEntity resolveCategory(UUID categoryExternalId) {
+        return categoryRepository.findByExternalId(categoryExternalId)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
     }
 
     @Override
