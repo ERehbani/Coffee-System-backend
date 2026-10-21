@@ -30,7 +30,7 @@ import lombok.AllArgsConstructor;
 public class CategoryController {
     private final ICategoryService categoryService;
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @GetMapping()
     @Operation(summary = "List all categories", description = "Retrieves all product categories")
     @ApiResponses
@@ -38,7 +38,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.getAllCategories());
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
     @Operation(summary = "Get category by ID", description = "Retrieves a specific category by its external ID")
     @ApiResponses

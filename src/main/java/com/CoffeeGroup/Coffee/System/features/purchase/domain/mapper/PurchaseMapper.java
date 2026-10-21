@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.mapper.PurchaseDetailMapper;
@@ -35,7 +36,10 @@ public class PurchaseMapper {
                 entity.getClient().getExternalId(),
                 //entity.getCafe().getExternalId(),
                 redemptionId,
-                details
+                details,
+                entity.getPaymentMethod(),
+                entity.getPaymentStatus(),
+                entity.getStatus() == PurchaseStatus.PENDING ? entity.getPaymentUrl() : null
         );
     }
 }

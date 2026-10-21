@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.payment.PaymentMethod;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.PurchaseDetailEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 
@@ -55,7 +56,8 @@ public class PurchaseEntity {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    // varchar instead of a MySQL ENUM so adding a status doesn't need a column change.
+    @Column(name = "status", nullable = false, columnDefinition = "varchar(20)")
     private PurchaseStatus status;
 
     @OneToOne
@@ -74,6 +76,26 @@ public class PurchaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cafe_id")
     private CafeEntity cafe;
+
+    // --- Payment ---
+    // Nullable so purchases created before payments existed still load.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", columnDefinition = "varchar(30)")
+    private PaymentMethod paymentMethod;
+
+    /** Last status reported by the provider (e.g. approved, rejected, in_process). */
+    @Column(name = "payment_status")
+    private String paymentStatus;
+
+    /** Provider payment ID once a payment exists. */
+    @Column(name = "payment_id")
+    private String paymentId;
+
+    @Column(name = "payment_preference_id")
+    private String paymentPreferenceId;
+
+    @Column(name = "payment_url", length = 512)
+    private String paymentUrl;
 
     @Builder.Default
     @OneToMany(mappedBy = "purchase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

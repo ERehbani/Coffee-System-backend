@@ -21,4 +21,13 @@ public interface IPurchaseService {
     List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to);
 
     List<PurchaseResponse> getHistorialByCliente(UUID clientId);
+
+    /** Called from the Mercado Pago webhook. */
+    void handleMercadoPagoNotification(long paymentId);
+
+    /** Asks Mercado Pago for the purchase's payment and updates it. Used by the front after paying. */
+    PurchaseResponse syncMercadoPagoPayment(UUID purchaseId);
+
+    /** The client gives up on a pending purchase; any benefit code used is given back. */
+    PurchaseResponse cancelPending(UUID purchaseId);
 }

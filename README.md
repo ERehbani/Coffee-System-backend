@@ -67,6 +67,8 @@ src/main/java/com/CoffeeGroup/Coffee/System
 ### Autenticacion (`/auth`)
 Registro de clientes y login. El login devuelve un token JWT que debe enviarse en el header `Authorization: Bearer <token>` para el resto de los endpoints.
 
+`GET /auth/me` devuelve quien esta logueado: rol, email, nombre y el `clientId` o `cafeId` que corresponda. El front lo usa despues del login para saber que IDs mandar en el resto de los endpoints.
+
 ### Usuarios (`/users`)
 Administracion de cuentas de usuario. Acceso exclusivo de superadmin.
 
@@ -77,13 +79,25 @@ Registro y administracion de cafeterias. El superadmin registra cafeterias; las 
 Catalogo de productos. Las cafeterias crean, actualizan y eliminan sus productos. Cualquier usuario autenticado puede consultarlos y filtrarlos por cafeteria.
 
 ### Categorias (`/category`)
-Categorias de productos administradas por el superadmin.
+Categorias de productos. Solo el superadmin las crea y elimina; cualquier rol puede listarlas (las cafeterias las necesitan para cargar productos).
 
 ### Carrito (`/carts`)
 Carrito de compras del cliente. Permite agregar items, quitarlos, consultar el carrito y vaciarlo.
 
 ### Compras (`/purchases`)
-Creacion de compras a partir del carrito y consulta de historiales por cafeteria o por cliente. Cada compra otorga puntos al cliente.
+Creacion de compras a partir del carrito y consulta de historiales por cafeteria o por cliente. La compra nace en estado `PENDING` y otorga puntos recien cuando el pago se aprueba.
+
+### Pagos (`/payments`)
+Por ahora el unico metodo es Mercado Pago (Checkout Pro). Flujo para el front:
+
+1. `POST /purchases` con `{ cartId, validationCode?, paymentMethod: "MERCADO_PAGO" }`. La respuesta trae `status: PENDING` y `paymentUrl`.
+2. Redirigir al cliente a `paymentUrl`.
+3. Mercado Pago lo devuelve a `FRONTEND_URL/checkout/success`, `/pending` o `/failure`, con `external_reference=<id de la compra>` en la URL.
+4. El front llama a `POST /payments/purchases/{purchaseId}/sync` y muestra el resultado (`status` y `paymentStatus`).
+
+Si el pago es rechazado la compra sigue `PENDING`: el cliente puede reintentar con el mismo `paymentUrl` o cancelarla con `POST /payments/purchases/{purchaseId}/cancel` (se le devuelve el codigo de beneficio si uso uno). Si el total es 0 (beneficio que cubre todo) la compra se confirma sin pasar por Mercado Pago.
+
+En produccion Mercado Pago avisa por webhook a `POST /payments/mercadopago/webhook` (configurar `MP_NOTIFICATION_URL` y `MP_WEBHOOK_SECRET`). En local el webhook no llega, por eso existe `/sync`. Para probar se usan credenciales y usuarios de prueba de Mercado Pago.
 
 ### Clientes (`/clients`)
 Gestion de perfiles de cliente y consulta de puntos acumulados.
@@ -123,8 +137,25 @@ SUPERADMIN_EMAIL=admin@coffee.com
 SUPERADMIN_PASSWORD=tu_password
 RESEND_APIKEY=tu_api_key
 
+# Front (CORS y vuelta desde Mercado Pago). Por defecto http://localhost:5173
+FRONTEND_URL=http://localhost:5173
+CORS_ALLOWED_ORIGINS=http://localhost:5173
+
+# Mercado Pago (Access Token de prueba o produccion)
+MP_ACCESS_TOKEN=TEST-xxxx
+MP_WEBHOOK_SECRET=
+MP_NOTIFICATION_URL=
+
 MYSQL_ROOT_PASSWORD=tu_password
 MYSQL_DATABASE=coffee
+```
+
+### Base de datos existente (una sola vez)
+
+Si tu base ya tenia la tabla `purchases`, la columna `status` quedo como ENUM sin el valor `PENDING` y `ddl-auto: update` no la modifica. Correr una vez:
+
+```sql
+ALTER TABLE purchases MODIFY status VARCHAR(20) NOT NULL;
 ```
 
 ## Ejecucion

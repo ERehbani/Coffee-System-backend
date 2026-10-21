@@ -2,10 +2,17 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.payment.PaymentMethod;
+import com.CoffeeGroup.Coffee.System.features.payment.mercadopago.MercadoPagoService;
+import com.mercadopago.resources.payment.Payment;
+import lombok.extern.slf4j.Slf4j;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
@@ -36,6 +43,7 @@ import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PurchaseService implements IPurchaseService{
@@ -49,6 +57,7 @@ public class PurchaseService implements IPurchaseService{
     private final PurchaseMapper purchaseMapper;
     private final SecurityUtils securityUtils;
     private final EmailService emailService;
+    private final MercadoPagoService mercadoPagoService;
 
     @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
@@ -120,18 +129,160 @@ public class PurchaseService implements IPurchaseService{
             redemptionRepository.save(redemption);
         }
 
+        totalPrice = totalPrice.max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        PaymentMethod paymentMethod = request.paymentMethod() != null ? request.paymentMethod() : PaymentMethod.MERCADO_PAGO;
+
         purchase.setPrice(totalPrice);
         purchase.setRedemption(redemption);
+        purchase.setPaymentMethod(paymentMethod);
         purchase.getPurchaseDetails().addAll(details);
         purchaseRepository.save(purchase);
 
-        updateClientPoints(client, details);
-
+        // The cart is emptied now so the same items can't be bought twice while the payment is pending.
         cart.getItems().clear();
         cart.setTotalPrice(BigDecimal.ZERO);
         cartRepository.save(cart);
-        emailService.sendPurchaseConfirmation("Purchase created", client.getName(), purchase.getExternalId(), totalPrice, details);
-        return purchaseMapper.toResponse(purchase);
+
+        if (totalPrice.signum() == 0) {
+            // Fully covered by a benefit: nothing to charge.
+            confirm(purchase);
+        } else {
+            switch (paymentMethod) {
+                case MERCADO_PAGO -> {
+                    // If MP fails, the exception rolls back the whole purchase (cart and redemption included).
+                    MercadoPagoService.Checkout checkout = mercadoPagoService.createCheckout(purchase);
+                    purchase.setPaymentPreferenceId(checkout.preferenceId());
+                    purchase.setPaymentUrl(checkout.paymentUrl());
+                }
+            }
+        }
+
+        return purchaseMapper.toResponse(purchaseRepository.save(purchase));
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Payments
+    // ---------------------------------------------------------------------------------------------
+
+    @Transactional
+    @Override
+    public void handleMercadoPagoNotification(long paymentId) {
+        Payment payment = mercadoPagoService.getPayment(paymentId);
+
+        UUID purchaseId;
+        try {
+            purchaseId = UUID.fromString(String.valueOf(payment.getExternalReference()));
+        } catch (IllegalArgumentException e) {
+            log.warn("Mercado Pago payment {} has no purchase reference, ignoring it", paymentId);
+            return;
+        }
+
+        purchaseRepository.findForUpdateByExternalId(purchaseId).ifPresentOrElse(
+                purchase -> applyMercadoPagoPayment(purchase, payment),
+                () -> log.warn("Mercado Pago payment {} points to unknown purchase {}", paymentId, purchaseId));
+    }
+
+    @Transactional
+    @Override
+    public PurchaseResponse syncMercadoPagoPayment(UUID purchaseId) {
+        PurchaseEntity purchase = findOwnPurchase(purchaseId);
+        if (purchase.getPaymentMethod() != PaymentMethod.MERCADO_PAGO) {
+            throw new IllegalStateException("This purchase is not paid with Mercado Pago");
+        }
+
+        Optional<Payment> payment = mercadoPagoService.findPaymentForPurchase(purchaseId.toString());
+
+        PurchaseEntity locked = purchaseRepository.findForUpdateByExternalId(purchaseId).orElseThrow();
+        payment.ifPresent(p -> applyMercadoPagoPayment(locked, p));
+        return purchaseMapper.toResponse(locked);
+    }
+
+    @Transactional
+    @Override
+    public PurchaseResponse cancelPending(UUID purchaseId) {
+        findOwnPurchase(purchaseId);
+        PurchaseEntity purchase = purchaseRepository.findForUpdateByExternalId(purchaseId).orElseThrow();
+
+        if (purchase.getStatus() != PurchaseStatus.PENDING) {
+            throw new IllegalStateException("Only pending purchases can be cancelled");
+        }
+
+        purchase.setStatus(PurchaseStatus.CANCELLED);
+        RedemptionEntity redemption = purchase.getRedemption();
+        if (redemption != null) {
+            // Give the benefit code back so it can be used in another purchase.
+            redemption.setState(true);
+            redemptionRepository.save(redemption);
+        }
+        return purchaseMapper.toResponse(purchaseRepository.save(purchase));
+    }
+
+    /**
+     * Applies what Mercado Pago says about a payment. Safe to call many times with the same payment:
+     * MP sends repeated notifications, and the front may also call /sync.
+     */
+    private void applyMercadoPagoPayment(PurchaseEntity purchase, Payment payment) {
+        String mpStatus = payment.getStatus();
+        PurchaseStatus current = purchase.getStatus();
+        boolean refund = MercadoPagoService.STATUS_REFUNDED.equals(mpStatus)
+                || MercadoPagoService.STATUS_CHARGED_BACK.equals(mpStatus);
+
+        // A confirmed purchase only changes on a refund; a refunded one never changes again.
+        if (current == PurchaseStatus.REFUNDED || (current == PurchaseStatus.CONFIRMED && !refund)) {
+            return;
+        }
+
+        purchase.setPaymentId(String.valueOf(payment.getId()));
+        purchase.setPaymentStatus(mpStatus);
+
+        if (MercadoPagoService.STATUS_APPROVED.equals(mpStatus)) {
+            if (!MercadoPagoService.coversAmount(payment, purchase.getPrice())) {
+                log.error("Payment {} for purchase {} paid {} but the purchase costs {}. Not confirming it.",
+                        payment.getId(), purchase.getExternalId(), payment.getTransactionAmount(), purchase.getPrice());
+            } else {
+                if (current == PurchaseStatus.CANCELLED) {
+                    log.warn("Purchase {} was cancelled but its payment was approved; confirming it", purchase.getExternalId());
+                }
+                confirm(purchase);
+            }
+        } else if (refund && current == PurchaseStatus.CONFIRMED) {
+            purchase.setStatus(PurchaseStatus.REFUNDED);
+            removeClientPoints(purchase.getClient(), purchase.getPurchaseDetails());
+        }
+        // rejected / in_process / pending: the purchase stays PENDING so the client can retry or cancel it.
+
+        purchaseRepository.save(purchase);
+    }
+
+    /** Marks the purchase as paid: awards points and sends the confirmation email. */
+    private void confirm(PurchaseEntity purchase) {
+        purchase.setStatus(PurchaseStatus.CONFIRMED);
+
+        RedemptionEntity redemption = purchase.getRedemption();
+        if (redemption != null && Boolean.TRUE.equals(redemption.getState())) {
+            // It was given back by a cancel that raced with the payment: it's used after all.
+            redemption.setState(false);
+            redemptionRepository.save(redemption);
+        }
+
+        ClientEntity client = purchase.getClient();
+        updateClientPoints(client, purchase.getPurchaseDetails());
+        emailService.sendPurchaseConfirmation("Purchase confirmed", client.getName(), purchase.getExternalId(),
+                purchase.getPrice(), purchase.getPurchaseDetails());
+    }
+
+    /** The purchase, if the current user is its client or an admin. */
+    private PurchaseEntity findOwnPurchase(UUID purchaseId) {
+        PurchaseEntity purchase = purchaseRepository.findByExternalId(purchaseId)
+                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+        if (securityUtils.isAdmin()) {
+            return purchase;
+        }
+        ClientEntity client = securityUtils.getCurrentClient();
+        if (client == null || !client.getExternalId().equals(purchase.getClient().getExternalId())) {
+            throw new AccessDeniedException("You can only manage your own purchases");
+        }
+        return purchase;
     }
 
     @Override
@@ -269,12 +420,22 @@ public class PurchaseService implements IPurchaseService{
         clientRepository.save(client);
     }
 
+    private void removeClientPoints(ClientEntity client, List<PurchaseDetailEntity> details) {
+        int points = details.stream()
+                .map(PurchaseDetailEntity::getGeneratedPoints)
+                .reduce(0, Integer::sum);
+
+        client.setCurrentPoints(Math.max(0, client.getCurrentPoints() - points));
+        client.setHistoricalPoints(Math.max(0, client.getHistoricalPoints() - points));
+        clientRepository.save(client);
+    }
+
     private PurchaseEntity buildPurchase(ClientEntity client, CartEntity cart, CafeEntity cafe) {
         return PurchaseEntity.builder()
                 .externalId(UUID.randomUUID())
                 .date(new Date())
                 .price(BigDecimal.ZERO)
-                .status(PurchaseStatus.CONFIRMED)
+                .status(PurchaseStatus.PENDING)
                 .client(client)
                 .cart(cart)
                 .cafe(cafe)

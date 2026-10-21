@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.auth;
 import com.CoffeeGroup.Coffee.System.auth.dto.AuthRequest;
 import com.CoffeeGroup.Coffee.System.auth.dto.AuthResponse;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
+import com.CoffeeGroup.Coffee.System.auth.dto.MeResponse;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
 import com.CoffeeGroup.Coffee.System.features.user.UserService;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +49,12 @@ public class AuthController {
     @ApiResponses
     public ResponseEntity<UserResponse> registerUser(@RequestBody @Valid CreateAccountRequest newAccountRequest){
         return new ResponseEntity<>(userService.save(newAccountRequest), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Current user", description = "Returns the logged-in user's role and the client or cafe ID linked to it")
+    @ApiResponses
+    public ResponseEntity<MeResponse> me(Authentication authentication) {
+        return ResponseEntity.ok(authService.me(authentication.getName()));
     }
 }

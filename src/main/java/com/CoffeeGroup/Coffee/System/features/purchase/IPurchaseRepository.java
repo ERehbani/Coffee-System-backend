@@ -7,12 +7,22 @@ import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import jakarta.persistence.LockModeType;
 
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 
 public interface IPurchaseRepository extends JpaRepository<PurchaseEntity, Long> {
 
     Optional<PurchaseEntity> findByExternalId(UUID externalId);
+
+    /** Locks the row so two payment notifications for the same purchase can't both award points. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from PurchaseEntity p where p.externalId = :externalId")
+    Optional<PurchaseEntity> findForUpdateByExternalId(@Param("externalId") UUID externalId);
 
     boolean existsByExternalId(UUID externalId);
 
