@@ -5,10 +5,12 @@ import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartItemRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
+import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.UpdateCartItemRequest;
 
 public interface ICartService {
     List<CartResponse> getMyCart();
     CartResponse addItem(UUID cafeExternalId, CartItemRequest request);
+    CartResponse updateItemQuantity(UUID productExternalId, UpdateCartItemRequest request);
     CartResponse removeItem(UUID productExternalId);
     void clearCart();
 
