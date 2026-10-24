@@ -33,7 +33,8 @@ public class PurchaseMapper {
                 entity.getPrice(),
                 entity.getStatus(),
                 entity.getClient().getExternalId(),
-                //entity.getCafe().getExternalId(),
+                entity.getCafe().getExternalId(),
+                entity.getCafe().getName(),
                 redemptionId,
                 details
         );
