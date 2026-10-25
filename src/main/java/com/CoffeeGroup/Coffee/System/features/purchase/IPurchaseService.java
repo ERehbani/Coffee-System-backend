@@ -21,4 +21,6 @@ public interface IPurchaseService {
     List<PurchaseResponse> getHistorialByCafe(UUID cafeId, PurchaseStatus status, Date from, Date to);
 
     List<PurchaseResponse> getHistorialByCliente(UUID clientId);
+
+    List<PurchaseResponse> getMyHistory();
 }

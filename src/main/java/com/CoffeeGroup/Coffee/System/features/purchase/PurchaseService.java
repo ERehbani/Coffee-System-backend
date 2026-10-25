@@ -322,4 +322,14 @@ public class PurchaseService implements IPurchaseService{
         List<PurchaseEntity> purchases = purchaseRepository.findByClient(client);
         return purchases.stream().map(purchaseMapper::toResponse).toList();
     }
+
+    public List<PurchaseResponse> getMyHistory() {
+        ClientEntity currentClient = securityUtils.getCurrentClient();
+        if (currentClient == null) {
+            throw new EntityNotFoundException("Client not found");
+        }
+
+        List<PurchaseEntity> purchases = purchaseRepository.findByClient(currentClient);
+        return purchases.stream().map(purchaseMapper::toResponse).toList();
+    }
 }
