@@ -15,6 +15,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
+import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierLevelResponse;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
@@ -54,6 +55,36 @@ public class ClientTierService implements IClientTierService {
                 progressPercent(lifetimePoints, current, next),
                 next == null ? 0 : Math.max(0, next.getMinPoints() - lifetimePoints),
                 levels(tiers));
+    }
+
+    /** Enabled benefits of the client's tier and of every lower tier, ordered by tier threshold, then name. */
+    @Override
+    @Transactional(readOnly = true)
+    public List<TierBenefitResponse> viewMyBenefits() {
+        ClientEntity client = currentClient();
+        int clientThreshold = client.getTier().getMinPoints();
+        LocalDate today = LocalDate.now();
+
+        return benefitRepository.findByTierEntityIsNotNull().stream()
+                .filter(benefit -> benefit.isEnabledOn(today))
+                .filter(benefit -> benefit.getTierEntity().getMinPoints() <= clientThreshold)
+                .sorted(Comparator
+                        .comparing((BenefitEntity benefit) -> benefit.getTierEntity().getMinPoints())
+                        .thenComparing(BenefitEntity::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(ClientTierService::toTierBenefitResponse)
+                .toList();
+    }
+
+    private static TierBenefitResponse toTierBenefitResponse(BenefitEntity benefit) {
+        return new TierBenefitResponse(
+                benefit.getExternalId(),
+                benefit.getName(),
+                benefit.getDescription(),
+                benefit.getPointsCost(),
+                benefit.getEndDate(),
+                benefit.getCafeEntity() == null ? null : benefit.getCafeEntity().getName(),
+                benefit.getTierEntity().getName(),
+                benefit.getBenefitType() == null ? null : benefit.getBenefitType().getName().name());
     }
 
     private ClientEntity currentClient() {

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
+import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 
 import jakarta.validation.Valid;
@@ -86,6 +87,14 @@ public class ClientController {
     @ApiResponses
     public ResponseEntity<ClientTierResponse> viewMyTier() {
         return ResponseEntity.ok(clientTierService.viewMyTier());
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @GetMapping("/me/benefits")
+    @Operation(summary = "View my tier benefits", description = "Lists the enabled benefits available to the current client's tier and the tiers below it")
+    @ApiResponses
+    public ResponseEntity<List<TierBenefitResponse>> viewMyBenefits() {
+        return ResponseEntity.ok(clientTierService.viewMyBenefits());
     }
 
 }

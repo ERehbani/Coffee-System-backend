@@ -18,7 +18,11 @@ import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
+import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierLevelResponse;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
@@ -225,5 +229,124 @@ class ClientTierServiceTest {
         List<TierLevelResponse> levels = service.viewMyTier().levels();
 
         assertThat(levels.get(1).benefits()).containsExactly("Enabled");
+    }
+
+    // --- benefits for my tier ---
+
+    @Test
+    void viewMyBenefitsIncludesTheBenefitsOfTheClientTierAndOfEveryLowerTier() {
+        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(
+                benefit("Bronze perk", bronce),
+                benefit("Silver perk", plata),
+                benefit("Gold perk", oro),
+                benefit("Diamond perk", diamante)));
+
+        List<TierBenefitResponse> benefits = service.viewMyBenefits();
+
+        assertThat(benefits).extracting(TierBenefitResponse::name).containsExactly("Bronze perk", "Silver perk");
+    }
+
+    @Test
+    void viewMyBenefitsOnlyListsEnabledBenefits() {
+        BenefitEntity inactive = benefit("Inactive", plata);
+        inactive.setStatus(false);
+        BenefitEntity hidden = benefit("Hidden", plata);
+        hidden.setIsPublic(false);
+        BenefitEntity expired = benefit("Expired", plata);
+        expired.setEndDate(LocalDate.now().minusDays(1));
+        BenefitEntity notStarted = benefit("Not started", plata);
+        notStarted.setStartDate(LocalDate.now().plusDays(1));
+        BenefitEntity soldOut = benefit("Sold out", plata);
+        soldOut.setMaxRedemptions(0);
+        BenefitEntity enabled = benefit("Enabled", plata);
+
+        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
+        when(benefitRepository.findByTierEntityIsNotNull())
+                .thenReturn(List.of(inactive, hidden, expired, notStarted, soldOut, enabled));
+
+        assertThat(service.viewMyBenefits()).extracting(TierBenefitResponse::name).containsExactly("Enabled");
+    }
+
+    @Test
+    void viewMyBenefitsOrdersByTierThresholdThenByName() {
+        when(securityUtils.getCurrentClient()).thenReturn(client(oro, 0, 3000));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(
+                benefit("Zeta", oro),
+                benefit("beta", plata),
+                benefit("Alpha", oro),
+                benefit("Omega", bronce),
+                benefit("Alfa", plata)));
+
+        assertThat(service.viewMyBenefits()).extracting(TierBenefitResponse::name)
+                .containsExactly("Omega", "Alfa", "beta", "Alpha", "Zeta");
+    }
+
+    @Test
+    void viewMyBenefitsMapsEveryFieldOfAGlobalBenefit() {
+        BenefitEntity global = benefit("Courtesy coffee", bronce);
+        global.setDescription("A free coffee");
+        global.setPointsCost(300);
+        global.setEndDate(LocalDate.of(2026, 12, 31));
+        global.setBenefitType(BenefitTypeEntity.builder().name(BenefitType.PRODUCTO_GRATIS_SOCIO).build());
+        global.setCafeEntity(null);
+
+        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(global));
+
+        TierBenefitResponse response = service.viewMyBenefits().get(0);
+
+        assertThat(response.externalId()).isEqualTo(global.getExternalId());
+        assertThat(response.name()).isEqualTo("Courtesy coffee");
+        assertThat(response.description()).isEqualTo("A free coffee");
+        assertThat(response.pointsCost()).isEqualTo(300);
+        assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
+        assertThat(response.cafeName()).isNull();
+        assertThat(response.tierName()).isEqualTo("BRONCE");
+        assertThat(response.benefitType()).isEqualTo("PRODUCTO_GRATIS_SOCIO");
+    }
+
+    @Test
+    void viewMyBenefitsNamesTheCafeOfACafeBenefitAndAllowsAnOpenEndDate() {
+        BenefitEntity local = benefit("Two for one", plata);
+        local.setEndDate(null);
+        local.setBenefitType(BenefitTypeEntity.builder().name(BenefitType.DOS_POR_UNO).build());
+        local.setCafeEntity(CafeEntity.builder().name("Cafe Central").build());
+
+        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(local));
+
+        TierBenefitResponse response = service.viewMyBenefits().get(0);
+
+        assertThat(response.cafeName()).isEqualTo("Cafe Central");
+        assertThat(response.endDate()).isNull();
+        assertThat(response.tierName()).isEqualTo("PLATA");
+        assertThat(response.benefitType()).isEqualTo("DOS_POR_UNO");
+    }
+
+    @Test
+    void viewMyBenefitsToleratesABenefitWithoutType() {
+        BenefitEntity untyped = benefit("Untyped", bronce);
+        untyped.setBenefitType(null);
+
+        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(untyped));
+
+        assertThat(service.viewMyBenefits().get(0).benefitType()).isNull();
+    }
+
+    @Test
+    void viewMyBenefitsIsEmptyWhenNothingIsEnabledForTheClient() {
+        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
+        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(benefit("Gold perk", oro)));
+
+        assertThat(service.viewMyBenefits()).isEmpty();
+    }
+
+    @Test
+    void viewMyBenefitsFailsWhenTheCurrentUserHasNoClientProfile() {
+        when(securityUtils.getCurrentClient()).thenReturn(null);
+
+        assertThatThrownBy(() -> service.viewMyBenefits()).isInstanceOf(EntityNotFoundException.class);
     }
 }
