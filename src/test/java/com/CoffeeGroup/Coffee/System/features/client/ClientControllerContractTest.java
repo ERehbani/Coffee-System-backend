@@ -105,7 +105,8 @@ class ClientControllerContractTest {
                 new ClientDashboardResponse.Profile(clientId, "Ana", null, "ana@mail.com", null, "https://img/ana.png"),
                 new ClientDashboardResponse.Loyalty("PLATA", 820, 1420, "ORO", 3000, 21, 1580),
                 List.of(new ClientDashboardResponse.ActiveRedemption(
-                        redemptionId, "Free coffee", "A free coffee", "ABC123", LocalDate.of(2026, 12, 31))),
+                        redemptionId, "Free coffee", "A free coffee", "ABC123", LocalDate.of(2026, 12, 31),
+                        "Cafe Central")),
                 List.of(new ClientDashboardResponse.NearbyCafe(
                         cafeId, "Cafe Central", null, 4.3, 12, false, null, 80, "Cafe en el centro")),
                 List.of(new ClientDashboardResponse.FeaturedBenefit(
@@ -131,6 +132,7 @@ class ClientControllerContractTest {
                 .andExpect(jsonPath("$.activeRedemptions[0].description").value("A free coffee"))
                 .andExpect(jsonPath("$.activeRedemptions[0].code").value("ABC123"))
                 .andExpect(jsonPath("$.activeRedemptions[0].expiresAt").value("2026-12-31"))
+                .andExpect(jsonPath("$.activeRedemptions[0].cafeName").value("Cafe Central"))
                 .andExpect(jsonPath("$.nearbyCafes[0].id").value("44444444-4444-4444-4444-444444444444"))
                 .andExpect(jsonPath("$.nearbyCafes[0].name").value("Cafe Central"))
                 .andExpect(content().string(containsString("\"imageUrl\":null")))
@@ -144,6 +146,21 @@ class ClientControllerContractTest {
                 .andExpect(jsonPath("$.featuredBenefits[0].title").value("Free coffee"))
                 .andExpect(jsonPath("$.featuredBenefits[0].description").value("A free coffee"))
                 .andExpect(jsonPath("$.featuredBenefits[0].pointsCost").value(300));
+    }
+
+    @Test
+    void getMyDashboardSerializesAGlobalCouponWithNullCafeNameAndNoExpiry() throws Exception {
+        when(clientDashboardService.viewMyDashboard()).thenReturn(new ClientDashboardResponse(
+                new ClientDashboardResponse.Profile(UUID.randomUUID(), "Ana", null, null, null, null),
+                new ClientDashboardResponse.Loyalty("BRONCE", 0, 0, "PLATA", 1000, 0, 1000),
+                List.of(new ClientDashboardResponse.ActiveRedemption(
+                        UUID.randomUUID(), "Global perk", "", "XYZ", null, null)),
+                List.of(), List.of()));
+
+        mockMvc.perform(get("/clients/me/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("\"expiresAt\":null")))
+                .andExpect(content().string(containsString("\"cafeName\":null")));
     }
 
     @Test

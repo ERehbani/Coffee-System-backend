@@ -39,7 +39,8 @@ public record ClientDashboardResponse(
             String title,
             String description,
             String code,
-            LocalDate expiresAt
+            LocalDate expiresAt,
+            String cafeName
     ) {
     }
 

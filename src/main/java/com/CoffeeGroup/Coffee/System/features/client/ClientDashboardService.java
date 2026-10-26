@@ -2,6 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.client;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -80,10 +81,17 @@ public class ClientDashboardService implements IClientDashboardService {
                 tier.pointsToNextTier());
     }
 
+    /** Newest first. A benefit without end date never expires; one ending today is still usable. */
     private List<ActiveRedemption> activeRedemptions(ClientEntity client) {
+        LocalDate today = LocalDate.now();
         return redemptionRepository.findByClientAndStateOrderByDateDesc(client, true).stream()
+                .filter(redemption -> !isExpired(redemption.getBenefit(), today))
                 .map(ClientDashboardService::toActiveRedemption)
                 .toList();
+    }
+
+    private static boolean isExpired(BenefitEntity benefit, LocalDate today) {
+        return benefit.getEndDate() != null && benefit.getEndDate().isBefore(today);
     }
 
     private static ActiveRedemption toActiveRedemption(RedemptionEntity redemption) {
@@ -93,7 +101,8 @@ public class ClientDashboardService implements IClientDashboardService {
                 benefit.getName(),
                 orEmpty(benefit.getDescription()),
                 redemption.getValidationCode(),
-                benefit.getEndDate());
+                benefit.getEndDate(),
+                benefit.getCafeEntity() == null ? null : benefit.getCafeEntity().getName());
     }
 
     /**

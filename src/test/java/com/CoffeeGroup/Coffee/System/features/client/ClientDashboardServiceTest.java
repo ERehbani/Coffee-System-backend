@@ -207,6 +207,68 @@ class ClientDashboardServiceTest {
         assertThat(first.description()).isEmpty();
     }
 
+    private static RedemptionEntity redemptionOf(BenefitEntity benefit) {
+        return RedemptionEntity.builder()
+                .externalId(UUID.randomUUID()).validationCode("CODE").state(true).benefit(benefit).build();
+    }
+
+    @Test
+    void viewMyDashboardDropsRedemptionsWhoseBenefitAlreadyExpired() {
+        BenefitEntity expired = BenefitEntity.builder().name("Expired")
+                .endDate(LocalDate.now().minusDays(1)).build();
+        BenefitEntity valid = BenefitEntity.builder().name("Valid")
+                .endDate(LocalDate.now().plusDays(1)).build();
+        when(redemptionRepository.findByClientAndStateOrderByDateDesc(client, true))
+                .thenReturn(List.of(redemptionOf(expired), redemptionOf(valid)));
+
+        List<ActiveRedemption> redemptions = service.viewMyDashboard().activeRedemptions();
+
+        assertThat(redemptions).extracting(ActiveRedemption::title).containsExactly("Valid");
+    }
+
+    @Test
+    void viewMyDashboardKeepsARedemptionWhoseBenefitEndsToday() {
+        BenefitEntity endsToday = BenefitEntity.builder().name("Last day").endDate(LocalDate.now()).build();
+        when(redemptionRepository.findByClientAndStateOrderByDateDesc(client, true))
+                .thenReturn(List.of(redemptionOf(endsToday)));
+
+        assertThat(service.viewMyDashboard().activeRedemptions()).extracting(ActiveRedemption::title)
+                .containsExactly("Last day");
+    }
+
+    @Test
+    void viewMyDashboardKeepsTheRepositoryOrderAfterDroppingExpiredRedemptions() {
+        BenefitEntity newest = BenefitEntity.builder().name("Newest").endDate(null).build();
+        BenefitEntity expired = BenefitEntity.builder().name("Expired")
+                .endDate(LocalDate.now().minusDays(3)).build();
+        BenefitEntity oldest = BenefitEntity.builder().name("Oldest")
+                .endDate(LocalDate.now().plusDays(10)).build();
+        when(redemptionRepository.findByClientAndStateOrderByDateDesc(client, true))
+                .thenReturn(List.of(redemptionOf(newest), redemptionOf(expired), redemptionOf(oldest)));
+
+        assertThat(service.viewMyDashboard().activeRedemptions()).extracting(ActiveRedemption::title)
+                .containsExactly("Newest", "Oldest");
+    }
+
+    @Test
+    void viewMyDashboardNamesTheCafeOfACafeSpecificBenefit() {
+        BenefitEntity benefit = BenefitEntity.builder().name("Local perk")
+                .cafeEntity(cafe(7, "Cafe Central")).build();
+        when(redemptionRepository.findByClientAndStateOrderByDateDesc(client, true))
+                .thenReturn(List.of(redemptionOf(benefit)));
+
+        assertThat(service.viewMyDashboard().activeRedemptions().get(0).cafeName()).isEqualTo("Cafe Central");
+    }
+
+    @Test
+    void viewMyDashboardLeavesTheCafeNameEmptyForAGlobalBenefit() {
+        BenefitEntity benefit = BenefitEntity.builder().name("Global perk").cafeEntity(null).build();
+        when(redemptionRepository.findByClientAndStateOrderByDateDesc(client, true))
+                .thenReturn(List.of(redemptionOf(benefit)));
+
+        assertThat(service.viewMyDashboard().activeRedemptions().get(0).cafeName()).isNull();
+    }
+
     @Test
     void viewMyDashboardHasNoActiveRedemptionsWhenTheClientHasNone() {
         assertThat(service.viewMyDashboard().activeRedemptions()).isEmpty();
