@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.tier;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,4 +14,8 @@ public interface TierRepository extends JpaRepository<TierEntity, Long> {
     boolean existsByMinPoints(Integer minPoints);
     Optional<TierEntity> findByMinPoints(Integer minPoints);
     Optional<TierEntity> findByName(String name);
+    boolean existsByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCaseAndExternalIdNot(String name, UUID externalId);
+    boolean existsByMinPointsAndExternalIdNot(Integer minPoints, UUID externalId);
+    List<TierEntity> findAllByOrderByMinPointsAsc();
 }
