@@ -23,6 +23,7 @@ import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
+import com.CoffeeGroup.Coffee.System.features.client.IClientTierService;
 import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchaseRequest;
@@ -49,6 +50,7 @@ public class PurchaseService implements IPurchaseService{
     private final PurchaseMapper purchaseMapper;
     private final SecurityUtils securityUtils;
     private final EmailService emailService;
+    private final IClientTierService clientTierService;
 
     @Transactional
     public PurchaseResponse create(CreatePurchaseRequest request) {
@@ -266,6 +268,7 @@ public class PurchaseService implements IPurchaseService{
 
         client.setCurrentPoints(client.getCurrentPoints() + totalGeneratedPoints);
         client.setHistoricalPoints(client.getHistoricalPoints() + totalGeneratedPoints);
+        clientTierService.upgradeTierIfReached(client);
         clientRepository.save(client);
     }
 

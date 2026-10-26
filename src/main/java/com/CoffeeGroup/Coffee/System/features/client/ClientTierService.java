@@ -75,6 +75,24 @@ public class ClientTierService implements IClientTierService {
                 .toList();
     }
 
+    /** The tier only ever moves up: a client keeps a higher tier than their lifetime points alone would give. */
+    @Override
+    public boolean upgradeTierIfReached(ClientEntity client) {
+        int lifetimePoints = valueOrZero(client.getHistoricalPoints());
+        int currentThreshold = client.getTier().getMinPoints();
+
+        TierEntity reached = tierRepository.findAll().stream()
+                .filter(tier -> tier.getMinPoints() <= lifetimePoints)
+                .max(BY_MIN_POINTS)
+                .orElse(null);
+
+        if (reached == null || reached.getMinPoints() <= currentThreshold) {
+            return false;
+        }
+        client.setTier(reached);
+        return true;
+    }
+
     private static TierBenefitResponse toTierBenefitResponse(BenefitEntity benefit) {
         return new TierBenefitResponse(
                 benefit.getExternalId(),

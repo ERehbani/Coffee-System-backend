@@ -349,4 +349,93 @@ class ClientTierServiceTest {
 
         assertThatThrownBy(() -> service.viewMyBenefits()).isInstanceOf(EntityNotFoundException.class);
     }
+
+    // --- tier upgrade ---
+
+    private void givenAllTiers() {
+        when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
+    }
+
+    @Test
+    void upgradeTierIfReachedMovesTheClientUpOneTierWhenThePointsCrossTheNextThreshold() {
+        givenAllTiers();
+        ClientEntity client = client(bronce, 1100, 1100);
+
+        boolean upgraded = service.upgradeTierIfReached(client);
+
+        assertThat(upgraded).isTrue();
+        assertThat(client.getTier()).isSameAs(plata);
+    }
+
+    @Test
+    void upgradeTierIfReachedSkipsSeveralTiersWhenOnePurchaseCrossesMoreThanOneThreshold() {
+        givenAllTiers();
+        ClientEntity client = client(bronce, 3500, 3500);
+
+        assertThat(service.upgradeTierIfReached(client)).isTrue();
+
+        assertThat(client.getTier()).isSameAs(oro);
+    }
+
+    @Test
+    void upgradeTierIfReachedReachesTheTopTier() {
+        givenAllTiers();
+        ClientEntity client = client(plata, 0, 9000);
+
+        service.upgradeTierIfReached(client);
+
+        assertThat(client.getTier()).isSameAs(diamante);
+    }
+
+    @Test
+    void upgradeTierIfReachedUpgradesRightOnTheThreshold() {
+        givenAllTiers();
+        ClientEntity client = client(bronce, 1000, 1000);
+
+        service.upgradeTierIfReached(client);
+
+        assertThat(client.getTier()).isSameAs(plata);
+    }
+
+    @Test
+    void upgradeTierIfReachedKeepsTheTierOneBelowTheNextThreshold() {
+        givenAllTiers();
+        ClientEntity client = client(bronce, 999, 999);
+
+        boolean upgraded = service.upgradeTierIfReached(client);
+
+        assertThat(upgraded).isFalse();
+        assertThat(client.getTier()).isSameAs(bronce);
+    }
+
+    @Test
+    void upgradeTierIfReachedKeepsTheTierWhenTheClientAlreadyHoldsTheMatchingOne() {
+        givenAllTiers();
+        ClientEntity client = client(plata, 0, 1420);
+
+        assertThat(service.upgradeTierIfReached(client)).isFalse();
+
+        assertThat(client.getTier()).isSameAs(plata);
+    }
+
+    @Test
+    void upgradeTierIfReachedNeverDowngradesAClientWhoseTierIsAboveTheirHistoricalPoints() {
+        givenAllTiers();
+        ClientEntity client = client(oro, 0, 1200);
+
+        boolean upgraded = service.upgradeTierIfReached(client);
+
+        assertThat(upgraded).isFalse();
+        assertThat(client.getTier()).isSameAs(oro);
+    }
+
+    @Test
+    void upgradeTierIfReachedTreatsMissingHistoricalPointsAsZero() {
+        givenAllTiers();
+        ClientEntity client = client(bronce, null, null);
+
+        assertThat(service.upgradeTierIfReached(client)).isFalse();
+
+        assertThat(client.getTier()).isSameAs(bronce);
+    }
 }
