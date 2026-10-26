@@ -88,4 +88,16 @@ public class BenefitEntity {
 
     @OneToMany(mappedBy = "benefit")
     private List<RedemptionEntity> redemptionList;
+
+    /**
+     * A benefit can be redeemed on {@code today} when it is active and public, today falls inside its
+     * start/end dates (both optional and inclusive) and it still has redemptions left.
+     */
+    public boolean isEnabledOn(LocalDate today) {
+        return Boolean.TRUE.equals(status)
+                && Boolean.TRUE.equals(isPublic)
+                && (startDate == null || !startDate.isAfter(today))
+                && (endDate == null || !endDate.isBefore(today))
+                && maxRedemptions != null && maxRedemptions > 0;
+    }
 }

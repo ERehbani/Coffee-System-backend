@@ -15,6 +15,7 @@ public interface IBenefitRepository extends JpaRepository<BenefitEntity, Long> {
     Optional<BenefitEntity> findByExternalId(UUID externalId);
     List<BenefitEntity> findByIsGlobal(GlobalBenefit isGlobal);
     List<BenefitEntity> findByCafeEntity(CafeEntity cafe);
+    List<BenefitEntity> findByTierEntityIsNotNull();
     Optional<BenefitEntity> findByCafeEntityAndExternalId(CafeEntity cafe, UUID benefitExternalId);
 
     List<BenefitEntity> findByCafeEntityAndNameContainingIgnoreCase(CafeEntity cafe, String name);

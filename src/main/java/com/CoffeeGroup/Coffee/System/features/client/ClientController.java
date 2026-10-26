@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
 
 import jakarta.validation.Valid;
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Clients", description = "Endpoints for managing client profiles")
 public class ClientController {
     private final IClientService clientService;
+    private final IClientTierService clientTierService;
 
 
     //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido
@@ -76,6 +78,14 @@ public class ClientController {
     @ApiResponses
     public  ResponseEntity<ClientPointsResponse> viewMyPoints(){
         return ResponseEntity.ok(clientService.viewMyPoints());
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @GetMapping("/me/tier")
+    @Operation(summary = "View my tier", description = "Retrieves the current client's tier, progress towards the next tier and the benefits enabled at each level")
+    @ApiResponses
+    public ResponseEntity<ClientTierResponse> viewMyTier() {
+        return ResponseEntity.ok(clientTierService.viewMyTier());
     }
 
 }
