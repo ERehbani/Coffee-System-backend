@@ -20,6 +20,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRe
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitCreateMapper;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitResponseMapper;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.IBenefitFormatRepository;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
@@ -42,6 +43,7 @@ public class BenefitService implements IBenefitService {
     private final IBenefitResponseMapper responseMapper;
     private final SecurityUtils securityUtils;
     private final CredentialsRepository credentialsRepository;
+    private final IBenefitFormatRepository benefitFormatRepository;
 
     @Transactional
     @Override
@@ -54,6 +56,9 @@ public class BenefitService implements IBenefitService {
                 .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
         BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(benefitCreate.typeId())
                 .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
+        if (!benefitFormatRepository.existsByCodeAndActiveTrue(benefitType.getName())) {
+            throw new IllegalStateException("The benefit format " + benefitType.getName() + " is not enabled");
+        }
 
         CafeEntity cafeEntity = null;
         if (isCafeteria) {
