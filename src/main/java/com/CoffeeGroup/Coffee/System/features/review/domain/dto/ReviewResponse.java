@@ -8,8 +8,10 @@ import java.util.UUID;
 public record ReviewResponse (
         UUID externalId,
         String message,
+        Integer rating,
         LocalDate date,
         UUID clientId,
-        UUID cafeId
+        UUID cafeId,
+        UUID purchaseId
 
 ){ }

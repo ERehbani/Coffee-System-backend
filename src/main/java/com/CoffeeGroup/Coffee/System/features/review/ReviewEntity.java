@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +38,9 @@ public class ReviewEntity {
     @Column(name = "message")
     private String message;
 
+    @Column(name = "rating")
+    private Integer rating;
+
     @Column(name = "date")
     private LocalDate date;
 
@@ -46,5 +51,9 @@ public class ReviewEntity {
     @ManyToOne
     @JoinColumn(name = "cafe_id")
     private CafeEntity cafe;
+
+    @OneToOne
+    @JoinColumn(name = "purchase_id", unique = true)
+    private PurchaseEntity purchase;
 
 }

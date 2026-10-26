@@ -12,4 +12,5 @@ public interface IReviewRepository extends JpaRepository<ReviewEntity, Long> {
     Optional<ReviewEntity> findById(UUID externalId);
     Optional<ReviewEntity> findByExternalId(UUID externalId);
     List<ReviewEntity> findByCafeExternalId(UUID cafeExternalId);
+    boolean existsByPurchaseExternalId(UUID purchaseExternalId);
 }
