@@ -19,4 +19,6 @@ public interface IRedemptionRepository extends JpaRepository <RedemptionEntity, 
     List<RedemptionEntity> findByClientOrderByDateDesc(ClientEntity client);
     List<RedemptionEntity> findAllByOrderByDateDesc();
     List<RedemptionEntity> findByStateOrderByDateDesc(boolean state);
+    List<RedemptionEntity> findByClientAndUsedDateIsNotNullOrderByUsedDateDesc(ClientEntity client);
+    List<RedemptionEntity> findByUsedDateIsNotNullOrderByUsedDateDesc();
 }

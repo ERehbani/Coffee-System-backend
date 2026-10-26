@@ -87,7 +87,7 @@ class RedemptionServiceTest {
         lenient().when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
         lenient().when(createMapper.toEntity(request)).thenReturn(new RedemptionEntity());
         lenient().when(responseMapper.toDto(any(RedemptionEntity.class)))
-                .thenReturn(new RedemptionResponse(UUID.randomUUID(), null, 100, true, "code", "Free coffee", "Global", null, null, null));
+                .thenReturn(new RedemptionResponse(UUID.randomUUID(), null, 100, true, "code", "Free coffee", "Global", null, null, null, null));
     }
 
     private static TierEntity tier(String name, int minPoints) {

@@ -14,5 +14,6 @@ public record RedemptionResponse(
         String cafeName,
         String description,
         LocalDate expiresAt,
-        String conditions
+        String conditions,
+        LocalDateTime usedDate
 ) {}

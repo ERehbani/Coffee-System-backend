@@ -42,11 +42,12 @@ public class RedemptionController {
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN')")
-    @Operation(summary = "List all redemptions", description = "Retrieves all redemptions with optional state filter")
+    @Operation(summary = "List all redemptions", description = "Retrieves all redemptions with optional state filter, or only the used ones")
     @ApiResponses
     public ResponseEntity<List<RedemptionResponse>> getAll(
-            @Parameter(description = "Filter by redemption state") @RequestParam(required = false) Boolean state) {
-        return ResponseEntity.ok(redemptionService.findAll(state));
+            @Parameter(description = "Filter by redemption state") @RequestParam(required = false) Boolean state,
+            @Parameter(description = "Only redemptions already used in a cafe, newest first") @RequestParam(required = false) Boolean used) {
+        return ResponseEntity.ok(redemptionService.findAll(state, used));
     }
 
     @GetMapping("/{externalId}")

@@ -108,10 +108,16 @@ public class RedemptionService implements IRedemptionService {
     }
 
     @Override
-    public List<RedemptionResponse> findAll(Boolean state) {
+    public List<RedemptionResponse> findAll(Boolean state, Boolean used) {
         List<RedemptionEntity> redemptions;
+        boolean onlyUsed = Boolean.TRUE.equals(used);
 
         if (securityUtils.isAdmin()) {
+            if (onlyUsed) {
+                return redemptionRepository.findByUsedDateIsNotNullOrderByUsedDateDesc().stream()
+                        .map(responseMapper::toDto)
+                        .toList();
+            }
             redemptions = (state != null)
                     ? redemptionRepository.findByStateOrderByDateDesc(state)
                     : redemptionRepository.findAllByOrderByDateDesc();
@@ -120,9 +126,13 @@ public class RedemptionService implements IRedemptionService {
             if (client == null) {
                 throw new EntityNotFoundException("Client not found");
             }
-            redemptions = (state != null)
-                    ? redemptionRepository.findByClientAndState(client, state)
-                    : redemptionRepository.findByClientOrderByDateDesc(client);
+            if (onlyUsed) {
+                redemptions = redemptionRepository.findByClientAndUsedDateIsNotNullOrderByUsedDateDesc(client);
+            } else {
+                redemptions = (state != null)
+                        ? redemptionRepository.findByClientAndStateOrderByDateDesc(client, state)
+                        : redemptionRepository.findByClientOrderByDateDesc(client);
+            }
         } else {
             throw new AccessDeniedException("Access denied");
         }
@@ -179,6 +189,7 @@ public class RedemptionService implements IRedemptionService {
         }
 
         redemption.setState(false);
+        redemption.setUsedDate(LocalDateTime.now());
         redemptionRepository.save(redemption);
         return responseMapper.toDto(redemption);
     }

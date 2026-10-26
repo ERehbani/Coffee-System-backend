@@ -43,6 +43,9 @@ public class RedemptionEntity {
     @Column(name = "date_redemption")
     private LocalDateTime date;
 
+    @Column(name = "used_date")
+    private LocalDateTime usedDate;
+
     @Column(name = "used_points")
     private Integer usedPoints;
 

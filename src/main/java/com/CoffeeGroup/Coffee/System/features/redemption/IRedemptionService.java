@@ -12,7 +12,7 @@ public interface IRedemptionService {
 
     void deleteById(UUID id);
 
-    List<RedemptionResponse> findAll(Boolean state);
+    List<RedemptionResponse> findAll(Boolean state, Boolean used);
 
     RedemptionResponse getById(UUID externalId);
 
