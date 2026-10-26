@@ -35,4 +35,17 @@ class ClientControllerSecurityTest {
         assertThat(mapping).isNotNull();
         assertThat(mapping.value()).containsExactly("/me/benefits");
     }
+
+    @Test
+    void viewMyDashboardIsRestrictedToTheClientRoleAndMappedUnderMe() throws NoSuchMethodException {
+        Method viewMyDashboard = ClientController.class.getDeclaredMethod("viewMyDashboard");
+
+        PreAuthorize preAuthorize = viewMyDashboard.getAnnotation(PreAuthorize.class);
+        GetMapping mapping = viewMyDashboard.getAnnotation(GetMapping.class);
+
+        assertThat(preAuthorize).isNotNull();
+        assertThat(preAuthorize.value()).isEqualTo("hasAuthority('ROLE_CLIENTE')");
+        assertThat(mapping).isNotNull();
+        assertThat(mapping.value()).containsExactly("/me/dashboard");
+    }
 }

@@ -35,7 +35,12 @@ public class ClientTierService implements IClientTierService {
     @Override
     @Transactional(readOnly = true)
     public ClientTierResponse viewMyTier() {
-        ClientEntity client = currentClient();
+        return tierOf(currentClient());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ClientTierResponse tierOf(ClientEntity client) {
         TierEntity current = client.getTier();
         int lifetimePoints = valueOrZero(client.getHistoricalPoints());
 
@@ -61,7 +66,12 @@ public class ClientTierService implements IClientTierService {
     @Override
     @Transactional(readOnly = true)
     public List<TierBenefitResponse> viewMyBenefits() {
-        ClientEntity client = currentClient();
+        return benefitsOf(currentClient());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TierBenefitResponse> benefitsOf(ClientEntity client) {
         int clientThreshold = client.getTier().getMinPoints();
         LocalDate today = LocalDate.now();
 

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.CoffeeGroup.Coffee.System.features.client.dto.ClientDashboardResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
@@ -34,6 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class ClientController {
     private final IClientService clientService;
     private final IClientTierService clientTierService;
+    private final IClientDashboardService clientDashboardService;
 
 
     //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido
@@ -95,6 +97,14 @@ public class ClientController {
     @ApiResponses
     public ResponseEntity<List<TierBenefitResponse>> viewMyBenefits() {
         return ResponseEntity.ok(clientTierService.viewMyBenefits());
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @GetMapping("/me/dashboard")
+    @Operation(summary = "View my dashboard", description = "Retrieves the current client's profile, loyalty status, active redemptions, cafes and featured benefits in one response")
+    @ApiResponses
+    public ResponseEntity<ClientDashboardResponse> viewMyDashboard() {
+        return ResponseEntity.ok(clientDashboardService.viewMyDashboard());
     }
 
 }
