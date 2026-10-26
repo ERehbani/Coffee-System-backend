@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
 
 import jakarta.validation.Valid;
@@ -83,6 +84,14 @@ public class BenefitController {
     @ApiResponses
     ResponseEntity<BenefitResponse> changeEnd(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId, @Valid @RequestBody NewEndDateRequest newEndDate){
        return ResponseEntity.ok(benefitService.changeEndDate(externalId,newEndDate));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PutMapping("/{externalId}")
+    @Operation(summary = "Update benefit", description = "Updates the data of a benefit, including its conditions")
+    @ApiResponses
+    ResponseEntity<BenefitResponse> update(@Parameter(description = "Benefit external ID") @PathVariable UUID externalId, @Valid @RequestBody BenefitUpdateRequest request){
+        return ResponseEntity.ok(benefitService.update(externalId, request));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")

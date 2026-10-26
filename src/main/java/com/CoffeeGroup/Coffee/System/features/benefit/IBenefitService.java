@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 
@@ -17,6 +18,7 @@ public interface IBenefitService {
     BenefitResponse confirmBenefit(UUID externalId);
     BenefitResponse cancelBenefit(UUID externalId);
     BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest);
+    BenefitResponse update(UUID externalId, BenefitUpdateRequest request);
     BenefitEntity getBenefit(UUID externalId);
     List<BenefitResponse> getAllByCafe(UUID cafeExternalId);
     BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId);

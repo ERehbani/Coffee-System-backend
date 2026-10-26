@@ -16,6 +16,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitCreateMapper;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitResponseMapper;
@@ -175,6 +176,55 @@ public class BenefitService implements IBenefitService {
         }
 
         benefit.setEndDate(newEndDateRequest.endDate());
+        benefitRepository.save(benefit);
+        return responseMapper.toDto(benefit);
+    }
+
+    @Transactional
+    @Override
+    public BenefitResponse update(UUID externalId, BenefitUpdateRequest request) {
+        BenefitEntity benefit = getBenefit(externalId);
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isCafeteria = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
+
+        if (isCafeteria) {
+            if (benefit.getCafeEntity() == null) {
+                throw new AccessDeniedException("Access denied: Cafeterias cannot modify global benefits");
+            }
+
+            String currentUser = securityUtils.getCurrentUsername();
+            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
+                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+
+            if (!benefit.getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
+                throw new AccessDeniedException("Access denied: You do not have permission to modify this benefit");
+            }
+        }
+
+        if (request.startDate() != null && request.endDate() != null
+                && request.endDate().isBefore(request.startDate())) {
+            throw new IllegalStateException("The end date cannot be before the start date");
+        }
+
+        TierEntity tierEntity = tierRepository.findByExternalId(request.tierId())
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+        BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(request.typeId())
+                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
+
+        benefit.setName(request.name());
+        benefit.setDescription(request.description());
+        benefit.setConditions(request.conditions());
+        benefit.setPointsCost(request.pointsCost());
+        benefit.setStartDate(request.startDate());
+        benefit.setEndDate(request.endDate());
+        benefit.setMaxRedemptions(request.maxRedemptions());
+        benefit.setTierEntity(tierEntity);
+        benefit.setBenefitType(benefitType);
+
         benefitRepository.save(benefit);
         return responseMapper.toDto(benefit);
     }

@@ -70,6 +70,9 @@ public class BenefitEntity {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "conditions", columnDefinition = "TEXT")
+    private String conditions;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "is_global")
     private GlobalBenefit isGlobal;

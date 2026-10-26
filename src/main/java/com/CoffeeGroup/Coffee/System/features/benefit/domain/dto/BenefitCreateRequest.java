@@ -15,6 +15,8 @@ public record BenefitCreateRequest(
         @NotBlank(message = "The description is required")
         String description,
 
+        String conditions,
+
         @NotNull(message = "The pointsCost is required")
         Integer pointsCost,
 

@@ -12,6 +12,7 @@ public record BenefitResponse(
         Boolean isPublic,
         Integer maxRedemptions,
         String description,
+        String conditions,
         String cafeEntity,
         GlobalBenefit isGlobal
 ) {}
