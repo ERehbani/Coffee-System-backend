@@ -21,6 +21,7 @@ import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatSeeder;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
@@ -59,6 +60,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final IProductRepository productRepository;
     private final IBenefitTypeRepository benefitTypeRepository;
     private final IBenefitRepository benefitRepository;
+    private final BenefitFormatSeeder benefitFormatSeeder;
 
     @Value("${app.superadmin.email}")
     private String superAdminEmail;
@@ -101,6 +103,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         createInitialTiers();
 
         createInitialCategories();
+
+        benefitFormatSeeder.seed();
 
         createSuperAdmin(superAdminRole);
 
