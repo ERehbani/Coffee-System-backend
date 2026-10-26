@@ -23,6 +23,7 @@ import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedempt
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
+import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -56,8 +57,14 @@ public class RedemptionService implements IRedemptionService {
         if (!benefit.getStatus() || !benefit.getIsPublic()) {
             throw new IllegalStateException("Benefit is not enabled");
         }
+        if (benefit.getStartDate() != null && benefit.getStartDate().isAfter(LocalDate.now())) {
+            throw new IllegalStateException("Benefit is not available yet");
+        }
         if (benefit.getEndDate() != null && benefit.getEndDate().isBefore(LocalDate.now())) {
             throw new IllegalStateException("Benefit has expired");
+        }
+        if (requiresHigherTier(benefit, client)) {
+            throw new IllegalStateException("Benefit requires a higher tier");
         }
         if (benefit.getMaxRedemptions() <= 0) {
             throw new IllegalStateException("Benefit has no available redemptions");
@@ -83,6 +90,12 @@ public class RedemptionService implements IRedemptionService {
         redemption.setUsedPoints(benefit.getPointsCost());
         redemptionRepository.save(redemption);
         return responseMapper.toDto(redemption);
+    }
+
+    /** A benefit without a tier is open to every client. */
+    private static boolean requiresHigherTier(BenefitEntity benefit, ClientEntity client) {
+        TierEntity benefitTier = benefit.getTierEntity();
+        return benefitTier != null && benefitTier.getMinPoints() > client.getTier().getMinPoints();
     }
 
     @Override
