@@ -4,13 +4,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase.IPurchaseRepository;
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.Mappers.IReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
@@ -26,6 +31,7 @@ public class ReviewService implements IReviewService {
 
     private final CafeRepository cafeRepository;
     private final IReviewRepository reviewRepository;
+    private final IPurchaseRepository purchaseRepository;
     private final SecurityUtils securityUtils;
 
     private final IReviewCreateRequest MapReviewCreateRequest;
@@ -43,11 +49,28 @@ public class ReviewService implements IReviewService {
         CafeEntity cafeAux = cafeRepository.findByExternalId(reviewCreateRequest.cafeId()).
                 orElseThrow(() ->  new EntityNotFoundException("Cafe not found"));
 
+        PurchaseEntity purchaseAux = purchaseRepository.findByExternalId(reviewCreateRequest.purchaseId())
+                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+
+        if (!purchaseAux.getClient().getExternalId().equals(clientAux.getExternalId())) {
+            throw new AccessDeniedException("You can only review your own purchases");
+        }
+        if (!purchaseAux.getCafe().getExternalId().equals(cafeAux.getExternalId())) {
+            throw new IllegalStateException("The purchase does not belong to this cafe");
+        }
+        if (purchaseAux.getStatus() != PurchaseStatus.CONFIRMED) {
+            throw new IllegalStateException("Only confirmed purchases can be reviewed");
+        }
+        if (reviewRepository.existsByPurchaseExternalId(purchaseAux.getExternalId())) {
+            throw new EntityAlreadyExistsException("This purchase already has a review");
+        }
+
         ReviewEntity review = MapReviewCreateRequest.toEntity(reviewCreateRequest);
 
         review.setDate(LocalDate.now());
         review.setCafe(cafeAux);
         review.setClient(clientAux);
+        review.setPurchase(purchaseAux);
         review.setExternalId(UUID.randomUUID());
         reviewRepository.save(review);
 

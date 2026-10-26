@@ -54,6 +54,14 @@ public class PurchaseController {
         return ResponseEntity.ok(purchaseService.findAll(status, from, to));
     }
 
+    @GetMapping("/me")
+    @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
+    @Operation(summary = "Get my purchase history", description = "Retrieves the purchase history of the logged client")
+    @ApiResponses
+    ResponseEntity<List<PurchaseResponse>> getMyHistory() {
+        return ResponseEntity.ok(purchaseService.getMyHistory());
+    }
+
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @Operation(summary = "Get purchase by ID", description = "Retrieves a specific purchase by its external ID")

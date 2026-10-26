@@ -18,7 +18,10 @@ public record PurchaseResponse(
         BigDecimal price,
         PurchaseStatus status,
         UUID clientId,
+        UUID cafeId,
+        String cafeName,
         UUID redemptionId,
-        List<PurchaseDetailResponse> details
+        List<PurchaseDetailResponse> details,
+        boolean reviewed
 ) {
 }

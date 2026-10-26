@@ -14,6 +14,7 @@ import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartItemRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
+import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.UpdateCartItemRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.mapper.CartMapper;
 import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
@@ -80,6 +81,29 @@ public class CartService implements ICartService {
         }
 
         cart.setTotalPrice(calculateTotalPrice(items));
+        return cartMapper.toDto(cartRepository.save(cart));
+    }
+
+    @Override
+    @Transactional
+    public CartResponse updateItemQuantity(UUID productExternalId, UpdateCartItemRequest request) {
+        ClientEntity client = securityUtils.getCurrentClient();
+        if (client == null) throw new EntityNotFoundException("Client not found");
+
+        List<CartEntity> carts = cartRepository.findByClient(client);
+        CartEntity cart = carts.stream()
+                .filter(c -> c.getItems().stream().anyMatch(item -> item.getProductId().equals(productExternalId)))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
+
+        for (CartItem item : cart.getItems()) {
+            if (item.getProductId().equals(productExternalId)) {
+                item.setQuantity(request.quantity());
+                break;
+            }
+        }
+
+        cart.setTotalPrice(calculateTotalPrice(cart.getItems()));
         return cartMapper.toDto(cartRepository.save(cart));
     }
 

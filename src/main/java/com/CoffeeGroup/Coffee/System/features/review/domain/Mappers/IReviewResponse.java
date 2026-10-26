@@ -13,6 +13,7 @@ public interface IReviewResponse extends IMapper<ReviewEntity, ReviewResponse> {
     ReviewEntity toEntity(ReviewResponse reviewEntity);
     @Mapping(source = "client.externalId", target = "clientId")
     @Mapping(source = "cafe.externalId", target = "cafeId")
+    @Mapping(source = "purchase.externalId", target = "purchaseId")
     ReviewResponse toDto(ReviewEntity reviewEntity);
 
 }

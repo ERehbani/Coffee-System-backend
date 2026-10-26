@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
+import com.CoffeeGroup.Coffee.System.features.review.IReviewRepository;
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.PurchaseResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.PurchaseDetailResponse;
 import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.mapper.PurchaseDetailMapper;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class PurchaseMapper {
 
     private final PurchaseDetailMapper purchaseDetailMapper;
+    private final IReviewRepository reviewRepository;
 
     public PurchaseResponse toResponse(PurchaseEntity entity) {
 
@@ -33,9 +35,11 @@ public class PurchaseMapper {
                 entity.getPrice(),
                 entity.getStatus(),
                 entity.getClient().getExternalId(),
-                //entity.getCafe().getExternalId(),
+                entity.getCafe().getExternalId(),
+                entity.getCafe().getName(),
                 redemptionId,
-                details
+                details,
+                reviewRepository.existsByPurchaseExternalId(entity.getExternalId())
         );
     }
 }
