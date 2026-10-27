@@ -94,7 +94,6 @@ class RedemptionServiceTest {
         return TierEntity.builder().externalId(UUID.randomUUID()).name(name).minPoints(minPoints).build();
     }
 
-    // --- tier rule ---
 
     @Test
     void createRejectsABenefitOfAHigherTierAndDeductsNoPoints() {
@@ -146,7 +145,6 @@ class RedemptionServiceTest {
         verify(redemptionRepository).save(any(RedemptionEntity.class));
     }
 
-    // --- start date rule ---
 
     @Test
     void createRejectsABenefitThatHasNotStartedYetAndDeductsNoPoints() {
@@ -182,7 +180,6 @@ class RedemptionServiceTest {
         verify(redemptionRepository).save(any(RedemptionEntity.class));
     }
 
-    // --- pre-existing rules stay in place ---
 
     @Test
     void createStillRejectsWhenTheClientHasNotEnoughPoints() {

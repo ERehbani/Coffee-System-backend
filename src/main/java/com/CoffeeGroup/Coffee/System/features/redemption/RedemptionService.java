@@ -92,7 +92,6 @@ public class RedemptionService implements IRedemptionService {
         return responseMapper.toDto(redemption);
     }
 
-    /** A benefit without a tier is open to every client. */
     private static boolean requiresHigherTier(BenefitEntity benefit, ClientEntity client) {
         TierEntity benefitTier = benefit.getTierEntity();
         return benefitTier != null && benefitTier.getMinPoints() > client.getTier().getMinPoints();
