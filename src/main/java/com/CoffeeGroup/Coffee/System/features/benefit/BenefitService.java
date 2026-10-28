@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -402,6 +404,21 @@ public class BenefitService implements IBenefitService {
         }
 
         return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BenefitResponse> getAvailableCatalog(UUID cafeId, BenefitType type) {
+        LocalDate today = LocalDate.now();
+
+        return benefitRepository.findByIsPublicTrueAndStatusTrue().stream()
+                .filter(benefit -> benefit.getEndDate() == null || !benefit.getEndDate().isBefore(today))
+                .filter(benefit -> cafeId == null
+                        || (benefit.getCafeEntity() != null && cafeId.equals(benefit.getCafeEntity().getExternalId())))
+                .filter(benefit -> type == null
+                        || (benefit.getBenefitType() != null && benefit.getBenefitType().getName() == type))
+                .sorted(Comparator.comparing(BenefitEntity::getPointsCost, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(responseMapper::toDto)
                 .toList();
     }

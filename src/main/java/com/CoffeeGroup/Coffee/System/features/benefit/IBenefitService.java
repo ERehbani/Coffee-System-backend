@@ -27,4 +27,5 @@ public interface IBenefitService {
 
     List<BenefitResponse> filterAvailableBenefits(UUID cafeId, String name, BenefitType type, Integer maxPoints);
     List<BenefitResponse> filterAvailableGlobalBenefits(String name, BenefitType type, Integer maxPoints);
+    List<BenefitResponse> getAvailableCatalog(UUID cafeId, BenefitType type);
 }

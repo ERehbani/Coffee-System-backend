@@ -10,7 +10,9 @@ import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse
 public interface IBenefitResponseMapper {
     @Mapping(target = "cafeEntity",
             expression = "java(benefitEntity.getCafeEntity() != null ? benefitEntity.getCafeEntity().getName() : null)")
-
+    @Mapping(target = "benefitType", source = "benefitType.name")
+    @Mapping(target = "tierName", source = "tierEntity.name")
+    @Mapping(target = "tierMinPoints", source = "tierEntity.minPoints")
     BenefitResponse toDto(BenefitEntity benefitEntity);
 
 }
