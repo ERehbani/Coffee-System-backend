@@ -14,6 +14,8 @@ public interface ICafeService {
 
     CafeResponse getById(UUID externalId);
 
+    CafeResponse getMine();
+
     CafeResponse create(CreateCafeAccountRequest request, UserEntity user);
 
     CafeResponse update(UUID externalId, UpdateCafeRequest request);

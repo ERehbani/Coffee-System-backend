@@ -72,6 +72,14 @@ public class CafeController {
         return ResponseEntity.ok(service.getAll());
     }
 
+    @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
+    @GetMapping("/me")
+    @Operation(summary = "Get my cafe", description = "Retrieves the cafeteria owned by the authenticated cafe user")
+    @ApiResponses
+    ResponseEntity<CafeResponse> getMine() {
+        return ResponseEntity.ok(service.getMine());
+    }
+
 //    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{externalId}")
     @Operation(summary = "Get cafe by ID", description = "Retrieves a specific cafeteria by its external ID")
