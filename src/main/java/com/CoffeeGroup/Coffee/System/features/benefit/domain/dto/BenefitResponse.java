@@ -1,8 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.benefit.domain.dto;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 
 public record BenefitResponse(
         UUID externalId,
@@ -14,5 +16,12 @@ public record BenefitResponse(
         String description,
         String conditions,
         String cafeEntity,
-        GlobalBenefit isGlobal
+        GlobalBenefit isGlobal,
+        BenefitType benefitType,
+        UUID typeId,
+        UUID tierId,
+        String tierName,
+        Integer tierMinPoints,
+        LocalDate startDate,
+        LocalDate endDate
 ) {}

@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,13 +92,21 @@ public class BenefitService implements IBenefitService {
     @Override
     public void delete(UUID externalId) {
         BenefitEntity benefit = getBenefit(externalId);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-        if (isCafeteria && benefit.getIsGlobal().equals(GlobalBenefit.GLOBAL_BENEFIT)) {
-            throw new IllegalArgumentException("A cafe cannot delete a global benefit");
+        if (!canDelete(benefit)) {
+            throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
         }
         benefitRepository.delete(benefit);
+    }
+
+    /** A cafe deletes only the benefits of its own cafe; the admin deletes only global benefits. */
+    private boolean canDelete(BenefitEntity benefit) {
+        if (securityUtils.isCafeteria()) {
+            CafeEntity owner = benefit.getCafeEntity();
+            return owner != null && cafeRepository.findByUser_Credentials_Username(securityUtils.getCurrentUsername())
+                    .map(cafe -> cafe.getExternalId().equals(owner.getExternalId()))
+                    .orElse(false);
+        }
+        return securityUtils.isAdmin() && benefit.getIsGlobal() == GlobalBenefit.GLOBAL_BENEFIT;
     }
 
     @Override
@@ -402,6 +412,21 @@ public class BenefitService implements IBenefitService {
         }
 
         return benefits.stream()
+                .map(responseMapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public List<BenefitResponse> getAvailableCatalog(UUID cafeId, BenefitType type) {
+        LocalDate today = LocalDate.now();
+
+        return benefitRepository.findByIsPublicTrueAndStatusTrue().stream()
+                .filter(benefit -> benefit.getEndDate() == null || !benefit.getEndDate().isBefore(today))
+                .filter(benefit -> cafeId == null
+                        || (benefit.getCafeEntity() != null && cafeId.equals(benefit.getCafeEntity().getExternalId())))
+                .filter(benefit -> type == null
+                        || (benefit.getBenefitType() != null && benefit.getBenefitType().getName() == type))
+                .sorted(Comparator.comparing(BenefitEntity::getPointsCost, Comparator.nullsLast(Comparator.naturalOrder())))
                 .map(responseMapper::toDto)
                 .toList();
     }

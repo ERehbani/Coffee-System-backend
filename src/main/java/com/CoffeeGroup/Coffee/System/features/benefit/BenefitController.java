@@ -38,7 +38,7 @@ public class BenefitController {
         return new ResponseEntity<>(benefitService.save(CreateRequest),HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @DeleteMapping("/{externalId}")
     @Operation(summary = "Delete benefit", description = "Deletes a benefit by its external ID")
     @ApiResponses
@@ -123,10 +123,6 @@ public class BenefitController {
         return ResponseEntity.ok(benefitService.getBenefitByCafe(cafeId, benefitId));
     }
 
-    /*la diferencia de este y el de 2 endpoints mas arriba
-     es que este lo usan los clientes y muestra los disponibles
-     el otro lo utiliza solo la cafeteria para poder ver absolutamente todos*/
-
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/cafes/{cafeId}/available/filter")
     @Operation(summary = "Filter available benefits", description = "Filters available benefits for clients by various criteria")
@@ -148,5 +144,15 @@ public class BenefitController {
             @Parameter(description = "Filter by benefit type") @RequestParam(required = false) BenefitType type,
             @Parameter(description = "Filter by maximum points required") @RequestParam(required = false) Integer maxPoints) {
         return ResponseEntity.ok(benefitService.filterAvailableGlobalBenefits(name, type, maxPoints));
+    }
+
+    @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @GetMapping("/available")
+    @Operation(summary = "Available benefits catalog", description = "Lists every public and active benefit, optionally filtered by cafe and benefit type")
+    @ApiResponses
+    ResponseEntity<List<BenefitResponse>> availableCatalog(
+            @Parameter(description = "Cafe external ID") @RequestParam(required = false) UUID cafeId,
+            @Parameter(description = "Filter by benefit type") @RequestParam(required = false) BenefitType type) {
+        return ResponseEntity.ok(benefitService.getAvailableCatalog(cafeId, type));
     }
 }

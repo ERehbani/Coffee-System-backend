@@ -47,7 +47,7 @@ public class CafeController {
      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @PutMapping("/{externalId}")
     @Operation(summary = "Update cafe", description = "Updates cafeteria information")
     @ApiResponses
@@ -70,6 +70,14 @@ public class CafeController {
     @ApiResponses
     ResponseEntity<List<CafeResponse>> getAll(){
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
+    @GetMapping("/me")
+    @Operation(summary = "Get my cafe", description = "Retrieves the cafeteria owned by the authenticated cafe user")
+    @ApiResponses
+    ResponseEntity<CafeResponse> getMine() {
+        return ResponseEntity.ok(service.getMine());
     }
 
 //    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
