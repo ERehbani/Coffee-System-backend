@@ -30,6 +30,8 @@ public class ClientMapper {
         return new ClientResponse(
                 client.getExternalId(),
                 client.getName(),
+                client.getLastName(),
+                client.getPhone(),
                 client.getProfilePhoto(),
                 client.getCurrentPoints(),
                 client.getHistoricalPoints(),

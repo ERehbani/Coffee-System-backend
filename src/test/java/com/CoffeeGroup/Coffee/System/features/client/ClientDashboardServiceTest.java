@@ -63,6 +63,8 @@ class ClientDashboardServiceTest {
         client = ClientEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name("Ana")
+                .lastName("Perez")
+                .phone("1155550000")
                 .profilePhoto("https://img/ana.png")
                 .user(UserEntity.builder().email(new Email("ana@mail.com")).build())
                 .build();
@@ -114,21 +116,25 @@ class ClientDashboardServiceTest {
 
         assertThat(profile.id()).isEqualTo(client.getExternalId());
         assertThat(profile.firstName()).isEqualTo("Ana");
-        assertThat(profile.lastName()).isNull();
+        assertThat(profile.lastName()).isEqualTo("Perez");
         assertThat(profile.email()).isEqualTo("ana@mail.com");
-        assertThat(profile.phoneNumber()).isNull();
+        assertThat(profile.phoneNumber()).isEqualTo("1155550000");
         assertThat(profile.avatarUrl()).isEqualTo("https://img/ana.png");
     }
 
     @Test
-    void viewMyDashboardToleratesAClientWithoutUserOrPhoto() {
+    void viewMyDashboardToleratesAClientWithoutUserPhotoLastNameOrPhone() {
         client.setUser(null);
         client.setProfilePhoto(null);
+        client.setLastName(null);
+        client.setPhone(null);
 
         ClientDashboardResponse.Profile profile = service.viewMyDashboard().client();
 
         assertThat(profile.email()).isNull();
         assertThat(profile.avatarUrl()).isNull();
+        assertThat(profile.lastName()).isNull();
+        assertThat(profile.phoneNumber()).isNull();
     }
 
     @Test

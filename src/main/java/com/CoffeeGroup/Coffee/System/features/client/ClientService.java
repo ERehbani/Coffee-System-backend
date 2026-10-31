@@ -113,6 +113,14 @@ public class ClientService implements IClientService {
             client.setName(request.name());
         }
 
+        if (request.lastName() != null) {
+            client.setLastName(request.lastName());
+        }
+
+        if (request.phone() != null) {
+            client.setPhone(request.phone());
+        }
+
         if (request.profilePhoto() != null) {
             client.setProfilePhoto(request.profilePhoto());
         }
