@@ -18,6 +18,7 @@ public record PurchaseResponse(
         BigDecimal price,
         PurchaseStatus status,
         UUID clientId,
+        String clientName,
         UUID cafeId,
         String cafeName,
         UUID redemptionId,
