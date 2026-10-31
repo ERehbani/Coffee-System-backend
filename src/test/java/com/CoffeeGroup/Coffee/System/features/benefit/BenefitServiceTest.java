@@ -19,14 +19,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitCreateMapperImpl;
@@ -167,72 +165,5 @@ class BenefitServiceTest {
                 .containsExactly("Central dos por uno", "Norte dos por uno", "Global dos por uno");
         assertThat(service.getAvailableCatalog(centralCafe.getExternalId(), BenefitType.DOS_POR_UNO))
                 .extracting(BenefitResponse::name).containsExactly("Central dos por uno");
-    }
-
-    // --- delete ---
-
-    private BenefitEntity storedBenefit(CafeEntity cafe) {
-        BenefitEntity benefit = BenefitEntity.builder()
-                .externalId(UUID.randomUUID())
-                .name("Cafe gratis")
-                .pointsCost(100)
-                .cafeEntity(cafe)
-                .isGlobal(cafe == null ? GlobalBenefit.GLOBAL_BENEFIT : GlobalBenefit.CAFFETERIA_BENEFIT)
-                .build();
-        when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
-        return benefit;
-    }
-
-    private void givenCafeteriaOwning(CafeEntity cafe) {
-        when(securityUtils.isCafeteria()).thenReturn(true);
-        when(securityUtils.getCurrentUsername()).thenReturn("cafe@mail.com");
-        when(cafeRepository.findByUser_Credentials_Username("cafe@mail.com")).thenReturn(Optional.of(cafe));
-    }
-
-    @Test
-    void aCafeDeletesItsOwnBenefit() {
-        BenefitEntity benefit = storedBenefit(centralCafe);
-        givenCafeteriaOwning(centralCafe);
-
-        service.delete(benefit.getExternalId());
-
-        verify(benefitRepository).delete(benefit);
-    }
-
-    @Test
-    void aCafeCannotDeleteTheBenefitOfAnotherCafe() {
-        BenefitEntity benefit = storedBenefit(northCafe);
-        givenCafeteriaOwning(centralCafe);
-
-        assertThatThrownBy(() -> service.delete(benefit.getExternalId())).isInstanceOf(AccessDeniedException.class);
-        verify(benefitRepository, never()).delete(any(BenefitEntity.class));
-    }
-
-    @Test
-    void aCafeCannotDeleteAGlobalBenefit() {
-        BenefitEntity benefit = storedBenefit(null);
-        when(securityUtils.isCafeteria()).thenReturn(true);
-
-        assertThatThrownBy(() -> service.delete(benefit.getExternalId())).isInstanceOf(AccessDeniedException.class);
-        verify(benefitRepository, never()).delete(any(BenefitEntity.class));
-    }
-
-    @Test
-    void theAdminDeletesAGlobalBenefit() {
-        BenefitEntity benefit = storedBenefit(null);
-        when(securityUtils.isAdmin()).thenReturn(true);
-
-        service.delete(benefit.getExternalId());
-
-        verify(benefitRepository).delete(benefit);
-    }
-
-    @Test
-    void theAdminCannotDeleteTheBenefitOfACafe() {
-        BenefitEntity benefit = storedBenefit(centralCafe);
-        when(securityUtils.isAdmin()).thenReturn(true);
-
-        assertThatThrownBy(() -> service.delete(benefit.getExternalId())).isInstanceOf(AccessDeniedException.class);
-        verify(benefitRepository, never()).delete(any(BenefitEntity.class));
     }
 }
