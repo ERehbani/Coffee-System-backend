@@ -92,13 +92,21 @@ public class BenefitService implements IBenefitService {
     @Override
     public void delete(UUID externalId) {
         BenefitEntity benefit = getBenefit(externalId);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-        if (isCafeteria && benefit.getIsGlobal().equals(GlobalBenefit.GLOBAL_BENEFIT)) {
-            throw new IllegalArgumentException("A cafe cannot delete a global benefit");
+        if (!canDelete(benefit)) {
+            throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
         }
         benefitRepository.delete(benefit);
+    }
+
+    /** A cafe deletes only the benefits of its own cafe; the admin deletes only global benefits. */
+    private boolean canDelete(BenefitEntity benefit) {
+        if (securityUtils.isCafeteria()) {
+            CafeEntity owner = benefit.getCafeEntity();
+            return owner != null && cafeRepository.findByUser_Credentials_Username(securityUtils.getCurrentUsername())
+                    .map(cafe -> cafe.getExternalId().equals(owner.getExternalId()))
+                    .orElse(false);
+        }
+        return securityUtils.isAdmin() && benefit.getIsGlobal() == GlobalBenefit.GLOBAL_BENEFIT;
     }
 
     @Override

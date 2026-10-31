@@ -38,7 +38,7 @@ public class BenefitController {
         return new ResponseEntity<>(benefitService.save(CreateRequest),HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @DeleteMapping("/{externalId}")
     @Operation(summary = "Delete benefit", description = "Deletes a benefit by its external ID")
     @ApiResponses

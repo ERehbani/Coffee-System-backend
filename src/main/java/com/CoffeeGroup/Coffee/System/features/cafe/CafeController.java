@@ -47,7 +47,7 @@ public class CafeController {
      return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
     }
 
-    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @PutMapping("/{externalId}")
     @Operation(summary = "Update cafe", description = "Updates cafeteria information")
     @ApiResponses
