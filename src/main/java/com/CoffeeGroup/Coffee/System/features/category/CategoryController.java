@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,6 +53,15 @@ public class CategoryController {
     @ApiResponses
     public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
         return ResponseEntity.ok(categoryService.create(categoryRequest));
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PutMapping("/{externalId}")
+    @Operation(summary = "Update category", description = "Renames a product category")
+    @ApiResponses
+    public ResponseEntity<CategoryResponse> update(@Parameter(description = "Category external ID") @PathVariable UUID externalId,
+                                                   @Valid @RequestBody CategoryRequest categoryRequest) {
+        return ResponseEntity.ok(categoryService.update(externalId, categoryRequest));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
