@@ -49,6 +49,15 @@ public class CafeService implements ICafeService {
     }
 
     @Override
+    public CafeResponse getMine() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        assert auth != null;
+        return cafeRepository.findByUser_Credentials_Username(auth.getName())
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+    }
+
+    @Override
     public CafeResponse getById(UUID externalId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         assert auth != null;

@@ -43,6 +43,14 @@ public class CategoryService implements ICategoryService {
         return responseMapper.toDto(categoryRepository.save(entity));
     }
 
+    @Transactional
+    public CategoryResponse update(UUID externalId, CategoryRequest categoryRequest){
+        CategoryEntity category = categoryRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+        category.setName(categoryRequest.name());
+        return responseMapper.toDto(categoryRepository.save(category));
+    }
+
     public List<CategoryResponse> searchByName(String name) {
         validateName(name);
         return categoryRepository

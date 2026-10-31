@@ -62,12 +62,12 @@ public class ClientDashboardService implements IClientDashboardService {
                 featuredBenefits(clientTierService.benefitsOf(client)));
     }
 
-    /** The backend keeps a single name and no phone number for clients, so those two fields are left empty. */
     private static Profile profile(ClientEntity client) {
         String email = client.getUser() == null || client.getUser().getEmail() == null
                 ? null
                 : client.getUser().getEmail().value();
-        return new Profile(client.getExternalId(), client.getName(), null, email, null, client.getProfilePhoto());
+        return new Profile(client.getExternalId(), client.getName(), client.getLastName(), email, client.getPhone(),
+                client.getProfilePhoto());
     }
 
     private static Loyalty loyalty(ClientTierResponse tier) {

@@ -18,7 +18,10 @@ public record BenefitResponse(
         String cafeEntity,
         GlobalBenefit isGlobal,
         BenefitType benefitType,
+        UUID typeId,
+        UUID tierId,
         String tierName,
         Integer tierMinPoints,
+        LocalDate startDate,
         LocalDate endDate
 ) {}
