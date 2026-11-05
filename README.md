@@ -111,21 +111,24 @@ Estos endpoints estan habilitados sin autenticacion en la configuracion de segur
 
 ## Variables de entorno
 
-La aplicacion se configura mediante variables de entorno (archivo `.env`):
+La aplicacion se configura mediante variables de entorno. Copiar la plantilla y completar los datos del MySQL propio:
 
 ```
-DB_URL=jdbc:mysql://localhost:3307/coffee
-DB_USER=root
-DB_PASSWORD=tu_password
-JWT_SECRET=tu_secreto
-JWT_EXPIRATION=3600000
-SUPERADMIN_EMAIL=admin@coffee.com
-SUPERADMIN_PASSWORD=tu_password
-RESEND_APIKEY=tu_api_key
-
-MYSQL_ROOT_PASSWORD=tu_password
-MYSQL_DATABASE=coffee
+cp .env.example .env
 ```
+
+Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual para que todo el equipo tenga los mismos usuarios de prueba. El archivo `.env` no se sube al repositorio.
+
+| Variable | Descripcion |
+|---|---|
+| `DB_URL` | URL JDBC de la base. Con Docker el puerto es `3307`, con un MySQL local suele ser `3306` |
+| `DB_USER` / `DB_PASSWORD` | Usuario y contraseña de MySQL |
+| `JWT_SECRET` | Secreto para firmar los tokens, de al menos 32 caracteres |
+| `JWT_EXPIRATION` | Duracion del token en milisegundos |
+| `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | Superadmin que se crea al arrancar si no existe |
+| `RESEND_APIKEY` | API key de Resend. En local alcanza con un valor de prueba |
+| `CORS_ALLOWED_ORIGINS` | Origenes del frontend habilitados, separados por coma |
+| `MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE` | Solo para Docker Compose |
 
 ## Ejecucion
 
@@ -141,9 +144,19 @@ La aplicacion queda disponible en `http://localhost:8080` y MySQL en el puerto `
 
 ### En local
 
-Requiere Java 21 y una instancia de MySQL accesible. Definir las variables de entorno y ejecutar:
+Requiere Java 21 y una instancia de MySQL accesible. Spring no lee el `.env` por si solo, asi que hay que cargarlo antes de ejecutar.
+
+En Git Bash:
 
 ```
+set -a; source .env; set +a
+./mvnw spring-boot:run
+```
+
+En PowerShell:
+
+```
+Get-Content .env | Where-Object { $_ -match '^[A-Z_]+=' } | ForEach-Object { $name, $value = $_ -split '=', 2; Set-Item "env:$name" $value }
 ./mvnw spring-boot:run
 ```
 
@@ -156,6 +169,22 @@ Al arrancar, `DatabaseInitializer` crea de forma automatica:
 - Los tiers iniciales (BRONCE, PLATA, ORO, DIAMANTE).
 - Categorias de productos por defecto.
 - Datos de demostracion: dos cafeterias de prueba con productos y beneficios.
+- Un cliente de prueba.
+
+Cada dato se crea solo si no existe, asi que reiniciar la aplicacion no duplica nada ni pisa lo que ya este cargado.
+
+## Usuarios de prueba
+
+Con el `.env` copiado de `.env.example`, al arrancar quedan disponibles estos usuarios:
+
+| Rol | Email | Contraseña | Origen |
+|---|---|---|---|
+| Superadmin | `admin@test.com` | `Admin123` | Variables `SUPERADMIN_EMAIL` y `SUPERADMIN_PASSWORD` |
+| Cafeteria | `cafe.central@test.com` | `Cafe1234` | `DatabaseInitializer` |
+| Cafeteria | `cafe.norte@test.com` | `Cafe1234` | `DatabaseInitializer` |
+| Cliente | `cliente@test.com` | `Cliente123` | `DemoClientSeeder` |
+
+Son solo para desarrollo: no usar estas credenciales en un entorno publico.
 
 ## Autenticacion en las peticiones
 

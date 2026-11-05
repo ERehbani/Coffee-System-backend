@@ -29,6 +29,7 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
 import com.CoffeeGroup.Coffee.System.features.category.ICategoryRepository;
+import com.CoffeeGroup.Coffee.System.features.client.DemoClientSeeder;
 import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
@@ -61,6 +62,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final IBenefitTypeRepository benefitTypeRepository;
     private final IBenefitRepository benefitRepository;
     private final BenefitFormatSeeder benefitFormatSeeder;
+    private final DemoClientSeeder demoClientSeeder;
 
     @Value("${app.superadmin.email}")
     private String superAdminEmail;
@@ -109,6 +111,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         createSuperAdmin(superAdminRole);
 
         createDemoData(cafeteriaRole);
+
+        demoClientSeeder.seed();
     }
 
     private Map<Permits, PermitEntity> createPermits() {
