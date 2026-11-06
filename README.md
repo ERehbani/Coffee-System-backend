@@ -65,7 +65,7 @@ src/main/java/com/CoffeeGroup/Coffee/System
 ## Modulos principales
 
 ### Autenticacion (`/auth`)
-Registro de clientes y login. El login devuelve un token JWT que debe enviarse en el header `Authorization: Bearer <token>` para el resto de los endpoints.
+Registro de clientes y sesion. El login guarda el JWT en una cookie `auth_token` HttpOnly que el navegador envia sola en cada peticion. `POST /auth/logout` borra la cookie y `GET /auth/me` devuelve el email y los roles de la sesion.
 
 ### Usuarios (`/users`)
 Administracion de cuentas de usuario. Acceso exclusivo de superadmin.
@@ -119,12 +119,20 @@ cp .env.example .env
 
 Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual para que todo el equipo tenga los mismos usuarios de prueba. El archivo `.env` no se sube al repositorio.
 
+`JWT_SECRET` viene vacio en la plantilla. Para generar uno en Git Bash:
+
+```
+openssl rand -base64 48
+```
+
 | Variable | Descripcion |
 |---|---|
 | `DB_URL` | URL JDBC de la base. Con Docker el puerto es `3307`, con un MySQL local suele ser `3306` |
 | `DB_USER` / `DB_PASSWORD` | Usuario y contraseña de MySQL |
 | `JWT_SECRET` | Secreto para firmar los tokens, de al menos 32 caracteres |
-| `JWT_EXPIRATION` | Duracion del token en milisegundos |
+| `JWT_EXPIRATION` | Duracion del token y de la cookie de sesion en milisegundos |
+| `AUTH_COOKIE_SECURE` | Si la cookie de sesion lleva el atributo `Secure`. Por defecto `true`; los navegadores la aceptan igual en `localhost` |
+| `AUTH_COOKIE_SAME_SITE` | Atributo `SameSite` de la cookie de sesion. Por defecto `Strict` |
 | `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | Superadmin que se crea al arrancar si no existe |
 | `RESEND_APIKEY` | API key de Resend. En local alcanza con un valor de prueba |
 | `CORS_ALLOWED_ORIGINS` | Origenes del frontend habilitados, separados por coma |
@@ -188,13 +196,16 @@ Son solo para desarrollo: no usar estas credenciales en un entorno publico.
 
 ## Autenticacion en las peticiones
 
-1. Registrar un cliente en `POST /auth/register` o usar el superadmin generado al inicio.
-2. Hacer login en `POST /auth/login` para obtener el token.
-3. Incluir el token en cada peticion protegida:
+1. Registrar un cliente en `POST /auth/register` o usar uno de los usuarios de prueba.
+2. Hacer login en `POST /auth/login`. La respuesta trae el email y los roles, y setea la cookie `auth_token`.
+3. Desde el navegador o Swagger UI no hay que hacer nada mas: la cookie viaja sola. Con curl se guarda y se reenvia:
 
 ```
-Authorization: Bearer <token>
+curl -c cookies.txt -H "Content-Type: application/json" -d '{"email":"cliente@test.com","password":"Cliente123"}' http://localhost:8080/auth/login
+curl -b cookies.txt http://localhost:8080/auth/me
 ```
+
+El header `Authorization: Bearer <token>` se sigue aceptando, y tiene prioridad sobre la cookie.
 
 
 ## Reviews
