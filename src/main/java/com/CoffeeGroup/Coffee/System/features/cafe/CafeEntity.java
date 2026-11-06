@@ -6,7 +6,6 @@ import java.util.UUID;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
 import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
@@ -65,14 +64,10 @@ public class CafeEntity {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity user;
 
-    // --- Relacion Producto ---
     @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
     @ToString.Exclude
     private List<ProductEntity> products;
 
-//    @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
-//    @ToString.Exclude
-//    private List<PurchaseEntity> purchases;
 
     @OneToMany(mappedBy = "cafe")
     private List<ReviewEntity> review;

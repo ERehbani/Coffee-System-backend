@@ -53,6 +53,7 @@ public class CredentialsEntity implements UserDetails {
     @JoinColumn(name = "usuario_id", referencedColumnName = "id", unique = true)
     private UserEntity usuario;
 
+    @Builder.Default
     @ManyToMany(cascade = CascadeType.MERGE,fetch = FetchType.EAGER)
     @JoinTable(
             name = "credentials_roles",
