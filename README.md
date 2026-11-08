@@ -117,7 +117,7 @@ La aplicacion se configura mediante variables de entorno. Copiar la plantilla y 
 cp .env.example .env
 ```
 
-Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual para que todo el equipo tenga los mismos usuarios de prueba. El archivo `.env` no se sube al repositorio.
+Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual: la plantilla trae `DEMO_DATA_ENABLED=true`, que crea los mismos usuarios de prueba para todo el equipo. En un entorno publico tiene que ir en `false`. El archivo `.env` no se sube al repositorio.
 
 `JWT_SECRET` viene vacio en la plantilla. Para generar uno en Git Bash:
 
