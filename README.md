@@ -117,7 +117,7 @@ La aplicacion se configura mediante variables de entorno. Copiar la plantilla y 
 cp .env.example .env
 ```
 
-Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual para que todo el equipo tenga los mismos usuarios de prueba. El archivo `.env` no se sube al repositorio.
+Solo hace falta cambiar `DB_URL`, `DB_PASSWORD`, `JWT_SECRET` y, si se usa Docker, `MYSQL_ROOT_PASSWORD`. El resto de los valores conviene dejarlos igual: la plantilla trae `DEMO_DATA_ENABLED=true`, que crea los mismos usuarios de prueba para todo el equipo. En un entorno publico tiene que ir en `false`. El archivo `.env` no se sube al repositorio.
 
 `JWT_SECRET` viene vacio en la plantilla. Para generar uno en Git Bash:
 
@@ -134,6 +134,7 @@ openssl rand -base64 48
 | `AUTH_COOKIE_SECURE` | Si la cookie de sesion lleva el atributo `Secure`. Por defecto `true`; los navegadores la aceptan igual en `localhost` |
 | `AUTH_COOKIE_SAME_SITE` | Atributo `SameSite` de la cookie de sesion. Por defecto `Strict` |
 | `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | Superadmin que se crea al arrancar si no existe |
+| `DEMO_DATA_ENABLED` | Crea las cafeterias y el cliente de prueba. Por defecto `false`; ponerlo en `true` solo en desarrollo local |
 | `RESEND_APIKEY` | API key de Resend. En local alcanza con un valor de prueba |
 | `CORS_ALLOWED_ORIGINS` | Origenes del frontend habilitados, separados por coma |
 | `MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE` | Solo para Docker Compose |
@@ -176,14 +177,13 @@ Al arrancar, `DatabaseInitializer` crea de forma automatica:
 - El usuario superadmin con las credenciales de las variables de entorno.
 - Los tiers iniciales (BRONCE, PLATA, ORO, DIAMANTE).
 - Categorias de productos por defecto.
-- Datos de demostracion: dos cafeterias de prueba con productos y beneficios.
-- Un cliente de prueba.
+- Si `DEMO_DATA_ENABLED=true`, datos de demostracion: dos cafeterias de prueba con productos y beneficios, y un cliente de prueba.
 
 Cada dato se crea solo si no existe, asi que reiniciar la aplicacion no duplica nada ni pisa lo que ya este cargado.
 
 ## Usuarios de prueba
 
-Con el `.env` copiado de `.env.example`, al arrancar quedan disponibles estos usuarios:
+Con el `.env` copiado de `.env.example` y `DEMO_DATA_ENABLED=true`, al arrancar quedan disponibles estos usuarios:
 
 | Rol | Email | Contraseña | Origen |
 |---|---|---|---|

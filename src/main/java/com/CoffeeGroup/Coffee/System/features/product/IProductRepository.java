@@ -29,6 +29,7 @@ public interface IProductRepository extends JpaRepository<ProductEntity, Long> {
     List<ProductEntity> findByCafeAndPrice(CafeEntity cafe, BigDecimal price);
     List<ProductEntity> findByCafeAndAwardedPoints(CafeEntity cafe, Integer awardedPoints);
 
+    /** Most points an active product awards, for each of the given cafes that has one. */
     @Query("select p.cafe.id as cafeId, max(p.awardedPoints) as maxPoints "
             + "from ProductEntity p where p.cafe in :cafes and p.state = true group by p.cafe.id")
     List<CafeMaxPoints> findMaxPointsByCafe(@Param("cafes") List<CafeEntity> cafes);
