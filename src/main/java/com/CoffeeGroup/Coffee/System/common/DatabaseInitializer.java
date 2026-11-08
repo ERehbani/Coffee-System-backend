@@ -70,6 +70,10 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Value("${app.superadmin.password}")
     private String superAdminPassword;
 
+    /** Demo accounts have well-known passwords, so they are only created where this flag is on. */
+    @Value("${app.demo-data.enabled}")
+    private boolean demoDataEnabled;
+
     @Override
     @Transactional
     public void run(String... args) {
@@ -110,9 +114,10 @@ public class DatabaseInitializer implements CommandLineRunner {
 
         createSuperAdmin(superAdminRole);
 
-        createDemoData(cafeteriaRole);
-
-        demoClientSeeder.seed();
+        if (demoDataEnabled) {
+            createDemoData(cafeteriaRole);
+            demoClientSeeder.seed();
+        }
     }
 
     private Map<Permits, PermitEntity> createPermits() {

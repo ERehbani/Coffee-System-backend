@@ -29,6 +29,9 @@ app:
     cookie:
       secure: ${AUTH_COOKIE_SECURE:true}
       same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
+  demo-data:
+    # Demo cafes and client with known passwords. Keep it off outside local development.
+    enabled: ${DEMO_DATA_ENABLED:false}
 
 resend:
   apikey: ${RESEND_APIKEY}
