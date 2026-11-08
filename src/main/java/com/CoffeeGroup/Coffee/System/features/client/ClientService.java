@@ -1,7 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,8 +10,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
-import com.CoffeeGroup.Coffee.System.features.cart.ICartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.UpdateClientRequest;
@@ -20,7 +17,6 @@ import com.CoffeeGroup.Coffee.System.features.client.mapper.ClientMapper;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
-import com.CoffeeGroup.Coffee.System.features.user.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +27,6 @@ import lombok.RequiredArgsConstructor;
 public class ClientService implements IClientService {
     private final ClientRepository clientRepository;
     private final TierRepository tierRepository;
-    private final UserRepository userRepository;
-    private final ICartRepository cartRepository;
     private final ClientMapper clientMapper;
 
 
@@ -100,7 +94,6 @@ public class ClientService implements IClientService {
                     .orElse(null);
             
             if (client == null) {
-                // Try to find client by externalId first to see if it exists
                 var clientById = clientRepository.findByExternalId(externalId);
                 if (clientById.isPresent()) {
                     throw new AccessDeniedException("Access denied: You can only update your own client data");

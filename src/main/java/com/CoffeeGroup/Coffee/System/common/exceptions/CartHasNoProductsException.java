@@ -2,6 +2,9 @@ package com.CoffeeGroup.Coffee.System.common.exceptions;
 
 import java.time.Instant;
 
+import lombok.Getter;
+
+@Getter
 public class CartHasNoProductsException extends RuntimeException {
 
     private final Instant timestamp;

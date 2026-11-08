@@ -6,11 +6,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 
-@Repository
 public interface IBenefitFormatRepository extends JpaRepository<BenefitFormatEntity, Long> {
     Optional<BenefitFormatEntity> findByExternalId(UUID externalId);
 

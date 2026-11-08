@@ -51,9 +51,7 @@ public class CartService implements ICartService {
         CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
 
-        ProductEntity product = productRepository
-                .findByExternalIdAndCafeExternalId(request.productId(), cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
+        ensureProductBelongsToCafe(request.productId(), cafeExternalId);
 
         CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
                 .orElseGet(() -> CartEntity.builder()
@@ -82,6 +80,11 @@ public class CartService implements ICartService {
 
         cart.setTotalPrice(calculateTotalPrice(items));
         return cartMapper.toDto(cartRepository.save(cart));
+    }
+
+    private void ensureProductBelongsToCafe(UUID productExternalId, UUID cafeExternalId) {
+        productRepository.findByExternalIdAndCafeExternalId(productExternalId, cafeExternalId)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
     }
 
     @Override

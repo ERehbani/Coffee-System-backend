@@ -3,6 +3,9 @@ package com.CoffeeGroup.Coffee.System.common.exceptions;
 import java.time.Instant;
 import java.util.NoSuchElementException;
 
+import lombok.Getter;
+
+@Getter
 public class EntityNotFoundException extends NoSuchElementException {
 
     private final String entity;
