@@ -120,6 +120,7 @@ public class ProductService implements IProductService {
             throw new AccessDeniedException("Access denied: You can only update products from your own cafe");
         }
 
+        // Resolved before mutating anything so a missing category leaves the product untouched
         CategoryEntity category = requestBody.categoryId() != null
                 ? resolveCategory(requestBody.categoryId())
                 : null;
@@ -156,6 +157,7 @@ public class ProductService implements IProductService {
             }
         }
 
+        // Logical delete: purchase_details.product_id is a NOT NULL FK, so sold products cannot be removed
         entity.setState(false);
         productRepository.save(entity);
     }
@@ -200,6 +202,7 @@ public class ProductService implements IProductService {
         return toVisibleResponses(getFilteredProducts(cafe, name, price, awardedPoints));
     }
 
+    /** Clients only see active products; admins and the owning cafe see everything. */
     private List<ProductResponse> toVisibleResponses(List<ProductEntity> products) {
         boolean onlyActive = securityUtils.isCliente();
         return products.stream()

@@ -16,6 +16,7 @@ public interface IReviewRepository extends JpaRepository<ReviewEntity, Long> {
     List<ReviewEntity> findByCafeExternalId(UUID cafeExternalId);
     boolean existsByPurchaseExternalId(UUID purchaseExternalId);
 
+    /** Average rating and number of rated reviews for each of the given cafes that has at least one. */
     @Query("select r.cafe.id as cafeId, avg(r.rating) as averageRating, count(r.rating) as reviewCount "
             + "from ReviewEntity r where r.cafe in :cafes and r.rating is not null group by r.cafe.id")
     List<CafeReviewSummary> summarizeByCafe(@Param("cafes") List<CafeEntity> cafes);
