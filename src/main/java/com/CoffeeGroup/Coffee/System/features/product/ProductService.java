@@ -9,7 +9,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.common.email.EmailService;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;

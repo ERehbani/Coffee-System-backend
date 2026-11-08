@@ -1,7 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.cart.domain.mapper;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.CoffeeGroup.Coffee.System.common.model.IMapper;
@@ -24,30 +23,7 @@ public class CartMapper implements IMapper<CartEntity, CartResponse> {
 
     @Override
     public CartEntity toEntity(CartResponse cartResponse) {
-        /*if (cartResponse == null) return null;
-
-        List<CartItem> items = cartResponse.products() != null
-                ? cartResponse.products().stream()
-                        .map(this::toCartItem)
-                        .collect(Collectors.toList())
-                : List.of();
-
-        return CartEntity.builder()
-                .externalId(cartResponse.externalId() != null ? cartResponse.externalId() : UUID.randomUUID())
-                .client(cartResponse.clientid())
-                .cafeEntity(cartResponse.cafeid())
-                .totalPrice(cartResponse.totalPrice())
-                .items(items)
-                .build();
-
-         */
         return null;
-    }
-    private CartItem toCartItem(CartItemResponse response) {
-        return CartItem.builder()
-                .productId(response.productId())
-                .quantity(response.quantity())
-                .build();
     }
 
     private CartItemResponse toCartItemResponse(CartItem item) {

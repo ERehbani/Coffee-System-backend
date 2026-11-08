@@ -9,9 +9,7 @@ import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
 public interface CafeRepository extends JpaRepository <CafeEntity, Long> {
 
     Optional<CafeEntity> findByExternalId(UUID externalId);
