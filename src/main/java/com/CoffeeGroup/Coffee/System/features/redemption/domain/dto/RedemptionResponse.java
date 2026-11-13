@@ -1,8 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.redemption.domain.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
 
 public record RedemptionResponse(
         UUID externalId,
@@ -15,5 +18,11 @@ public record RedemptionResponse(
         String description,
         LocalDate expiresAt,
         String conditions,
-        LocalDateTime usedDate
+        LocalDateTime usedDate,
+        UUID cafeId,
+        BenefitType benefitType,
+        Double discountPercentage,
+        UUID productId,
+        String productName,
+        BigDecimal productPrice
 ) {}

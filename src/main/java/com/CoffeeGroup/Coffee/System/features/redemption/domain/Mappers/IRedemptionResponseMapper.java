@@ -23,5 +23,11 @@ public interface IRedemptionResponseMapper extends IMapper<RedemptionEntity, Red
     @Mapping(target = "description", source = "benefit.description")
     @Mapping(target = "expiresAt", source = "benefit.endDate")
     @Mapping(target = "conditions", source = "benefit.conditions")
+    @Mapping(target = "cafeId", source = "cafeEntity.externalId")
+    @Mapping(target = "benefitType", source = "benefit.benefitType.name")
+    @Mapping(target = "discountPercentage", source = "benefit.benefitType.porcentajeDescuento")
+    @Mapping(target = "productId", source = "benefit.benefitType.product.externalId")
+    @Mapping(target = "productName", source = "benefit.benefitType.product.name")
+    @Mapping(target = "productPrice", source = "benefit.benefitType.product.price")
     RedemptionResponse toDto(RedemptionEntity redemptionEntity);
 }
