@@ -3,6 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.purchase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -25,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.email.EmailService;
+import com.CoffeeGroup.Coffee.System.common.model.Email;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
@@ -39,6 +41,7 @@ import com.CoffeeGroup.Coffee.System.features.purchase.domain.dto.CreatePurchase
 import com.CoffeeGroup.Coffee.System.features.purchase.domain.mapper.PurchaseMapper;
 import com.CoffeeGroup.Coffee.System.features.redemption.IRedemptionRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
 @ExtendWith(MockitoExtension.class)
 class PurchaseServiceTest {
@@ -78,6 +81,7 @@ class PurchaseServiceTest {
         client = ClientEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name("Ana")
+                .user(UserEntity.builder().email(new Email("ana@test.com")).build())
                 .currentPoints(950)
                 .historicalPoints(950)
                 .tier(bronce)
@@ -119,6 +123,14 @@ class PurchaseServiceTest {
         InOrder order = inOrder(clientTierService, clientRepository);
         order.verify(clientTierService).upgradeTierIfReached(client);
         order.verify(clientRepository).save(client);
+    }
+
+    @Test
+    void createSendsTheReceiptToTheEmailOfTheClient() {
+        service.create(new CreatePurchaseRequest(cart.getExternalId(), null));
+
+        verify(emailService).sendPurchaseConfirmation(
+                eq("ana@test.com"), any(), eq("Ana"), any(), eq(new BigDecimal("5000")), any());
     }
 
     @Test

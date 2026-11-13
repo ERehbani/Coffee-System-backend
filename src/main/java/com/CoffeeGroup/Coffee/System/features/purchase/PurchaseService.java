@@ -132,7 +132,7 @@ public class PurchaseService implements IPurchaseService{
         cart.getItems().clear();
         cart.setTotalPrice(BigDecimal.ZERO);
         cartRepository.save(cart);
-        emailService.sendPurchaseConfirmation("Purchase created", client.getName(), purchase.getExternalId(), totalPrice, details);
+        emailService.sendPurchaseConfirmation(emailOf(client), "Purchase created", client.getName(), purchase.getExternalId(), totalPrice, details);
         return purchaseMapper.toResponse(purchase);
     }
 
@@ -270,6 +270,10 @@ public class PurchaseService implements IPurchaseService{
         client.setHistoricalPoints(client.getHistoricalPoints() + totalGeneratedPoints);
         clientTierService.upgradeTierIfReached(client);
         clientRepository.save(client);
+    }
+
+    private String emailOf(ClientEntity client) {
+        return client.getUser().getEmail().value();
     }
 
     private PurchaseEntity buildPurchase(ClientEntity client, CartEntity cart, CafeEntity cafe) {

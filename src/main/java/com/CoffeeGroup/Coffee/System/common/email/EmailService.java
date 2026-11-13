@@ -28,7 +28,7 @@ public class EmailService {
         this.resend = new Resend(cleanApiKey);
     }
 
-    public void sendPurchaseConfirmation(String subject, String clientName, UUID purchaseId, BigDecimal totalPrice, List<PurchaseDetailEntity> details) {
+    public void sendPurchaseConfirmation(String recipient, String subject, String clientName, UUID purchaseId, BigDecimal totalPrice, List<PurchaseDetailEntity> details) {
         StringBuilder productsHtml = new StringBuilder();
         productsHtml.append("<table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%;'>");
         productsHtml.append("<tr style='background-color: #f2f2f2;'>");
@@ -56,7 +56,7 @@ public class EmailService {
 
         CreateEmailOptions params = CreateEmailOptions.builder()
                 .from("Acme <onboarding@resend.dev>")
-                .to("elianrhbn@gmail.com")
+                .to(recipient)
                 .subject(subject)
                 .html("<h2>Hola " + clientName + "</h2>" +
                         "<p>Tu compra fue confirmada exitosamente.</p>" +
