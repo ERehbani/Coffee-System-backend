@@ -122,6 +122,10 @@ public class CafeProductEntity extends AuditableEntity {
         active = false;
     }
 
+    public void activate() {
+        active = true;
+    }
+
     public void markAvailability(boolean isAvailable) {
         available = isAvailable;
     }

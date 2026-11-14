@@ -28,4 +28,6 @@ public interface ICafeProductService {
     ProductResponse changeAvailability(UUID productExternalId, boolean available);
 
     void deactivate(UUID productExternalId);
+
+    ProductResponse activate(UUID productExternalId);
 }

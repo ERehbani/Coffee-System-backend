@@ -86,6 +86,15 @@ public class CafeProductController {
         return ResponseEntity.ok(cafeProductService.changeAvailability(productId, request.available()));
     }
 
+    @PatchMapping("/{productId}/activate")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @Operation(summary = "Sell a deactivated product again")
+    public ResponseEntity<ProductResponse> activate(
+            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
+            @Parameter(description = "Product external ID") @PathVariable UUID productId) {
+        return ResponseEntity.ok(cafeProductService.activate(productId));
+    }
+
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @Operation(summary = "Stop selling a product", description = "Logical delete, the purchase history is kept")

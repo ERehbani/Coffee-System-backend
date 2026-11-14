@@ -124,6 +124,32 @@ class CafeProductServiceTest {
     }
 
     @Test
+    void aDeactivatedProductCanBeSoldAgain() {
+        CafeProductEntity product = TestData.product(central, medialuna, "900", 50);
+        product.deactivate();
+        when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+
+        ProductResponse response = service.activate(product.getExternalId());
+
+        assertThat(product.isActive()).isTrue();
+        assertThat(response.state()).isTrue();
+        verify(cafeAccessGuard).assertCanManage(central);
+    }
+
+    @Test
+    void aProductCannotBeActivatedWhileTheCafeSellsItAgainUnderAnotherOffer() {
+        CafeProductEntity product = TestData.product(central, medialuna, "900", 50);
+        product.deactivate();
+        when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        when(cafeProductRepository.existsByCafeAndCatalogProductAndActiveTrue(central, medialuna)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.activate(product.getExternalId()))
+                .isInstanceOf(EntityAlreadyExistsException.class)
+                .hasMessage("The cafe already sells Medialuna");
+        assertThat(product.isActive()).isFalse();
+    }
+
+    @Test
     void renamingSetsTheCustomNameOfTheCafe() {
         CafeProductEntity product = TestData.product(central, medialuna, "900", 50);
         when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));

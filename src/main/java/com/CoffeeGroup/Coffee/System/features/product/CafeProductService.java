@@ -126,11 +126,26 @@ public class CafeProductService implements ICafeProductService {
         managedProduct(productExternalId).deactivate();
     }
 
-    private ProductResponse addToCafe(CafeEntity cafe, ProductRequest request) {
-        CatalogProductEntity catalogProduct = resolveCatalogProduct(request, cafe);
+    @Override
+    @Transactional
+    public ProductResponse activate(UUID productExternalId) {
+        CafeProductEntity product = managedProduct(productExternalId);
+        if (!product.isActive()) {
+            ensureNotSoldYet(product.getCafe(), product.getCatalogProduct());
+            product.activate();
+        }
+        return cafeProductMapper.toResponse(product);
+    }
+
+    private void ensureNotSoldYet(CafeEntity cafe, CatalogProductEntity catalogProduct) {
         if (cafeProductRepository.existsByCafeAndCatalogProductAndActiveTrue(cafe, catalogProduct)) {
             throw new EntityAlreadyExistsException("The cafe already sells " + catalogProduct.getName());
         }
+    }
+
+    private ProductResponse addToCafe(CafeEntity cafe, ProductRequest request) {
+        CatalogProductEntity catalogProduct = resolveCatalogProduct(request, cafe);
+        ensureNotSoldYet(cafe, catalogProduct);
         CafeProductEntity product = CafeProductEntity.builder()
                 .cafe(cafe)
                 .catalogProduct(catalogProduct)
