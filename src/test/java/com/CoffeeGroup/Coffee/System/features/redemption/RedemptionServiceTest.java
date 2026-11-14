@@ -6,190 +6,157 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BenefitSoldOutException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.InsufficientPointsException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.ProductNotAvailableException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionCreateMapper;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.mapper.RedemptionMapper;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+import com.CoffeeGroup.Coffee.System.support.TestData;
 
 @ExtendWith(MockitoExtension.class)
 class RedemptionServiceTest {
 
     @Mock
-    private IRedemptionRepository redemptionRepository;
+    private RedemptionRepository redemptionRepository;
     @Mock
-    private IRedemptionResponseMapper responseMapper;
-    @Mock
-    private IRedemptionCreateMapper createMapper;
+    private BenefitRepository benefitRepository;
     @Mock
     private ClientRepository clientRepository;
-    @Mock
-    private IBenefitRepository benefitRepository;
-    @Mock
-    private CredentialsRepository credentialsRepository;
-    @Mock
-    private CafeRepository cafeRepository;
     @Mock
     private SecurityUtils securityUtils;
 
     private RedemptionService service;
 
-    private final TierEntity bronce = tier("BRONCE", 0);
-    private final TierEntity plata = tier("PLATA", 1000);
-    private final TierEntity oro = tier("ORO", 3000);
-
+    private final TierEntity bronce = TestData.tier("BRONCE", 0);
+    private final CafeEntity central = TestData.cafe("Cafe Central");
     private ClientEntity client;
     private BenefitEntity benefit;
     private RedemptionCreateRequest request;
 
     @BeforeEach
     void setUp() {
-        service = new RedemptionService(redemptionRepository, responseMapper, createMapper, clientRepository,
-                benefitRepository, credentialsRepository, cafeRepository, securityUtils);
-
-        client = ClientEntity.builder()
-                .externalId(UUID.randomUUID())
-                .currentPoints(500)
-                .historicalPoints(1500)
-                .tier(plata)
-                .build();
-        benefit = BenefitEntity.builder()
-                .externalId(UUID.randomUUID())
-                .name("Free coffee")
-                .pointsCost(100)
-                .status(true)
-                .isPublic(true)
-                .maxRedemptions(5)
-                .tierEntity(plata)
-                .build();
+        service = new RedemptionService(redemptionRepository, new RedemptionMapper(), benefitRepository,
+                clientRepository, securityUtils, TestData.fixedClock());
+        client = TestData.client(bronce, 500);
+        benefit = TestData.benefit("Capuccino gratis", BenefitType.PRODUCTO_POR_PUNTOS, central, bronce);
+        benefit.setCafeProduct(TestData.product(central, TestData.catalogProduct("Capuccino"), "2500", 80));
         request = new RedemptionCreateRequest(benefit.getExternalId());
 
-        lenient().when(securityUtils.getCurrentClient()).thenReturn(client);
+        lenient().when(securityUtils.currentClient()).thenReturn(client);
         lenient().when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
-        lenient().when(createMapper.toEntity(request)).thenReturn(new RedemptionEntity());
-        lenient().when(responseMapper.toDto(any(RedemptionEntity.class)))
-                .thenReturn(new RedemptionResponse(UUID.randomUUID(), null, 100, true, "code", "Free coffee", "Global", null, null, null, null,
-                        null, null, null, null, null, null));
+        lenient().when(benefitRepository.consumeRedemption(benefit.getId())).thenReturn(1);
     }
-
-    private static TierEntity tier(String name, int minPoints) {
-        return TierEntity.builder().externalId(UUID.randomUUID()).name(name).minPoints(minPoints).build();
-    }
-
 
     @Test
-    void createRejectsABenefitOfAHigherTierAndDeductsNoPoints() {
-        benefit.setTierEntity(oro);
+    void createSpendsThePointsTakesASlotAndReturnsTheCode() {
+        var response = service.create(request);
 
-        assertThatThrownBy(() -> service.create(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("higher tier");
+        assertThat(client.getCurrentPoints()).isEqualTo(400);
+        assertThat(response.status()).isEqualTo(RedemptionStatus.ACTIVE);
+        assertThat(response.validationCode()).hasSize(36);
+        verify(benefitRepository).consumeRedemption(benefit.getId());
+        ArgumentCaptor<RedemptionEntity> saved = ArgumentCaptor.forClass(RedemptionEntity.class);
+        verify(redemptionRepository).save(saved.capture());
+        assertThat(saved.getValue().getRedeemedAt()).isEqualTo(LocalDateTime.of(2026, 11, 14, 10, 0));
+    }
+
+    @Test
+    void createRejectsASoldOutBenefitWithoutSpendingPoints() {
+        when(benefitRepository.consumeRedemption(benefit.getId())).thenReturn(0);
+
+        assertThatThrownBy(() -> service.create(request)).isInstanceOf(BenefitSoldOutException.class);
 
         assertThat(client.getCurrentPoints()).isEqualTo(500);
-        assertThat(benefit.getMaxRedemptions()).isEqualTo(5);
-        verify(clientRepository, never()).save(any(ClientEntity.class));
-        verify(benefitRepository, never()).save(any(BenefitEntity.class));
-        verifyNoInteractions(redemptionRepository);
+        verify(redemptionRepository, never()).save(any());
     }
 
     @Test
-    void createAllowsABenefitOfTheSameTier() {
-        benefit.setTierEntity(plata);
-
-        RedemptionResponse response = service.create(request);
-
-        assertThat(response).isNotNull();
-        assertThat(client.getCurrentPoints()).isEqualTo(400);
-        assertThat(benefit.getMaxRedemptions()).isEqualTo(4);
-        verify(clientRepository).save(client);
-        verify(redemptionRepository).save(any(RedemptionEntity.class));
-    }
-
-    @Test
-    void createAllowsABenefitOfALowerTier() {
-        benefit.setTierEntity(bronce);
-
-        RedemptionResponse response = service.create(request);
-
-        assertThat(response).isNotNull();
-        assertThat(client.getCurrentPoints()).isEqualTo(400);
-        verify(redemptionRepository).save(any(RedemptionEntity.class));
-    }
-
-    @Test
-    void createAllowsABenefitWithoutTier() {
-        benefit.setTierEntity(null);
-
-        RedemptionResponse response = service.create(request);
-
-        assertThat(response).isNotNull();
-        assertThat(client.getCurrentPoints()).isEqualTo(400);
-        verify(redemptionRepository).save(any(RedemptionEntity.class));
-    }
-
-
-    @Test
-    void createRejectsABenefitThatHasNotStartedYetAndDeductsNoPoints() {
-        benefit.setStartDate(LocalDate.now().plusDays(1));
-
-        assertThatThrownBy(() -> service.create(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("not available yet");
-
-        assertThat(client.getCurrentPoints()).isEqualTo(500);
-        assertThat(benefit.getMaxRedemptions()).isEqualTo(5);
-        verify(clientRepository, never()).save(any(ClientEntity.class));
-        verifyNoInteractions(redemptionRepository);
-    }
-
-    @Test
-    void createAllowsABenefitThatStartsToday() {
-        benefit.setStartDate(LocalDate.now());
-
-        RedemptionResponse response = service.create(request);
-
-        assertThat(response).isNotNull();
-        assertThat(client.getCurrentPoints()).isEqualTo(400);
-    }
-
-    @Test
-    void createAllowsABenefitWithoutStartDate() {
-        benefit.setStartDate(null);
-
-        RedemptionResponse response = service.create(request);
-
-        assertThat(response).isNotNull();
-        verify(redemptionRepository).save(any(RedemptionEntity.class));
-    }
-
-
-    @Test
-    void createStillRejectsWhenTheClientHasNotEnoughPoints() {
+    void createRejectsWithoutEnoughPointsBeforeTakingASlot() {
         benefit.setPointsCost(900);
 
-        assertThatThrownBy(() -> service.create(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("enough points");
+        assertThatThrownBy(() -> service.create(request)).isInstanceOf(InsufficientPointsException.class);
 
-        verify(clientRepository, never()).save(any(ClientEntity.class));
+        verify(benefitRepository, never()).consumeRedemption(any());
+    }
+
+    @Test
+    void createRespectsTheLimitPerClient() {
+        benefit.setMaxPerClient(1);
+        when(redemptionRepository.countByClientAndBenefitAndStatusNot(client, benefit, RedemptionStatus.CANCELLED))
+                .thenReturn(1L);
+
+        assertThatThrownBy(() -> service.create(request))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("maximum number of times");
+        verify(benefitRepository, never()).consumeRedemption(any());
+    }
+
+    @Test
+    void anyCafeCanValidateAGlobalBenefit() {
+        benefit.setCafe(null);
+        benefit.setCafeProduct(null);
+        RedemptionEntity redemption = RedemptionEntity.of(client, benefit, LocalDateTime.now());
+        when(redemptionRepository.findByValidationCode("code")).thenReturn(Optional.of(redemption));
+        when(securityUtils.currentCafe()).thenReturn(TestData.cafe("Cafe Norte"));
+
+        service.validate("code");
+
+        assertThat(redemption.getStatus()).isEqualTo(RedemptionStatus.USED);
+    }
+
+    @Test
+    void aCafeCannotValidateTheBenefitOfAnotherCafe() {
+        when(redemptionRepository.findByValidationCode("code"))
+                .thenReturn(Optional.of(RedemptionEntity.of(client, benefit, LocalDateTime.now())));
+        when(securityUtils.currentCafe()).thenReturn(TestData.cafe("Cafe Norte"));
+
+        assertThatThrownBy(() -> service.validate("code")).isInstanceOf(AccessDeniedException.class);
+    }
+
+    @Test
+    void validateFailsWhileTheProductIsSoldOutForToday() {
+        RedemptionEntity redemption = RedemptionEntity.of(client, benefit, LocalDateTime.now());
+        benefit.getCafeProduct().markAvailability(false);
+        when(redemptionRepository.findByValidationCode("code")).thenReturn(Optional.of(redemption));
+        when(securityUtils.currentCafe()).thenReturn(central);
+
+        assertThatThrownBy(() -> service.validate("code")).isInstanceOf(ProductNotAvailableException.class);
+        assertThat(redemption.isActive()).isTrue();
+    }
+
+    @Test
+    void cancelGivesBackThePointsAndTheSlot() {
+        client.spendPoints(100);
+        RedemptionEntity redemption = RedemptionEntity.of(client, benefit, LocalDateTime.now());
+        when(redemptionRepository.findByValidationCode("code")).thenReturn(Optional.of(redemption));
+        when(securityUtils.isAdmin()).thenReturn(true);
+
+        service.cancel("code");
+
+        assertThat(redemption.getStatus()).isEqualTo(RedemptionStatus.CANCELLED);
+        assertThat(client.getCurrentPoints()).isEqualTo(500);
+        verify(benefitRepository).releaseRedemption(benefit.getId());
     }
 }

@@ -1,39 +1,30 @@
 package com.CoffeeGroup.Coffee.System.features.review;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
+@Table(name = "reviews")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "reviews")
-public class ReviewEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "external_id", nullable = false,unique = true)
-    private UUID externalId;
+@SuperBuilder
+public class ReviewEntity extends AuditableEntity {
 
     @Column(name = "message")
     private String message;
@@ -56,4 +47,7 @@ public class ReviewEntity {
     @JoinColumn(name = "purchase_id", unique = true)
     private PurchaseEntity purchase;
 
+    public boolean isWrittenBy(ClientEntity author) {
+        return client != null && client.isSameAs(author);
+    }
 }

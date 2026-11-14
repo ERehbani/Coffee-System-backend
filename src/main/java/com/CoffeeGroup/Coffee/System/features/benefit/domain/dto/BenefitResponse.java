@@ -1,10 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.benefit.domain.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 
 public record BenefitResponse(
         UUID externalId,
@@ -13,15 +13,25 @@ public record BenefitResponse(
         Boolean status,
         Boolean isPublic,
         Integer maxRedemptions,
+        Integer redeemedCount,
+        Integer remainingRedemptions,
+        Integer maxPerClient,
+        boolean soldOut,
         String description,
         String conditions,
+        UUID cafeId,
         String cafeEntity,
-        GlobalBenefit isGlobal,
+        boolean global,
         BenefitType benefitType,
-        UUID typeId,
+        BigDecimal discountPercentage,
+        UUID productId,
+        String productName,
+        UUID catalogProductId,
+        boolean productAvailable,
         UUID tierId,
         String tierName,
         Integer tierMinPoints,
         LocalDate startDate,
         LocalDate endDate
-) {}
+) {
+}

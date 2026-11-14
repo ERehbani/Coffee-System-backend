@@ -1,7 +1,20 @@
 package com.CoffeeGroup.Coffee.System.common.exceptions;
 
-public class EntityAlreadyExistsException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class EntityAlreadyExistsException extends DomainException {
+
     public EntityAlreadyExistsException(String message) {
         super(message);
+    }
+
+    @Override
+    public HttpStatus status() {
+        return HttpStatus.CONFLICT;
+    }
+
+    @Override
+    public String title() {
+        return "Resource already exists";
     }
 }

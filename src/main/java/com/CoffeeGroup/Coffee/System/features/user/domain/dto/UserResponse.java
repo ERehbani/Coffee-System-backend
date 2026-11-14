@@ -1,12 +1,12 @@
 package com.CoffeeGroup.Coffee.System.features.user.domain.dto;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record UserResponse (
+public record UserResponse(
         UUID externalId,
         String email,
         Boolean state,
-        Date creationDate
-){
+        LocalDateTime creationDate
+) {
 }

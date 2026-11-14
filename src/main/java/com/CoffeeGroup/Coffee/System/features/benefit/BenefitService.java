@@ -1,33 +1,35 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.CoffeeGroup.Coffee.System.auth.access.CafeAccessGuard;
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
+import com.CoffeeGroup.Coffee.System.common.persistence.Specifications;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.NewEndDateRequest;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitCreateMapper;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitResponseMapper;
-import com.CoffeeGroup.Coffee.System.features.benefit_format.IBenefitFormatRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.mapper.BenefitMapper;
+import com.CoffeeGroup.Coffee.System.features.benefit.rules.BenefitRules;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 
@@ -35,201 +37,53 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BenefitService implements IBenefitService {
 
-    private final IBenefitRepository benefitRepository;
-    private final IBenefitTypeRepository benefitTypeRepository;
-    private final CafeRepository cafeRepository;
+    private static final Sort BY_NAME = Sort.by("name");
+    private static final Sort BY_POINTS = Sort.by("pointsCost", "name");
+
+    private final BenefitRepository benefitRepository;
+    private final BenefitFormatRepository benefitFormatRepository;
     private final TierRepository tierRepository;
-    private final IBenefitCreateMapper createMapper;
-    private final IBenefitResponseMapper responseMapper;
+    private final CafeProductRepository cafeProductRepository;
+    private final ICatalogProductService catalogProductService;
+    private final BenefitMapper benefitMapper;
+    private final BenefitRules benefitRules;
+    private final CafeAccessGuard cafeAccessGuard;
     private final SecurityUtils securityUtils;
-    private final CredentialsRepository credentialsRepository;
-    private final IBenefitFormatRepository benefitFormatRepository;
+    private final Clock clock;
 
-    @Transactional
     @Override
-    public BenefitResponse save(BenefitCreateRequest benefitCreate) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        TierEntity tierEntity = tierRepository.findByExternalId(benefitCreate.tierId())
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
-        BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(benefitCreate.typeId())
-                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
-        if (!benefitFormatRepository.existsByCodeAndActiveTrue(benefitType.getName())) {
-            throw new IllegalStateException("The benefit format " + benefitType.getName() + " is not enabled");
-        }
-
-        CafeEntity cafeEntity = null;
-        if (isCafeteria) {
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            cafeEntity = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        } else if (benefitCreate.cafeId() != null) {
-            cafeEntity = cafeRepository.findByExternalId(benefitCreate.cafeId())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        }
-
-        BenefitEntity benefit = createMapper.toEntity(benefitCreate);
-        benefit.setExternalId(UUID.randomUUID());
-        benefit.setBenefitType(benefitType);
-        benefit.setTierEntity(tierEntity);
-        benefit.setCafeEntity(cafeEntity);
-        benefit.setIsPublic(false);
-        benefit.setStatus(false);
-        benefit.setIsGlobal(cafeEntity == null
-                ? GlobalBenefit.GLOBAL_BENEFIT
-                : GlobalBenefit.CAFFETERIA_BENEFIT);
-
+    @Transactional
+    public BenefitResponse save(BenefitCreateRequest request) {
+        BenefitEntity benefit = BenefitEntity.builder()
+                .cafe(owningCafeFor(request.cafeId()))
+                .active(false)
+                .isPublic(false)
+                .name(request.name())
+                .description(request.description())
+                .conditions(request.conditions())
+                .pointsCost(request.pointsCost())
+                .startDate(request.startDate())
+                .endDate(request.endDate())
+                .maxRedemptions(request.maxRedemptions())
+                .maxPerClient(request.maxPerClient())
+                .tier(findTier(request.tierId()))
+                .build();
+        configureRule(benefit, request.type(),
+                new RuleSettings(request.discountPercentage(), request.productId(), request.catalogProductId()));
         benefitRepository.save(benefit);
-        return responseMapper.toDto(benefit);
+        return benefitMapper.toResponse(benefit);
     }
 
     @Override
-    public void delete(UUID externalId) {
-        BenefitEntity benefit = getBenefit(externalId);
-        if (!canDelete(benefit)) {
-            throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
-        }
-        benefitRepository.delete(benefit);
-    }
-
-    /** A cafe deletes only the benefits of its own cafe; the admin deletes only global benefits. */
-    private boolean canDelete(BenefitEntity benefit) {
-        if (securityUtils.isCafeteria()) {
-            CafeEntity owner = benefit.getCafeEntity();
-            return owner != null && cafeRepository.findByUser_Credentials_Username(securityUtils.getCurrentUsername())
-                    .map(cafe -> cafe.getExternalId().equals(owner.getExternalId()))
-                    .orElse(false);
-        }
-        return securityUtils.isAdmin() && benefit.getIsGlobal() == GlobalBenefit.GLOBAL_BENEFIT;
-    }
-
-    @Override
-    public List<BenefitResponse> getAll() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        if (isCafeteria) {
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-            return benefitRepository.findByCafeEntity(cafe).stream()
-                    .map(responseMapper::toDto)
-                    .toList();
-        }
-
-        return benefitRepository.findAll().stream().map(responseMapper::toDto).toList();
-    }
-
-
-    public BenefitResponse findById(UUID externalId){
-        BenefitEntity benefit = getBenefit(externalId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        if (isCafeteria) {
-            if (benefit.getCafeEntity() == null) {
-                throw new AccessDeniedException("Access denied: Cafeterias cannot view global benefits");
-            }
-
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!benefit.getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new AccessDeniedException("Access denied: You do not have permission to view this benefit");
-            }
-        }
-
-        return responseMapper.toDto(benefit);
-    }
-
     @Transactional
-    public BenefitResponse confirmBenefit(UUID externalId){
-        return setVisibility(externalId,true, true);
-    }
-
-    @Transactional
-    public BenefitResponse cancelBenefit(UUID externalId){
-        return setVisibility(externalId,false, false);
-    }
-
-    @Transactional
-    public BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest newEndDateRequest){
-        BenefitEntity benefit = getBenefit(externalId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        if (isCafeteria) {
-            if (benefit.getCafeEntity() == null) {
-                throw new AccessDeniedException("Access denied: Cafeterias cannot modify global benefits");
-            }
-
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!benefit.getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new AccessDeniedException("Access denied: You do not have permission to modify this benefit");
-            }
-        }
-
-        benefit.setEndDate(newEndDateRequest.endDate());
-        benefitRepository.save(benefit);
-        return responseMapper.toDto(benefit);
-    }
-
-    @Transactional
-    @Override
     public BenefitResponse update(UUID externalId, BenefitUpdateRequest request) {
-        BenefitEntity benefit = getBenefit(externalId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        if (isCafeteria) {
-            if (benefit.getCafeEntity() == null) {
-                throw new AccessDeniedException("Access denied: Cafeterias cannot modify global benefits");
-            }
-
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!benefit.getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new AccessDeniedException("Access denied: You do not have permission to modify this benefit");
-            }
+        BenefitEntity benefit = managedBenefit(externalId);
+        if (request.maxRedemptions() != null && request.maxRedemptions() < benefit.getRedeemedCount()) {
+            throw new BusinessRuleException("The limit cannot be lower than the redemptions already made");
         }
-
-        if (request.startDate() != null && request.endDate() != null
-                && request.endDate().isBefore(request.startDate())) {
-            throw new IllegalStateException("The end date cannot be before the start date");
-        }
-
-        TierEntity tierEntity = tierRepository.findByExternalId(request.tierId())
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
-        BenefitTypeEntity benefitType = benefitTypeRepository.findByExternalId(request.typeId())
-                .orElseThrow(() -> new EntityNotFoundException("Benefit type not found"));
-
         benefit.setName(request.name());
         benefit.setDescription(request.description());
         benefit.setConditions(request.conditions());
@@ -237,197 +91,198 @@ public class BenefitService implements IBenefitService {
         benefit.setStartDate(request.startDate());
         benefit.setEndDate(request.endDate());
         benefit.setMaxRedemptions(request.maxRedemptions());
-        benefit.setTierEntity(tierEntity);
-        benefit.setBenefitType(benefitType);
-
-        benefitRepository.save(benefit);
-        return responseMapper.toDto(benefit);
+        benefit.setMaxPerClient(request.maxPerClient());
+        benefit.setTier(findTier(request.tierId()));
+        configureRule(benefit, request.type(),
+                new RuleSettings(request.discountPercentage(), request.productId(), request.catalogProductId()));
+        return benefitMapper.toResponse(benefit);
     }
 
-    public BenefitEntity getBenefit(UUID externalId){
-        BenefitEntity benefitEntity = benefitRepository.findByExternalId(externalId)
-                .orElseThrow(()-> new EntityNotFoundException("Benefit not found"));
-        return benefitEntity;
-    }
-
-    private BenefitResponse setVisibility(UUID externalId, boolean isPublic, boolean status){
-        BenefitEntity benefit = getBenefit(externalId);
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        boolean isCafeteria = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_CAFETERIA"));
-
-        if (isCafeteria) {
-            if (benefit.getCafeEntity() == null) {
-                throw new AccessDeniedException("Access denied: Cafeterias cannot modify global benefits");
-            }
-
-            String currentUser = securityUtils.getCurrentUsername();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(currentUser)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!benefit.getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new AccessDeniedException("Access denied: You do not have permission to modify this benefit");
-            }
+    @Override
+    @Transactional
+    public void delete(UUID externalId) {
+        BenefitEntity benefit = findBenefit(externalId);
+        boolean adminDeletingGlobal = securityUtils.isAdmin() && benefit.isGlobal();
+        boolean cafeDeletingOwn = securityUtils.isCafe() && benefit.belongsTo(securityUtils.currentCafe());
+        if (!adminDeletingGlobal && !cafeDeletingOwn) {
+            throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
         }
-
-        benefit.setIsPublic(isPublic);
-        benefitRepository.save(benefit);
-        return responseMapper.toDto(benefit);
+        benefitRepository.delete(benefit);
+        benefitRepository.flush();
     }
 
+    @Override
+    public List<BenefitResponse> getAll() {
+        if (securityUtils.isCafe()) {
+            return search(BenefitSpecifications.belongsTo(securityUtils.currentCafe()), BY_NAME);
+        }
+        if (securityUtils.isClient()) {
+            return search(BenefitSpecifications.isPublished(), BY_NAME);
+        }
+        return search(null, BY_NAME);
+    }
+
+    @Override
+    public BenefitResponse findById(UUID externalId) {
+        BenefitEntity benefit = findBenefit(externalId);
+        if (securityUtils.isCafe() && !benefit.belongsTo(securityUtils.currentCafe())) {
+            throw new AccessDeniedException("Access denied: You do not have permission to view this benefit");
+        }
+        if (securityUtils.isClient() && !benefit.isPublished()) {
+            throw new EntityNotFoundException("Benefit not found");
+        }
+        return benefitMapper.toResponse(benefit);
+    }
+
+    @Override
+    @Transactional
+    public BenefitResponse confirmBenefit(UUID externalId) {
+        BenefitEntity benefit = managedBenefit(externalId);
+        benefit.publish();
+        return benefitMapper.toResponse(benefit);
+    }
+
+    @Override
+    @Transactional
+    public BenefitResponse cancelBenefit(UUID externalId) {
+        BenefitEntity benefit = managedBenefit(externalId);
+        benefit.unpublish();
+        return benefitMapper.toResponse(benefit);
+    }
+
+    @Override
+    @Transactional
+    public BenefitResponse changeEndDate(UUID externalId, NewEndDateRequest request) {
+        BenefitEntity benefit = managedBenefit(externalId);
+        benefit.setEndDate(request.endDate());
+        ensureValidDates(benefit);
+        return benefitMapper.toResponse(benefit);
+    }
 
     @Override
     public List<BenefitResponse> getAllByCafe(UUID cafeExternalId) {
-
-        CafeEntity cafe;
-
-        if(securityUtils.isAdmin()){
-            cafe = cafeRepository.findByExternalId(cafeExternalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        }else {
-            String currentUser = securityUtils.getCurrentUsername();
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
-        }
-
-        return benefitRepository.findByCafeEntity(cafe).stream()
-                .map(responseMapper::toDto)
-                .toList();
+        return search(BenefitSpecifications.belongsTo(cafeAccessGuard.managedCafe(cafeExternalId)), BY_NAME);
     }
 
     @Override
     public BenefitResponse getBenefitByCafe(UUID cafeExternalId, UUID benefitExternalId) {
-
-        CafeEntity cafe;
-
-        if(securityUtils.isAdmin()){
-            cafe = cafeRepository.findByExternalId(cafeExternalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        }else {
-            String currentUser = securityUtils.getCurrentUsername();
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeExternalId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view the benefits of this coffee shop"));
+        CafeEntity cafe = cafeAccessGuard.managedCafe(cafeExternalId);
+        BenefitEntity benefit = findBenefit(benefitExternalId);
+        if (!benefit.belongsTo(cafe)) {
+            throw new EntityNotFoundException("Benefit not found");
         }
-
-        BenefitEntity benefit = benefitRepository.findByCafeEntityAndExternalId(cafe,benefitExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
-
-
-        return responseMapper.toDto(benefit);
+        return benefitMapper.toResponse(benefit);
     }
 
-    public List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean status, Boolean isPublic, BenefitType type) {
-        CafeEntity cafe;
-
-        if (securityUtils.isAdmin()) {
-            cafe = cafeRepository.findByExternalId(cafeId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        } else {
-            String currentUser = securityUtils.getCurrentUsername();
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to filter benefits of this cafe"));
-        }
-
-        List<BenefitEntity> filteredBenefits;
-
-        if (type != null) {
-            filteredBenefits = benefitRepository.findByCafeEntityAndBenefitType_Name(cafe, type);
-        } else if (name != null && status != null && isPublic != null) {
-            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCaseAndStatusAndIsPublic(cafe, name, status, isPublic);
-        } else if (name != null) {
-            filteredBenefits = benefitRepository.findByCafeEntityAndNameContainingIgnoreCase(cafe, name);
-        } else if (status != null) {
-            filteredBenefits = benefitRepository.findByCafeEntityAndStatus(cafe, status);
-        } else if (isPublic != null) {
-            filteredBenefits = benefitRepository.findByCafeEntityAndIsPublic(cafe, isPublic);
-        } else {
-            filteredBenefits = benefitRepository.findByCafeEntity(cafe);
-        }
-
-        return filteredBenefits.stream().map(responseMapper::toDto).toList();
+    @Override
+    public List<BenefitResponse> filterBenefitsByCafe(UUID cafeId, String name, Boolean active, Boolean isPublic,
+            BenefitType type) {
+        CafeEntity cafe = cafeAccessGuard.managedCafe(cafeId);
+        return search(Specifications.allOf(
+                BenefitSpecifications.belongsTo(cafe),
+                BenefitSpecifications.nameContains(name),
+                BenefitSpecifications.hasActive(active),
+                BenefitSpecifications.hasPublic(isPublic),
+                BenefitSpecifications.ofType(type)), BY_NAME);
     }
 
+    @Override
     public List<BenefitResponse> filterAvailableBenefits(UUID cafeId, String name, BenefitType type, Integer maxPoints) {
-
-        CafeEntity cafe;
-
-        if (securityUtils.isCafeteria()) {
-            String currentUser = securityUtils.getCurrentUsername();
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(cafeId, currentUser)
-                    .orElseThrow(() -> new AccessDeniedException("Access denied: You do not have permission to view benefits of this cafe"));
-        } else {
-            cafe = cafeRepository.findByExternalId(cafeId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        }
-
-        List<BenefitEntity> benefits;
-
-        if (name != null && type != null && maxPoints != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(cafe, name, type, maxPoints);
-        } else if (name != null && type != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(cafe, name, type);
-        } else if (name != null && maxPoints != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(cafe, name, maxPoints);
-        } else if (type != null && maxPoints != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(cafe, type, maxPoints);
-        } else if (name != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(cafe, name);
-        } else if (type != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndBenefitType_Name(cafe, type);
-        } else if (maxPoints != null) {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(cafe, maxPoints);
-        } else {
-            benefits = benefitRepository.findByCafeEntityAndIsPublicTrueAndStatusTrue(cafe);
-        }
-
-        return benefits.stream()
-                .map(responseMapper::toDto)
-                .toList();
+        CafeEntity cafe = cafeAccessGuard.visibleCafe(cafeId);
+        return search(Specifications.allOf(
+                BenefitSpecifications.belongsTo(cafe),
+                availableToday(),
+                BenefitSpecifications.nameContains(name),
+                BenefitSpecifications.ofType(type),
+                BenefitSpecifications.costAtMost(maxPoints)), BY_POINTS);
     }
 
     @Override
     public List<BenefitResponse> filterAvailableGlobalBenefits(String name, BenefitType type, Integer maxPoints) {
-        GlobalBenefit global = GlobalBenefit.GLOBAL_BENEFIT;
-        List<BenefitEntity> benefits;
-
-        if (name != null && type != null && maxPoints != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_NameAndPointsCostLessThanEqual(global, name, type, maxPoints);
-        } else if (name != null && type != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndBenefitType_Name(global, name, type);
-        } else if (name != null && maxPoints != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCaseAndPointsCostLessThanEqual(global, name, maxPoints);
-        } else if (type != null && maxPoints != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_NameAndPointsCostLessThanEqual(global, type, maxPoints);
-        } else if (name != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndNameContainingIgnoreCase(global, name);
-        } else if (type != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndBenefitType_Name(global, type);
-        } else if (maxPoints != null) {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrueAndPointsCostLessThanEqual(global, maxPoints);
-        } else {
-            benefits = benefitRepository.findByIsGlobalAndIsPublicTrueAndStatusTrue(global);
-        }
-
-        return benefits.stream()
-                .map(responseMapper::toDto)
-                .toList();
+        return search(Specifications.allOf(
+                BenefitSpecifications.isGlobal(),
+                availableToday(),
+                BenefitSpecifications.nameContains(name),
+                BenefitSpecifications.ofType(type),
+                BenefitSpecifications.costAtMost(maxPoints)), BY_POINTS);
     }
 
     @Override
     public List<BenefitResponse> getAvailableCatalog(UUID cafeId, BenefitType type) {
-        LocalDate today = LocalDate.now();
+        return search(Specifications.allOf(
+                availableToday(),
+                BenefitSpecifications.ofCafe(cafeId),
+                BenefitSpecifications.ofType(type)), BY_POINTS);
+    }
 
-        return benefitRepository.findByIsPublicTrueAndStatusTrue().stream()
-                .filter(benefit -> benefit.getEndDate() == null || !benefit.getEndDate().isBefore(today))
-                .filter(benefit -> cafeId == null
-                        || (benefit.getCafeEntity() != null && cafeId.equals(benefit.getCafeEntity().getExternalId())))
-                .filter(benefit -> type == null
-                        || (benefit.getBenefitType() != null && benefit.getBenefitType().getName() == type))
-                .sorted(Comparator.comparing(BenefitEntity::getPointsCost, Comparator.nullsLast(Comparator.naturalOrder())))
-                .map(responseMapper::toDto)
-                .toList();
+    private Specification<BenefitEntity> availableToday() {
+        return Specifications.allOf(
+                BenefitSpecifications.isPublished(),
+                BenefitSpecifications.isInsideDates(LocalDate.now(clock)));
+    }
+
+    private List<BenefitResponse> search(Specification<BenefitEntity> specification, Sort sort) {
+        List<BenefitEntity> benefits = specification == null
+                ? benefitRepository.findAll(sort)
+                : benefitRepository.findAll(specification, sort);
+        return benefits.stream().map(benefitMapper::toResponse).toList();
+    }
+
+    private void configureRule(BenefitEntity benefit, BenefitType type, RuleSettings settings) {
+        benefit.setFormat(enabledFormat(type));
+        benefit.setDiscountPercentage(settings.discountPercentage());
+        benefit.setCafeProduct(settings.productId() == null ? null : productOfCafe(settings.productId(), benefit));
+        benefit.setCatalogProduct(settings.catalogProductId() == null || !benefit.isGlobal()
+                ? null
+                : catalogProductService.findActive(settings.catalogProductId()));
+        ensureValidDates(benefit);
+        benefitRules.ruleFor(benefit).validate(benefit);
+    }
+
+    private CafeProductEntity productOfCafe(UUID productId, BenefitEntity benefit) {
+        if (benefit.isGlobal()) {
+            throw new BusinessRuleException("A global benefit uses a catalog product, not the product of a cafe");
+        }
+        return cafeProductRepository.findByExternalIdAndCafe(productId, benefit.getCafe())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
+    }
+
+    private BenefitFormatEntity enabledFormat(BenefitType type) {
+        return benefitFormatRepository.findByCode(type)
+                .filter(BenefitFormatEntity::isActive)
+                .orElseThrow(() -> new BusinessRuleException("The benefit format " + type + " is not enabled"));
+    }
+
+    private static void ensureValidDates(BenefitEntity benefit) {
+        if (benefit.getStartDate() != null && benefit.getEndDate() != null
+                && benefit.getEndDate().isBefore(benefit.getStartDate())) {
+            throw new BusinessRuleException("The end date cannot be before the start date");
+        }
+    }
+
+    private CafeEntity owningCafeFor(UUID requestedCafeId) {
+        if (securityUtils.isCafe()) {
+            return securityUtils.currentCafe();
+        }
+        return requestedCafeId == null ? null : cafeAccessGuard.managedCafe(requestedCafeId);
+    }
+
+    private BenefitEntity managedBenefit(UUID externalId) {
+        BenefitEntity benefit = findBenefit(externalId);
+        cafeAccessGuard.assertCanManage(benefit.getCafe());
+        return benefit;
+    }
+
+    private BenefitEntity findBenefit(UUID externalId) {
+        return benefitRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
+    }
+
+    private TierEntity findTier(UUID tierId) {
+        return tierRepository.findByExternalId(tierId)
+                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+    }
+
+    private record RuleSettings(BigDecimal discountPercentage, UUID productId, UUID catalogProductId) {
     }
 }

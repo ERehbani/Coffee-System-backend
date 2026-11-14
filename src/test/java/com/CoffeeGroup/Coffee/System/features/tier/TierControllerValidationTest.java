@@ -25,12 +25,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.GlobalExceptionHandler;
 import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.CreateTierRequest;
 import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponse;
 
-/** Pins the request validation and error bodies the frontend consumes. Method security is not exercised here. */
 @ExtendWith(MockitoExtension.class)
 class TierControllerValidationTest {
 
@@ -108,23 +108,23 @@ class TierControllerValidationTest {
     }
 
     @Test
-    void duplicateTiersAnswerConflictWithThePlainMessage() throws Exception {
+    void duplicateTiersAnswerConflictWithTheProblemDetail() throws Exception {
         when(tierService.create(any())).thenThrow(new EntityAlreadyExistsException("A tier named Plata already exists"));
 
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("Plata", 1000)))
                 .andExpect(status().isConflict())
-                .andExpect(content().string("A tier named Plata already exists"));
+                .andExpect(jsonPath("$.detail").value("A tier named Plata already exists"));
     }
 
     @Test
-    void movingTheBaseTierAnswersBadRequestWithTheErrorBody() throws Exception {
+    void movingTheBaseTierAnswersUnprocessableWithTheProblemDetail() throws Exception {
         when(tierService.update(eq(externalId), any()))
-                .thenThrow(new IllegalStateException("The base tier must keep 0 points"));
+                .thenThrow(new BusinessRuleException("The base tier must keep 0 points"));
 
         mockMvc.perform(put("/tiers/" + externalId).contentType(MediaType.APPLICATION_JSON).content(body("Bronce", 500)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("The base tier must keep 0 points"))
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.detail").value("The base tier must keep 0 points"))
+                .andExpect(jsonPath("$.status").value(422));
     }
 
     @Test

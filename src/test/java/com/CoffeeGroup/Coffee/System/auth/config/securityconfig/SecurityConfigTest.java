@@ -19,6 +19,7 @@ import com.CoffeeGroup.Coffee.System.auth.AuthController;
 import com.CoffeeGroup.Coffee.System.auth.AuthService;
 import com.CoffeeGroup.Coffee.System.auth.cookie.AuthCookieService;
 import com.CoffeeGroup.Coffee.System.auth.filters.JwtAuthenticationFilter;
+import com.CoffeeGroup.Coffee.System.auth.filters.ProblemResponseWriter;
 import com.CoffeeGroup.Coffee.System.auth.filters.RestAuthenticationEntryPoint;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
 import com.CoffeeGroup.Coffee.System.features.user.UserService;
@@ -29,6 +30,7 @@ import com.CoffeeGroup.Coffee.System.features.user.UserService;
         SecurityConfig.class,
         JwtAuthenticationFilter.class,
         RestAuthenticationEntryPoint.class,
+        ProblemResponseWriter.class,
         AuthCookieService.class
 })
 @TestPropertySource(properties = {

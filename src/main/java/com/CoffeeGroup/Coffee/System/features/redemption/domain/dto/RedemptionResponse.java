@@ -5,13 +5,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionStatus;
 
 public record RedemptionResponse(
         UUID externalId,
         LocalDateTime date,
         Integer usedPoints,
         Boolean state,
+        RedemptionStatus status,
         String validationCode,
         String benefitName,
         String cafeName,
@@ -21,8 +23,9 @@ public record RedemptionResponse(
         LocalDateTime usedDate,
         UUID cafeId,
         BenefitType benefitType,
-        Double discountPercentage,
+        BigDecimal discountPercentage,
         UUID productId,
         String productName,
         BigDecimal productPrice
-) {}
+) {
+}

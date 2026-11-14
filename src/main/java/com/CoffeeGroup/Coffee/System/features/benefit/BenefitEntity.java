@@ -1,52 +1,47 @@
 package com.CoffeeGroup.Coffee.System.features.benefit;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.Enum.GlobalBenefit;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BenefitSoldOutException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
+import com.CoffeeGroup.Coffee.System.features.catalog.CatalogProductEntity;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "benefits")
-@Setter
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
-@Builder
+@SuperBuilder
+public class BenefitEntity extends AuditableEntity {
 
-public class BenefitEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "external_id", nullable = false, unique = true)
-    private UUID externalId;
-
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "conditions", columnDefinition = "TEXT")
+    private String conditions;
 
     @Column(name = "points_cost", nullable = false)
     private Integer pointsCost;
@@ -58,49 +53,127 @@ public class BenefitEntity {
     private LocalDate endDate;
 
     @Builder.Default
-    @Column(name = "status", columnDefinition = "boolean default true")
-    private Boolean status = true;
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
 
-    @Column(name = "is_public")
-    private Boolean isPublic;
+    @Builder.Default
+    @Column(name = "is_public", nullable = false)
+    private Boolean isPublic = false;
 
     @Column(name = "max_redemptions")
     private Integer maxRedemptions;
 
-    @Column(name = "description")
-    private String description;
+    @Builder.Default
+    @Column(name = "redeemed_count", nullable = false)
+    private Integer redeemedCount = 0;
 
-    @Column(name = "conditions", columnDefinition = "TEXT")
-    private String conditions;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "is_global")
-    private GlobalBenefit isGlobal;
+    @Column(name = "max_per_client")
+    private Integer maxPerClient;
 
     @ManyToOne
-    @JoinColumn(name = "type_id")
-    private BenefitTypeEntity benefitType;
+    @JoinColumn(name = "format_id", nullable = false)
+    private BenefitFormatEntity format;
 
-    @ManyToOne
-    @JoinColumn(name = "tier_id", nullable = true)
-    private TierEntity tierEntity;
+    @Column(name = "discount_percentage", precision = 5, scale = 2)
+    private BigDecimal discountPercentage;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cafe_id", nullable = true)
-    private CafeEntity cafeEntity;
+    @JoinColumn(name = "cafe_product_id")
+    private CafeProductEntity cafeProduct;
 
-    @OneToMany(mappedBy = "benefit")
-    private List<RedemptionEntity> redemptionList;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "catalog_product_id")
+    private CatalogProductEntity catalogProduct;
 
-    /**
-     * A benefit can be redeemed on {@code today} when it is active and public, today falls inside its
-     * start/end dates (both optional and inclusive) and it still has redemptions left.
-     */
+    @ManyToOne
+    @JoinColumn(name = "tier_id")
+    private TierEntity tier;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cafe_id")
+    private CafeEntity cafe;
+
+    public BenefitType type() {
+        return format.getCode();
+    }
+
+    public boolean isGlobal() {
+        return cafe == null;
+    }
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(active);
+    }
+
+    public boolean isPublished() {
+        return Boolean.TRUE.equals(isPublic);
+    }
+
+    public boolean isSoldOut() {
+        return maxRedemptions != null && redeemedCount >= maxRedemptions;
+    }
+
+    public Integer remainingRedemptions() {
+        return maxRedemptions == null ? null : Math.max(0, maxRedemptions - redeemedCount);
+    }
+
+    public boolean isInsideDates(LocalDate today) {
+        return (startDate == null || !startDate.isAfter(today)) && (endDate == null || !endDate.isBefore(today));
+    }
+
+    public boolean isVisibleOn(LocalDate today) {
+        return isActive() && isPublished() && isInsideDates(today);
+    }
+
     public boolean isEnabledOn(LocalDate today) {
-        return Boolean.TRUE.equals(status)
-                && Boolean.TRUE.equals(isPublic)
-                && (startDate == null || !startDate.isAfter(today))
-                && (endDate == null || !endDate.isBefore(today))
-                && maxRedemptions != null && maxRedemptions > 0;
+        return isVisibleOn(today) && !isSoldOut();
+    }
+
+    public boolean isProductAvailable() {
+        return cafeProduct == null || cafeProduct.canBeSold();
+    }
+
+    public boolean isUsableAt(CafeEntity sellingCafe) {
+        return isGlobal() || cafe.isSameAs(sellingCafe);
+    }
+
+    public boolean belongsTo(CafeEntity owner) {
+        return cafe != null && cafe.isSameAs(owner);
+    }
+
+    public void publish() {
+        isPublic = true;
+        active = true;
+    }
+
+    public void unpublish() {
+        isPublic = false;
+        active = false;
+    }
+
+    public void ensureRedeemableBy(ClientEntity client, LocalDate today) {
+        if (!isActive() || !isPublished()) {
+            throw new BusinessRuleException("Benefit is not enabled");
+        }
+        if (startDate != null && startDate.isAfter(today)) {
+            throw new BusinessRuleException("Benefit is not available yet");
+        }
+        if (endDate != null && endDate.isBefore(today)) {
+            throw new BusinessRuleException("Benefit has expired");
+        }
+        if (requiresHigherTierThan(client.getTier())) {
+            throw new BusinessRuleException("Benefit requires a higher tier");
+        }
+        if (isSoldOut()) {
+            throw new BenefitSoldOutException("Benefit is sold out");
+        }
+    }
+
+    public boolean reachedClientLimit(long redemptionsOfClient) {
+        return maxPerClient != null && redemptionsOfClient >= maxPerClient;
+    }
+
+    private boolean requiresHigherTierThan(TierEntity clientTier) {
+        return tier != null && tier.isAbove(clientTier);
     }
 }

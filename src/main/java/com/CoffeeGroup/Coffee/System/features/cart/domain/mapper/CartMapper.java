@@ -1,60 +1,31 @@
 package com.CoffeeGroup.Coffee.System.features.cart.domain.mapper;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.CoffeeGroup.Coffee.System.common.model.IMapper;
-import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
-import com.CoffeeGroup.Coffee.System.features.cart.CartItem;
-import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartItemResponse;
-import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
-import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
-import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
-
-import lombok.AllArgsConstructor;
-
 import org.springframework.stereotype.Component;
 
+import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
+import com.CoffeeGroup.Coffee.System.features.cart.CartItemEntity;
+import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartItemResponse;
+import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
+
 @Component
-@AllArgsConstructor
-public class CartMapper implements IMapper<CartEntity, CartResponse> {
+public class CartMapper {
 
-    private final IProductRepository productRepository;
-
-    @Override
-    public CartEntity toEntity(CartResponse cartResponse) {
-        return null;
-    }
-
-    private CartItemResponse toCartItemResponse(CartItem item) {
-        String productName = productRepository.findByExternalId(item.getProductId())
-                .map(ProductEntity::getName)
-                .orElse("Unknown Product");
-
-        return new CartItemResponse(
-                item.getProductId(),
-                productName,
-                item.getQuantity()
-        );
-    }
-
-    @Override
-    public CartResponse toDto(CartEntity entity) {
-        if (entity == null) return null;
-
-        List<CartItemResponse> products = entity.getItems() != null
-                ? entity.getItems().stream()
-                .map(this::toCartItemResponse)
-                .collect(Collectors.toList())
-                : List.of();
-
+    public CartResponse toResponse(CartEntity cart) {
         return new CartResponse(
-                entity.getExternalId(),
-                entity.getClient() != null ? entity.getClient().getExternalId() : null,
-                entity.getCafeEntity() != null ? entity.getCafeEntity().getExternalId() : null,
-                entity.getTotalPrice(),
-                products
-        );
+                cart.getExternalId(),
+                cart.getClient().getExternalId(),
+                cart.getCafe().getExternalId(),
+                cart.total(),
+                cart.getItems().stream().map(CartMapper::toItemResponse).toList());
     }
 
+    private static CartItemResponse toItemResponse(CartItemEntity item) {
+        return new CartItemResponse(
+                item.getProduct().getExternalId(),
+                item.getProduct().name(),
+                item.getQuantity(),
+                item.getProduct().getPrice(),
+                item.subtotal(),
+                item.getProduct().canBeSold());
+    }
 }

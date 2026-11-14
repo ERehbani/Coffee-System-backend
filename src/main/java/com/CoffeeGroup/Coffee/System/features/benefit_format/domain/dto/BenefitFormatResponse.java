@@ -2,7 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto;
 
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 
 public record BenefitFormatResponse(
         UUID externalId,

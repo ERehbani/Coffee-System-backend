@@ -3,167 +3,190 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.AccessDeniedException;
 
+import com.CoffeeGroup.Coffee.System.auth.access.CafeAccessGuard;
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitResponse;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitCreateMapperImpl;
-import com.CoffeeGroup.Coffee.System.features.benefit.domain.mappers.IBenefitResponseMapperImpl;
-import com.CoffeeGroup.Coffee.System.features.benefit_format.IBenefitFormatRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.IBenefitTypeRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.dto.BenefitUpdateRequest;
+import com.CoffeeGroup.Coffee.System.features.benefit.domain.mapper.BenefitMapper;
+import com.CoffeeGroup.Coffee.System.features.benefit.rules.BenefitRules;
+import com.CoffeeGroup.Coffee.System.features.benefit.rules.FreeProductRule;
+import com.CoffeeGroup.Coffee.System.features.benefit.rules.PercentageDiscountRule;
+import com.CoffeeGroup.Coffee.System.features.benefit.rules.TwoForOneRule;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
+import com.CoffeeGroup.Coffee.System.support.TestData;
 
 @ExtendWith(MockitoExtension.class)
 class BenefitServiceTest {
 
     @Mock
-    private IBenefitRepository benefitRepository;
+    private BenefitRepository benefitRepository;
     @Mock
-    private IBenefitTypeRepository benefitTypeRepository;
-    @Mock
-    private CafeRepository cafeRepository;
+    private BenefitFormatRepository benefitFormatRepository;
     @Mock
     private TierRepository tierRepository;
     @Mock
+    private CafeProductRepository cafeProductRepository;
+    @Mock
+    private ICatalogProductService catalogProductService;
+    @Mock
+    private CafeAccessGuard cafeAccessGuard;
+    @Mock
     private SecurityUtils securityUtils;
-    @Mock
-    private CredentialsRepository credentialsRepository;
-    @Mock
-    private IBenefitFormatRepository benefitFormatRepository;
 
     private BenefitService service;
 
-    private final UUID tierId = UUID.randomUUID();
-    private final UUID typeId = UUID.randomUUID();
+    private final TierEntity bronce = TestData.tier("BRONCE", 0);
+    private final CafeEntity central = TestData.cafe("Cafe Central");
+    private final CafeProductEntity capuccino =
+            TestData.product(central, TestData.catalogProduct("Capuccino"), "2500", 80);
 
     @BeforeEach
     void setUp() {
-        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
-                "admin", null, List.of(new SimpleGrantedAuthority("ROLE_SUPERADMIN"))));
-        service = new BenefitService(benefitRepository, benefitTypeRepository, cafeRepository, tierRepository,
-                new IBenefitCreateMapperImpl(), new IBenefitResponseMapperImpl(), securityUtils, credentialsRepository,
-                benefitFormatRepository);
+        BenefitRules rules = new BenefitRules(List.of(
+                new PercentageDiscountRule(), new TwoForOneRule(), new FreeProductRule(cafeProductRepository)));
+        service = new BenefitService(benefitRepository, benefitFormatRepository, tierRepository,
+                cafeProductRepository, catalogProductService, new BenefitMapper(), rules, cafeAccessGuard,
+                securityUtils, TestData.fixedClock());
+        lenient().when(tierRepository.findByExternalId(bronce.getExternalId())).thenReturn(Optional.of(bronce));
+        lenient().when(benefitFormatRepository.findByCode(any()))
+                .thenAnswer(invocation -> Optional.of(TestData.format(invocation.getArgument(0))));
     }
 
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.clearContext();
+    private BenefitCreateRequest request(BenefitType type, BigDecimal discount, UUID productId) {
+        return new BenefitCreateRequest("Beneficio", "Descripcion", null, 100, null, null, 20, null, type, discount,
+                productId, null, null, bronce.getExternalId());
     }
 
-    private BenefitCreateRequest request() {
-        return new BenefitCreateRequest("Cafe gratis", "Un cafe", null, 100, null, null, 5, typeId, null, tierId);
-    }
-
-    private void givenTierAndType(BenefitType code) {
-        when(tierRepository.findByExternalId(tierId))
-                .thenReturn(Optional.of(TierEntity.builder().externalId(tierId).name("Bronce").minPoints(0).build()));
-        when(benefitTypeRepository.findByExternalId(typeId))
-                .thenReturn(Optional.of(BenefitTypeEntity.builder().externalId(typeId).name(code).build()));
-    }
-
-    @Test
-    void saveCreatesTheBenefitWhenItsFormatIsActiveInTheCatalog() {
-        givenTierAndType(BenefitType.DOS_POR_UNO);
-        when(benefitFormatRepository.existsByCodeAndActiveTrue(BenefitType.DOS_POR_UNO)).thenReturn(true);
-
-        service.save(request());
-
+    private BenefitEntity savedBenefit() {
         ArgumentCaptor<BenefitEntity> saved = ArgumentCaptor.forClass(BenefitEntity.class);
         verify(benefitRepository).save(saved.capture());
-        assertThat(saved.getValue().getBenefitType().getName()).isEqualTo(BenefitType.DOS_POR_UNO);
+        return saved.getValue();
     }
 
     @Test
-    void saveRejectsABenefitWhoseFormatIsInactiveOrMissingFromTheCatalog() {
-        givenTierAndType(BenefitType.PRODUCTO_POR_PUNTOS);
-        when(benefitFormatRepository.existsByCodeAndActiveTrue(BenefitType.PRODUCTO_POR_PUNTOS)).thenReturn(false);
+    void aCafeCreatesAHiddenBenefitOfItsOwnCafe() {
+        when(securityUtils.isCafe()).thenReturn(true);
+        when(securityUtils.currentCafe()).thenReturn(central);
+        when(cafeProductRepository.findByExternalIdAndCafe(capuccino.getExternalId(), central))
+                .thenReturn(Optional.of(capuccino));
 
-        assertThatThrownBy(() -> service.save(request()))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("The benefit format PRODUCTO_POR_PUNTOS is not enabled");
+        BenefitResponse response = service.save(request(BenefitType.PRODUCTO_POR_PUNTOS, null, capuccino.getExternalId()));
+
+        BenefitEntity benefit = savedBenefit();
+        assertThat(benefit.getCafe()).isSameAs(central);
+        assertThat(benefit.getCafeProduct()).isSameAs(capuccino);
+        assertThat(benefit.isPublished()).isFalse();
+        assertThat(response.productName()).isEqualTo("Capuccino");
+        assertThat(response.remainingRedemptions()).isEqualTo(20);
+    }
+
+    @Test
+    void theAdminCreatesAGlobalDiscount() {
+        BenefitResponse response = service.save(request(BenefitType.CODIGO_DESCUENTO, new BigDecimal("15"), null));
+
+        assertThat(savedBenefit().isGlobal()).isTrue();
+        assertThat(response.global()).isTrue();
+        assertThat(response.discountPercentage()).isEqualByComparingTo("15");
+    }
+
+    @Test
+    void theRulesOfTheTypeAreValidatedBeforeSaving() {
+        assertThatThrownBy(() -> service.save(request(BenefitType.CODIGO_DESCUENTO, null, null)))
+                .isInstanceOf(BusinessRuleException.class);
+        assertThatThrownBy(() -> service.save(request(BenefitType.DOS_POR_UNO, null, null)))
+                .isInstanceOf(BusinessRuleException.class);
         verify(benefitRepository, never()).save(any());
     }
 
-    private final CafeEntity centralCafe = CafeEntity.builder().externalId(UUID.randomUUID()).name("Cafe Central").build();
-    private final CafeEntity northCafe = CafeEntity.builder().externalId(UUID.randomUUID()).name("Cafe Norte").build();
-    private final TierEntity goldTier = TierEntity.builder().externalId(UUID.randomUUID()).name("Oro").minPoints(500).build();
+    @Test
+    void aDisabledFormatCannotBeUsed() {
+        BenefitFormatEntity disabled = TestData.format(BenefitType.CODIGO_DESCUENTO);
+        disabled.setActive(false);
+        when(benefitFormatRepository.findByCode(BenefitType.CODIGO_DESCUENTO)).thenReturn(Optional.of(disabled));
 
-    private BenefitEntity catalogBenefit(String name, int pointsCost, CafeEntity cafe, BenefitType type, LocalDate endDate) {
-        return BenefitEntity.builder()
-                .externalId(UUID.randomUUID())
-                .name(name)
-                .pointsCost(pointsCost)
-                .cafeEntity(cafe)
-                .benefitType(BenefitTypeEntity.builder().name(type).build())
-                .tierEntity(goldTier)
-                .endDate(endDate)
-                .status(true)
-                .isPublic(true)
-                .build();
+        assertThatThrownBy(() -> service.save(request(BenefitType.CODIGO_DESCUENTO, BigDecimal.TEN, null)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("The benefit format CODIGO_DESCUENTO is not enabled");
     }
 
     @Test
-    void availableCatalogReturnsEveryActiveBenefitWithItsRequirementsOrderedByPoints() {
-        when(benefitRepository.findByIsPublicTrueAndStatusTrue()).thenReturn(List.of(
-                catalogBenefit("Medialuna", 300, centralCafe, BenefitType.PRODUCTO_POR_PUNTOS, null),
-                catalogBenefit("Cafe doble", 100, null, BenefitType.DOS_POR_UNO, LocalDate.now())));
-
-        List<BenefitResponse> catalog = service.getAvailableCatalog(null, null);
-
-        assertThat(catalog).extracting(BenefitResponse::name).containsExactly("Cafe doble", "Medialuna");
-        assertThat(catalog.get(1).cafeEntity()).isEqualTo("Cafe Central");
-        assertThat(catalog.get(1).benefitType()).isEqualTo(BenefitType.PRODUCTO_POR_PUNTOS);
-        assertThat(catalog.get(1).tierName()).isEqualTo("Oro");
-        assertThat(catalog.get(1).tierMinPoints()).isEqualTo(500);
+    void aGlobalBenefitCannotPointToTheProductOfACafe() {
+        assertThatThrownBy(() -> service.save(request(BenefitType.PRODUCTO_POR_PUNTOS, null, capuccino.getExternalId())))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("catalog product");
     }
 
     @Test
-    void availableCatalogLeavesOutExpiredBenefits() {
-        when(benefitRepository.findByIsPublicTrueAndStatusTrue()).thenReturn(List.of(
-                catalogBenefit("Vencido", 100, centralCafe, BenefitType.DOS_POR_UNO, LocalDate.now().minusDays(1)),
-                catalogBenefit("Vigente", 200, centralCafe, BenefitType.DOS_POR_UNO, LocalDate.now().plusDays(1))));
+    void confirmPublishesAndEnablesTheBenefitAndCancelDoesTheOpposite() {
+        BenefitEntity benefit = TestData.benefit("Cafe", BenefitType.CODIGO_DESCUENTO, central, bronce);
+        benefit.unpublish();
+        when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
 
-        assertThat(service.getAvailableCatalog(null, null)).extracting(BenefitResponse::name).containsExactly("Vigente");
+        BenefitResponse confirmed = service.confirmBenefit(benefit.getExternalId());
+        assertThat(confirmed.isPublic()).isTrue();
+        assertThat(confirmed.status()).isTrue();
+
+        BenefitResponse cancelled = service.cancelBenefit(benefit.getExternalId());
+        assertThat(cancelled.isPublic()).isFalse();
+        assertThat(cancelled.status()).isFalse();
+        verify(cafeAccessGuard, times(2)).assertCanManage(central);
     }
 
     @Test
-    void availableCatalogFiltersByCafeAndBenefitType() {
-        when(benefitRepository.findByIsPublicTrueAndStatusTrue()).thenReturn(List.of(
-                catalogBenefit("Central dos por uno", 100, centralCafe, BenefitType.DOS_POR_UNO, null),
-                catalogBenefit("Central descuento", 200, centralCafe, BenefitType.CODIGO_DESCUENTO, null),
-                catalogBenefit("Norte dos por uno", 300, northCafe, BenefitType.DOS_POR_UNO, null),
-                catalogBenefit("Global dos por uno", 400, null, BenefitType.DOS_POR_UNO, null)));
+    void theAdminOnlyDeletesGlobalBenefitsAndACafeOnlyItsOwn() {
+        BenefitEntity ofCentral = TestData.benefit("Local", BenefitType.CODIGO_DESCUENTO, central, bronce);
+        when(benefitRepository.findByExternalId(ofCentral.getExternalId())).thenReturn(Optional.of(ofCentral));
+        when(securityUtils.isAdmin()).thenReturn(true);
 
-        assertThat(service.getAvailableCatalog(centralCafe.getExternalId(), null)).extracting(BenefitResponse::name)
-                .containsExactly("Central dos por uno", "Central descuento");
-        assertThat(service.getAvailableCatalog(null, BenefitType.DOS_POR_UNO)).extracting(BenefitResponse::name)
-                .containsExactly("Central dos por uno", "Norte dos por uno", "Global dos por uno");
-        assertThat(service.getAvailableCatalog(centralCafe.getExternalId(), BenefitType.DOS_POR_UNO))
-                .extracting(BenefitResponse::name).containsExactly("Central dos por uno");
+        assertThatThrownBy(() -> service.delete(ofCentral.getExternalId())).isInstanceOf(AccessDeniedException.class);
+
+        when(securityUtils.isAdmin()).thenReturn(false);
+        when(securityUtils.isCafe()).thenReturn(true);
+        when(securityUtils.currentCafe()).thenReturn(central);
+        service.delete(ofCentral.getExternalId());
+        verify(benefitRepository).delete(ofCentral);
+    }
+
+    @Test
+    void theLimitCannotGoBelowTheRedemptionsAlreadyMade() {
+        BenefitEntity benefit = TestData.benefit("Cafe", BenefitType.CODIGO_DESCUENTO, central, bronce);
+        benefit.setRedeemedCount(8);
+        when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
+
+        BenefitUpdateRequest update = new BenefitUpdateRequest("Cafe", "Descripcion", null, 100, null, null, 5, null,
+                BenefitType.CODIGO_DESCUENTO, BigDecimal.TEN, null, null, bronce.getExternalId());
+
+        assertThatThrownBy(() -> service.update(benefit.getExternalId(), update))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("The limit cannot be lower than the redemptions already made");
     }
 }

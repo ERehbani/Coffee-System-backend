@@ -1,0 +1,14 @@
+<h2>Hola {{clientName}}</h2>
+<p>Tu compra en <strong>{{cafeName}}</strong> fue cancelada.</p>
+<p><strong>ID de compra:</strong> {{purchaseId}}</p>
+<table border='1' cellpadding='10' cellspacing='0' style='border-collapse: collapse; width: 100%;'>
+  <tr style='background-color: #f2f2f2;'>
+    <th style='text-align: left;'>Producto</th>
+    <th style='text-align: center;'>Cantidad</th>
+    <th style='text-align: center;'>Precio Unitario</th>
+    <th style='text-align: center;'>Subtotal</th>
+  </tr>
+  {{lines}}
+</table>
+<p style='margin-top: 20px;'><strong>Total:</strong> ${{total}}</p>
+<p>Se descontaron los {{revokedPoints}} puntos que te había dado esta compra. Si usaste un cupón, volvió a estar disponible.</p>

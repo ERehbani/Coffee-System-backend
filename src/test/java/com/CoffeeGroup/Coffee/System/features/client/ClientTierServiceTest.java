@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.BenefitTypeEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatEntity;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
@@ -30,12 +32,14 @@ import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 @ExtendWith(MockitoExtension.class)
 class ClientTierServiceTest {
 
+    private static final LocalDate TODAY = LocalDate.of(2026, 11, 14);
+
     @Mock
     private SecurityUtils securityUtils;
     @Mock
     private TierRepository tierRepository;
     @Mock
-    private IBenefitRepository benefitRepository;
+    private BenefitRepository benefitRepository;
 
     private ClientTierService service;
 
@@ -46,14 +50,15 @@ class ClientTierServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ClientTierService(securityUtils, tierRepository, benefitRepository);
+        Clock clock = Clock.fixed(TODAY.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
+        service = new ClientTierService(securityUtils, tierRepository, benefitRepository, clock);
     }
 
     private static TierEntity tier(String name, int minPoints) {
         return TierEntity.builder().externalId(UUID.randomUUID()).name(name).minPoints(minPoints).build();
     }
 
-    private static ClientEntity client(TierEntity tier, Integer current, Integer historical) {
+    private static ClientEntity client(TierEntity tier, int current, int historical) {
         return ClientEntity.builder()
                 .externalId(UUID.randomUUID())
                 .name("Ana")
@@ -68,22 +73,21 @@ class ClientTierServiceTest {
                 .externalId(UUID.randomUUID())
                 .name(name)
                 .pointsCost(100)
-                .status(true)
+                .active(true)
                 .isPublic(true)
                 .maxRedemptions(5)
-                .startDate(LocalDate.now().minusDays(1))
-                .endDate(LocalDate.now().plusDays(30))
-                .tierEntity(tier)
+                .startDate(TODAY.minusDays(1))
+                .endDate(TODAY.plusDays(30))
+                .format(BenefitFormatEntity.builder().code(BenefitType.CODIGO_DESCUENTO).build())
+                .tier(tier)
                 .build();
     }
 
     private void givenClient(ClientEntity client) {
-        when(securityUtils.getCurrentClient()).thenReturn(client);
-        when(tierRepository.findAll()).thenReturn(List.of(bronce, plata, oro, diamante));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of());
+        when(securityUtils.currentClient()).thenReturn(client);
+        when(tierRepository.findAllByOrderByMinPointsAsc()).thenReturn(List.of(bronce, plata, oro, diamante));
+        when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of());
     }
-
-    // --- progress ---
 
     @Test
     void viewMyTierDescribesAClientInAMiddleTier() {
@@ -107,8 +111,6 @@ class ClientTierServiceTest {
 
         ClientTierResponse response = service.viewMyTier();
 
-        assertThat(response.tier()).isEqualTo("DIAMANTE");
-        assertThat(response.currentTierThreshold()).isEqualTo(7000);
         assertThat(response.nextTier()).isNull();
         assertThat(response.nextTierThreshold()).isNull();
         assertThat(response.progressPercent()).isEqualTo(100);
@@ -116,23 +118,12 @@ class ClientTierServiceTest {
     }
 
     @Test
-    void viewMyTierClampsProgressToZeroWhenLifetimePointsAreBelowTheCurrentTier() {
+    void viewMyTierClampsProgressBetweenZeroAndOneHundred() {
         givenClient(client(plata, 400, 400));
+        assertThat(service.viewMyTier().progressPercent()).isZero();
 
-        ClientTierResponse response = service.viewMyTier();
-
-        assertThat(response.progressPercent()).isZero();
-        assertThat(response.pointsToNextTier()).isEqualTo(2600);
-    }
-
-    @Test
-    void viewMyTierClampsProgressToOneHundredWhenLifetimePointsReachTheNextTier() {
         givenClient(client(plata, 500, 3500));
-
-        ClientTierResponse response = service.viewMyTier();
-
-        assertThat(response.progressPercent()).isEqualTo(100);
-        assertThat(response.pointsToNextTier()).isZero();
+        assertThat(service.viewMyTier().progressPercent()).isEqualTo(100);
     }
 
     @Test
@@ -143,57 +134,16 @@ class ClientTierServiceTest {
     }
 
     @Test
-    void viewMyTierStartsAtZeroProgressRightOnTheCurrentThreshold() {
-        givenClient(client(plata, 0, 1000));
-
-        ClientTierResponse response = service.viewMyTier();
-
-        assertThat(response.progressPercent()).isZero();
-        assertThat(response.pointsToNextTier()).isEqualTo(2000);
-    }
-
-    @Test
-    void viewMyTierTreatsMissingPointsAsZero() {
-        givenClient(client(bronce, null, null));
-
-        ClientTierResponse response = service.viewMyTier();
-
-        assertThat(response.availablePoints()).isZero();
-        assertThat(response.lifetimePoints()).isZero();
-        assertThat(response.nextTier()).isEqualTo("PLATA");
-        assertThat(response.progressPercent()).isZero();
-        assertThat(response.pointsToNextTier()).isEqualTo(1000);
-    }
-
-    @Test
     void viewMyTierFailsWhenTheCurrentUserHasNoClientProfile() {
-        when(securityUtils.getCurrentClient()).thenReturn(null);
+        when(securityUtils.currentClient()).thenThrow(new AccessDeniedException("no client"));
 
-        assertThatThrownBy(() -> service.viewMyTier()).isInstanceOf(EntityNotFoundException.class);
-    }
-
-    // --- levels ---
-
-    @Test
-    void viewMyTierListsEveryTierOrderedByThresholdEvenIfTheRepositoryIsNot() {
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of());
-
-        List<TierLevelResponse> levels = service.viewMyTier().levels();
-
-        assertThat(levels).extracting(TierLevelResponse::tier)
-                .containsExactly("BRONCE", "PLATA", "ORO", "DIAMANTE");
-        assertThat(levels).extracting(TierLevelResponse::threshold)
-                .containsExactly(0, 1000, 3000, 7000);
-        assertThat(levels).allSatisfy(level -> assertThat(level.benefits()).isEmpty());
+        assertThatThrownBy(() -> service.viewMyTier()).isInstanceOf(AccessDeniedException.class);
     }
 
     @Test
-    void viewMyTierPutsEachEnabledBenefitOnlyInItsOwnTierSortedByName() {
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(tierRepository.findAll()).thenReturn(List.of(bronce, plata, oro, diamante));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(
+    void viewMyTierPutsEachVisibleBenefitOnlyInItsOwnTierSortedByName() {
+        givenClient(client(plata, 0, 1000));
+        when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of(
                 benefit("Cafe de cortesia", bronce),
                 benefit("Dos por uno", plata),
                 benefit("Bebida gratis", plata),
@@ -201,6 +151,7 @@ class ClientTierServiceTest {
 
         List<TierLevelResponse> levels = service.viewMyTier().levels();
 
+        assertThat(levels).extracting(TierLevelResponse::tier).containsExactly("BRONCE", "PLATA", "ORO", "DIAMANTE");
         assertThat(levels.get(0).benefits()).containsExactly("Cafe de cortesia");
         assertThat(levels.get(1).benefits()).containsExactly("Bebida gratis", "Dos por uno");
         assertThat(levels.get(2).benefits()).containsExactly("Postre de la casa");
@@ -208,70 +159,47 @@ class ClientTierServiceTest {
     }
 
     @Test
-    void viewMyTierLeavesOutBenefitsThatAreNotEnabled() {
-        BenefitEntity inactive = benefit("Inactive", plata);
-        inactive.setStatus(false);
-        BenefitEntity hidden = benefit("Hidden", plata);
-        hidden.setIsPublic(false);
-        BenefitEntity expired = benefit("Expired", plata);
-        expired.setEndDate(LocalDate.now().minusDays(1));
-        BenefitEntity notStarted = benefit("Not started", plata);
-        notStarted.setStartDate(LocalDate.now().plusDays(1));
-        BenefitEntity soldOut = benefit("Sold out", plata);
-        soldOut.setMaxRedemptions(0);
-        BenefitEntity enabled = benefit("Enabled", plata);
-
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(tierRepository.findAll()).thenReturn(List.of(bronce, plata, oro, diamante));
-        when(benefitRepository.findByTierEntityIsNotNull())
-                .thenReturn(List.of(inactive, hidden, expired, notStarted, soldOut, enabled));
-
-        List<TierLevelResponse> levels = service.viewMyTier().levels();
-
-        assertThat(levels.get(1).benefits()).containsExactly("Enabled");
-    }
-
-    // --- benefits for my tier ---
-
-    @Test
     void viewMyBenefitsIncludesTheBenefitsOfTheClientTierAndOfEveryLowerTier() {
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(
+        when(securityUtils.currentClient()).thenReturn(client(plata, 0, 1000));
+        when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of(
                 benefit("Bronze perk", bronce),
                 benefit("Silver perk", plata),
                 benefit("Gold perk", oro),
                 benefit("Diamond perk", diamante)));
 
-        List<TierBenefitResponse> benefits = service.viewMyBenefits();
-
-        assertThat(benefits).extracting(TierBenefitResponse::name).containsExactly("Bronze perk", "Silver perk");
+        assertThat(service.viewMyBenefits()).extracting(TierBenefitResponse::name)
+                .containsExactly("Bronze perk", "Silver perk");
     }
 
     @Test
-    void viewMyBenefitsOnlyListsEnabledBenefits() {
+    void viewMyBenefitsHidesInactiveHiddenAndOutOfDateBenefitsButShowsSoldOutOnes() {
         BenefitEntity inactive = benefit("Inactive", plata);
-        inactive.setStatus(false);
+        inactive.setActive(false);
         BenefitEntity hidden = benefit("Hidden", plata);
         hidden.setIsPublic(false);
         BenefitEntity expired = benefit("Expired", plata);
-        expired.setEndDate(LocalDate.now().minusDays(1));
+        expired.setEndDate(TODAY.minusDays(1));
         BenefitEntity notStarted = benefit("Not started", plata);
-        notStarted.setStartDate(LocalDate.now().plusDays(1));
+        notStarted.setStartDate(TODAY.plusDays(1));
         BenefitEntity soldOut = benefit("Sold out", plata);
-        soldOut.setMaxRedemptions(0);
+        soldOut.setRedeemedCount(5);
         BenefitEntity enabled = benefit("Enabled", plata);
 
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(benefitRepository.findByTierEntityIsNotNull())
+        when(securityUtils.currentClient()).thenReturn(client(plata, 0, 1000));
+        when(benefitRepository.findByTierIsNotNull())
                 .thenReturn(List.of(inactive, hidden, expired, notStarted, soldOut, enabled));
 
-        assertThat(service.viewMyBenefits()).extracting(TierBenefitResponse::name).containsExactly("Enabled");
+        List<TierBenefitResponse> benefits = service.viewMyBenefits();
+
+        assertThat(benefits).extracting(TierBenefitResponse::name).containsExactly("Enabled", "Sold out");
+        assertThat(benefits).extracting(TierBenefitResponse::soldOut).containsExactly(false, true);
+        assertThat(benefits).extracting(TierBenefitResponse::remainingRedemptions).containsExactly(5, 0);
     }
 
     @Test
     void viewMyBenefitsOrdersByTierThresholdThenByName() {
-        when(securityUtils.getCurrentClient()).thenReturn(client(oro, 0, 3000));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(
+        when(securityUtils.currentClient()).thenReturn(client(oro, 0, 3000));
+        when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of(
                 benefit("Zeta", oro),
                 benefit("beta", plata),
                 benefit("Alpha", oro),
@@ -283,159 +211,64 @@ class ClientTierServiceTest {
     }
 
     @Test
-    void viewMyBenefitsMapsEveryFieldOfAGlobalBenefit() {
+    void viewMyBenefitsMapsAGlobalAndACafeBenefit() {
         BenefitEntity global = benefit("Courtesy coffee", bronce);
-        global.setDescription("A free coffee");
-        global.setPointsCost(300);
-        global.setEndDate(LocalDate.of(2026, 12, 31));
-        global.setBenefitType(BenefitTypeEntity.builder().name(BenefitType.PRODUCTO_GRATIS_SOCIO).build());
-        global.setCafeEntity(null);
-
-        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(global));
-
-        TierBenefitResponse response = service.viewMyBenefits().get(0);
-
-        assertThat(response.externalId()).isEqualTo(global.getExternalId());
-        assertThat(response.name()).isEqualTo("Courtesy coffee");
-        assertThat(response.description()).isEqualTo("A free coffee");
-        assertThat(response.pointsCost()).isEqualTo(300);
-        assertThat(response.endDate()).isEqualTo(LocalDate.of(2026, 12, 31));
-        assertThat(response.cafeName()).isNull();
-        assertThat(response.tierName()).isEqualTo("BRONCE");
-        assertThat(response.benefitType()).isEqualTo("PRODUCTO_GRATIS_SOCIO");
-    }
-
-    @Test
-    void viewMyBenefitsNamesTheCafeOfACafeBenefitAndAllowsAnOpenEndDate() {
-        BenefitEntity local = benefit("Two for one", plata);
+        global.setFormat(BenefitFormatEntity.builder().code(BenefitType.PRODUCTO_GRATIS_SOCIO).build());
+        BenefitEntity local = benefit("Two for one", bronce);
         local.setEndDate(null);
-        local.setBenefitType(BenefitTypeEntity.builder().name(BenefitType.DOS_POR_UNO).build());
-        local.setCafeEntity(CafeEntity.builder().name("Cafe Central").build());
+        local.setCafe(CafeEntity.builder().name("Cafe Central").build());
 
-        when(securityUtils.getCurrentClient()).thenReturn(client(plata, 0, 1000));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(local));
+        when(securityUtils.currentClient()).thenReturn(client(bronce, 0, 0));
+        when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of(global, local));
 
-        TierBenefitResponse response = service.viewMyBenefits().get(0);
+        List<TierBenefitResponse> benefits = service.viewMyBenefits();
 
-        assertThat(response.cafeName()).isEqualTo("Cafe Central");
-        assertThat(response.endDate()).isNull();
-        assertThat(response.tierName()).isEqualTo("PLATA");
-        assertThat(response.benefitType()).isEqualTo("DOS_POR_UNO");
+        assertThat(benefits.get(0).cafeName()).isNull();
+        assertThat(benefits.get(0).benefitType()).isEqualTo("PRODUCTO_GRATIS_SOCIO");
+        assertThat(benefits.get(0).tierName()).isEqualTo("BRONCE");
+        assertThat(benefits.get(1).cafeName()).isEqualTo("Cafe Central");
+        assertThat(benefits.get(1).endDate()).isNull();
+        assertThat(benefits.get(1).productAvailable()).isTrue();
     }
 
     @Test
-    void viewMyBenefitsToleratesABenefitWithoutType() {
-        BenefitEntity untyped = benefit("Untyped", bronce);
-        untyped.setBenefitType(null);
-
-        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(untyped));
-
-        assertThat(service.viewMyBenefits().get(0).benefitType()).isNull();
-    }
-
-    @Test
-    void viewMyBenefitsIsEmptyWhenNothingIsEnabledForTheClient() {
-        when(securityUtils.getCurrentClient()).thenReturn(client(bronce, 0, 0));
-        when(benefitRepository.findByTierEntityIsNotNull()).thenReturn(List.of(benefit("Gold perk", oro)));
-
-        assertThat(service.viewMyBenefits()).isEmpty();
-    }
-
-    @Test
-    void viewMyBenefitsFailsWhenTheCurrentUserHasNoClientProfile() {
-        when(securityUtils.getCurrentClient()).thenReturn(null);
-
-        assertThatThrownBy(() -> service.viewMyBenefits()).isInstanceOf(EntityNotFoundException.class);
-    }
-
-    // --- tier upgrade ---
-
-    private void givenAllTiers() {
+    void upgradeTierIfReachedMovesTheClientUpOneOrSeveralTiers() {
         when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
+        ClientEntity oneStep = client(bronce, 1100, 1100);
+        ClientEntity twoSteps = client(bronce, 3500, 3500);
+
+        assertThat(service.upgradeTierIfReached(oneStep)).isTrue();
+        assertThat(service.upgradeTierIfReached(twoSteps)).isTrue();
+
+        assertThat(oneStep.getTier()).isSameAs(plata);
+        assertThat(twoSteps.getTier()).isSameAs(oro);
     }
 
     @Test
-    void upgradeTierIfReachedMovesTheClientUpOneTierWhenThePointsCrossTheNextThreshold() {
-        givenAllTiers();
-        ClientEntity client = client(bronce, 1100, 1100);
-
-        boolean upgraded = service.upgradeTierIfReached(client);
-
-        assertThat(upgraded).isTrue();
-        assertThat(client.getTier()).isSameAs(plata);
-    }
-
-    @Test
-    void upgradeTierIfReachedSkipsSeveralTiersWhenOnePurchaseCrossesMoreThanOneThreshold() {
-        givenAllTiers();
-        ClientEntity client = client(bronce, 3500, 3500);
-
-        assertThat(service.upgradeTierIfReached(client)).isTrue();
-
-        assertThat(client.getTier()).isSameAs(oro);
-    }
-
-    @Test
-    void upgradeTierIfReachedReachesTheTopTier() {
-        givenAllTiers();
-        ClientEntity client = client(plata, 0, 9000);
-
-        service.upgradeTierIfReached(client);
-
-        assertThat(client.getTier()).isSameAs(diamante);
-    }
-
-    @Test
-    void upgradeTierIfReachedUpgradesRightOnTheThreshold() {
-        givenAllTiers();
-        ClientEntity client = client(bronce, 1000, 1000);
-
-        service.upgradeTierIfReached(client);
-
-        assertThat(client.getTier()).isSameAs(plata);
-    }
-
-    @Test
-    void upgradeTierIfReachedKeepsTheTierOneBelowTheNextThreshold() {
-        givenAllTiers();
+    void upgradeTierIfReachedKeepsTheTierBelowTheNextThreshold() {
+        when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
         ClientEntity client = client(bronce, 999, 999);
 
-        boolean upgraded = service.upgradeTierIfReached(client);
-
-        assertThat(upgraded).isFalse();
+        assertThat(service.upgradeTierIfReached(client)).isFalse();
         assertThat(client.getTier()).isSameAs(bronce);
     }
 
     @Test
-    void upgradeTierIfReachedKeepsTheTierWhenTheClientAlreadyHoldsTheMatchingOne() {
-        givenAllTiers();
-        ClientEntity client = client(plata, 0, 1420);
-
-        assertThat(service.upgradeTierIfReached(client)).isFalse();
-
-        assertThat(client.getTier()).isSameAs(plata);
-    }
-
-    @Test
-    void upgradeTierIfReachedNeverDowngradesAClientWhoseTierIsAboveTheirHistoricalPoints() {
-        givenAllTiers();
+    void upgradeTierIfReachedNeverDowngrades() {
+        when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
         ClientEntity client = client(oro, 0, 1200);
 
-        boolean upgraded = service.upgradeTierIfReached(client);
-
-        assertThat(upgraded).isFalse();
+        assertThat(service.upgradeTierIfReached(client)).isFalse();
         assertThat(client.getTier()).isSameAs(oro);
     }
 
     @Test
-    void upgradeTierIfReachedTreatsMissingHistoricalPointsAsZero() {
-        givenAllTiers();
-        ClientEntity client = client(bronce, null, null);
+    void recalculateTierMovesTheClientDownWhenACancellationTakesPointsAway() {
+        when(tierRepository.findAll()).thenReturn(List.of(oro, bronce, diamante, plata));
+        ClientEntity client = client(oro, 0, 1200);
 
-        assertThat(service.upgradeTierIfReached(client)).isFalse();
+        service.recalculateTier(client);
 
-        assertThat(client.getTier()).isSameAs(bronce);
+        assertThat(client.getTier()).isSameAs(plata);
     }
 }

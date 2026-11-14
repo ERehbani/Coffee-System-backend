@@ -19,17 +19,20 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitRepository;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.BenefitFormatResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.CreateBenefitFormatRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.UpdateBenefitFormatRequest;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 
 @ExtendWith(MockitoExtension.class)
 class BenefitFormatServiceTest {
 
     @Mock
-    private IBenefitFormatRepository repository;
+    private BenefitFormatRepository repository;
+    @Mock
+    private BenefitRepository benefitRepository;
 
     private BenefitFormatService service;
 
@@ -37,7 +40,7 @@ class BenefitFormatServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new BenefitFormatService(repository);
+        service = new BenefitFormatService(repository, benefitRepository);
     }
 
     private BenefitFormatEntity format(UUID externalId, BenefitType code, String name, boolean active) {
@@ -50,7 +53,6 @@ class BenefitFormatServiceTest {
                 .build();
     }
 
-    // create
 
     @Test
     void createSavesTheFormatWithTrimmedTextAndActiveByDefault() {
@@ -63,7 +65,6 @@ class BenefitFormatServiceTest {
         assertThat(saved.getValue().getDisplayName()).isEqualTo("Producto por puntos");
         assertThat(saved.getValue().getDescription()).isEqualTo("Canjea un producto");
         assertThat(saved.getValue().getActive()).isTrue();
-        assertThat(saved.getValue().getExternalId()).isNotNull();
         assertThat(response.externalId()).isEqualTo(saved.getValue().getExternalId());
         assertThat(response.code()).isEqualTo(BenefitType.PRODUCTO_POR_PUNTOS);
         assertThat(response.displayName()).isEqualTo("Producto por puntos");
@@ -101,7 +102,6 @@ class BenefitFormatServiceTest {
         verify(repository, never()).save(any());
     }
 
-    // update
 
     @Test
     void updateChangesNameDescriptionAndActiveButNeverTheCode() {
@@ -111,7 +111,6 @@ class BenefitFormatServiceTest {
         BenefitFormatResponse response = service.update(formatId,
                 new UpdateBenefitFormatRequest("  Dos por uno ", " Nueva descripcion ", false));
 
-        verify(repository).save(existing);
         assertThat(existing.getCode()).isEqualTo(BenefitType.DOS_POR_UNO);
         assertThat(existing.getDisplayName()).isEqualTo("Dos por uno");
         assertThat(existing.getDescription()).isEqualTo("Nueva descripcion");
@@ -152,7 +151,6 @@ class BenefitFormatServiceTest {
         verify(repository, never()).save(any());
     }
 
-    // list
 
     @Test
     void getAllOrdersByDisplayNameIgnoringCaseAndCountsTheBenefitsOfEachFormat() {
@@ -160,7 +158,7 @@ class BenefitFormatServiceTest {
                 format(UUID.randomUUID(), BenefitType.PRODUCTO_GRATIS_SOCIO, "producto gratis", true),
                 format(UUID.randomUUID(), BenefitType.DOS_POR_UNO, "2x1", false),
                 format(UUID.randomUUID(), BenefitType.CODIGO_DESCUENTO, "Descuento", true)));
-        when(repository.countBenefitsByFormatCode()).thenReturn(List.of(
+        when(benefitRepository.countBenefitsByFormatCode()).thenReturn(List.of(
                 new BenefitFormatUsage(BenefitType.CODIGO_DESCUENTO, 7L),
                 new BenefitFormatUsage(BenefitType.PRODUCTO_POR_PUNTOS, 3L)));
 

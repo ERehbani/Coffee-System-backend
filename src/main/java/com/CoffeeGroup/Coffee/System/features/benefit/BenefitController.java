@@ -3,7 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import java.util.List;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -11,6 +11,9 @@ public record TierBenefitResponse(
         LocalDate endDate,
         String cafeName,
         String tierName,
-        String benefitType
+        String benefitType,
+        boolean soldOut,
+        Integer remainingRedemptions,
+        boolean productAvailable
 ) {
 }

@@ -2,7 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.user.domain.mapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -15,14 +15,14 @@ class UserMapperTest {
 
     private final UserMapper mapper = new UserMapper();
 
-    private final Date creationDate = new Date(1_700_000_000_000L);
+    private final LocalDateTime creationDate = LocalDateTime.of(2026, 6, 14, 9, 47);
 
     private UserEntity buildUser() {
         return UserEntity.builder()
                 .externalId(UUID.randomUUID())
                 .email(new Email("cliente@test.com"))
-                .state(true)
-                .creationDate(creationDate)
+                .active(true)
+                .createdAt(creationDate)
                 .build();
     }
 

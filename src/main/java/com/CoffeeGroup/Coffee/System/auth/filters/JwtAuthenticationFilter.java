@@ -27,10 +27,11 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> SKIPPED_PATHS = Set.of("/auth/login", "/auth/register", "/auth/logout");
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String INVALID_TOKEN_BODY = "{\"error\":\"Token JWT invalido o expirado\", \"status\": %d, \"path\": \"%s\"}";
+    private static final String INVALID_TOKEN = "Token JWT invalido o expirado";
 
     private final JwtService jwtService;
     private final AuthCookieService authCookieService;
+    private final ProblemResponseWriter problemResponseWriter;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -48,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             authenticate(token.get(), request);
         } catch (JwtException e) {
-            writeUnauthorized(request, response);
+            problemResponseWriter.writeUnauthorized(request, response, INVALID_TOKEN);
             return;
         }
         filterChain.doFilter(request, response);
@@ -65,13 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 new UsernamePasswordAuthenticationToken(username, null, jwtService.extractAuthorities(jwt));
         authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private void writeUnauthorized(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write(String.format(INVALID_TOKEN_BODY, HttpServletResponse.SC_UNAUTHORIZED, request.getRequestURI()));
-        response.getWriter().flush();
     }
 
     private Optional<String> resolveToken(HttpServletRequest request) {

@@ -1,173 +1,101 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.CoffeeGroup.Coffee.System.auth.access.CafeAccessGuard;
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
-import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
-import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.common.persistence.Specifications;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CafeService implements ICafeService {
 
-    private final CafeRepository cafeRepository;
-    private final CafeMapper mapper;
+    private static final Sort BY_NAME = Sort.by("name");
 
+    private final CafeRepository cafeRepository;
+    private final CafeMapper cafeMapper;
+    private final SecurityUtils securityUtils;
+    private final CafeAccessGuard cafeAccessGuard;
 
     @Override
     public List<CafeResponse> getAll() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
-
-        List<CafeEntity> cafes;
-        if (isAdmin) {
-            cafes = cafeRepository.findAll();
-        } else {
-            cafes = cafeRepository.findByState(true);
-        }
-
-        return cafes.stream()
-                .map(mapper::toResponse)
-                .toList();
+        Boolean active = securityUtils.isAdmin() ? null : true;
+        return search(null, null, active);
     }
 
     @Override
     public CafeResponse getMine() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        return cafeRepository.findByUser_Credentials_Username(auth.getName())
-                .map(mapper::toResponse)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+        return cafeMapper.toResponse(securityUtils.currentCafe());
     }
 
     @Override
     public CafeResponse getById(UUID externalId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isCafe = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_CAFETERIA"));
-
-        CafeEntity cafe;
-        if (isCafe) {
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
-                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
-            return mapper.toResponse(cafe);
-        }
-        cafe = cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        return mapper.toResponse(cafe);
+        return cafeMapper.toResponse(cafeAccessGuard.visibleCafe(externalId));
     }
 
-
+    @Override
+    @Transactional
     public CafeResponse create(CreateCafeAccountRequest request, UserEntity user) {
-
-        Email cafeEmail = new Email(request.email());
-
-        if (cafeRepository.existsByEmail(cafeEmail)) {
-            throw new EntityAlreadyExistsException("Cafe email already exists");
-        }
-
         CafeEntity cafe = CafeEntity.builder()
-                .externalId(UUID.randomUUID())
                 .name(request.name())
                 .address(request.address())
-                .email(cafeEmail)
                 .phoneNumber(request.phoneNumber())
                 .description(request.description())
-                .state(true)
-                .image(null)
                 .schedule(request.schedule())
+                .active(true)
                 .user(user)
                 .build();
-
-        CafeEntity savedCafe = cafeRepository.save(cafe);
-        return mapper.toResponse(savedCafe);
+        cafeRepository.save(cafe);
+        return cafeMapper.toResponse(cafe);
     }
 
     @Override
     @Transactional
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
-
-        CafeEntity cafe;
-        if (isAdmin) {
-            cafe = cafeRepository.findByExternalId(externalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        } else {
-            cafe = cafeRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
-                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
-        }
-         cafe.setAddress(request.address());
-         cafe.setPhoneNumber(request.phoneNumber());
-         cafe.setDescription(request.description());
-         cafe.setSchedule(request.schedule());
-         cafe.setImage(request.image());
-        return mapper.toResponse(cafeRepository.save(cafe));
+        CafeEntity cafe = cafeAccessGuard.managedCafe(externalId);
+        cafe.setAddress(request.address());
+        cafe.setPhoneNumber(request.phoneNumber());
+        cafe.setDescription(request.description());
+        cafe.setSchedule(request.schedule());
+        cafe.setImage(request.image());
+        return cafeMapper.toResponse(cafe);
     }
 
     @Override
+    @Transactional
     public void delete(UUID externalId) {
-
-        CafeEntity cafe = cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-        cafe.setState(false);
-        cafeRepository.save(cafe);
+        cafeRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"))
+                .deactivate();
     }
 
     @Override
-    public List<CafeResponse> filterCafes(String name, String address, Boolean state) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> Objects.equals(a.getAuthority(), "ROLE_SUPERADMIN"));
+    public List<CafeResponse> filterCafes(String name, String address, Boolean active) {
+        Boolean visibleState = securityUtils.isAdmin() ? active : true;
+        return search(name, address, visibleState);
+    }
 
-        // If not admin, ignore state parameter and default to active cafes only
-        if (!isAdmin) {
-            state = true;
-        }
-
-        List<CafeEntity> filteredCafes;
-
-        if (name != null && address != null && state != null) {
-            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCaseAndState(name, address, state);
-        } else if (name != null && address != null) {
-            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndAddressContainingIgnoreCase(name, address);
-        } else if (name != null && state != null) {
-            filteredCafes = cafeRepository.findByNameContainingIgnoreCaseAndState(name, state);
-        } else if (address != null && state != null) {
-            filteredCafes = cafeRepository.findByAddressContainingIgnoreCaseAndState(address, state);
-        } else if (name != null) {
-            filteredCafes = cafeRepository.findByNameContainingIgnoreCase(name);
-        } else if (address != null) {
-            filteredCafes = cafeRepository.findByAddressContainingIgnoreCase(address);
-        } else if (state != null) {
-            filteredCafes = cafeRepository.findByState(state);
-        } else {
-            filteredCafes = cafeRepository.findAll();
-        }
-
-        return filteredCafes.stream()
-                .map(mapper::toResponse)
+    private List<CafeResponse> search(String name, String address, Boolean active) {
+        return cafeRepository.findAll(Specifications.allOf(
+                        CafeSpecifications.nameContains(name),
+                        CafeSpecifications.addressContains(address),
+                        CafeSpecifications.hasActive(active)), BY_NAME)
+                .stream()
+                .map(cafeMapper::toResponse)
                 .toList();
     }
 }

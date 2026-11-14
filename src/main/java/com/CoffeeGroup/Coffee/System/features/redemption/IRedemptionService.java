@@ -3,16 +3,17 @@ package com.CoffeeGroup.Coffee.System.features.redemption;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
+
+import com.CoffeeGroup.Coffee.System.common.web.PageResponse;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
 
 public interface IRedemptionService {
 
-    RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest);
+    RedemptionResponse create(RedemptionCreateRequest request);
 
-    void deleteById(UUID id);
-
-    List<RedemptionResponse> findAll(Boolean state, Boolean used);
+    PageResponse<RedemptionResponse> findAll(RedemptionStatus status, Pageable pageable);
 
     RedemptionResponse getById(UUID externalId);
 
@@ -21,5 +22,4 @@ public interface IRedemptionService {
     RedemptionResponse cancel(String validationCode);
 
     List<RedemptionResponse> getAllByClient(UUID clientExternalId);
-
 }

@@ -40,7 +40,8 @@ class JwtAuthenticationFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new JwtAuthenticationFilter(jwtService, new AuthCookieService(true, "Strict", ONE_HOUR_IN_MILLIS));
+        filter = new JwtAuthenticationFilter(jwtService, new AuthCookieService(true, "Strict", ONE_HOUR_IN_MILLIS),
+                new ProblemResponseWriter());
         response = new MockHttpServletResponse();
         filterChain = new MockFilterChain();
     }

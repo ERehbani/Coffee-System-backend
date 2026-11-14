@@ -1,10 +1,8 @@
 package com.CoffeeGroup.Coffee.System.features.user;
 
-import java.util.Date;
-import java.util.UUID;
-
 import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
 import com.CoffeeGroup.Coffee.System.common.model.Email;
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 
@@ -12,46 +10,29 @@ import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-@AllArgsConstructor
-@Builder
 @NoArgsConstructor
-public class UserEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "external_id", nullable = false, unique = true, updatable = false)
-    private UUID externalId;
+@SuperBuilder
+public class UserEntity extends AuditableEntity {
 
     @Embedded
-    @AttributeOverride(
-            name = "value",
-            column = @Column(name = "email_address", unique = true, nullable = false)
-    )
+    @AttributeOverride(name = "value", column = @Column(name = "email_address", unique = true, nullable = false))
     private Email email;
 
-    @Column(name = "state", nullable = false)
-    private Boolean state;
+    @Column(name = "active", nullable = false)
+    private Boolean active;
 
-    @Column(name = "creation_date", nullable = false)
-    private Date creationDate;
-
-    @OneToOne(mappedBy = "usuario")
+    @OneToOne(mappedBy = "user")
     private CredentialsEntity credentials;
 
     @OneToOne(mappedBy = "user")
@@ -59,4 +40,16 @@ public class UserEntity {
 
     @OneToOne(mappedBy = "user")
     private ClientEntity client;
+
+    public boolean isActive() {
+        return Boolean.TRUE.equals(active);
+    }
+
+    public void deactivate() {
+        active = false;
+    }
+
+    public String emailAddress() {
+        return email == null ? null : email.value();
+    }
 }
