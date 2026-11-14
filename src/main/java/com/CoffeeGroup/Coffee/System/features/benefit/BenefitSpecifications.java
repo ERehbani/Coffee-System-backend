@@ -5,6 +5,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
+
 import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 
@@ -66,6 +69,16 @@ public final class BenefitSpecifications {
             return null;
         }
         return (root, query, builder) -> builder.equal(root.get("isPublic"), isPublic);
+    }
+
+    public static Specification<BenefitEntity> usableAt(UUID cafeExternalId) {
+        if (cafeExternalId == null) {
+            return null;
+        }
+        return (root, query, builder) -> {
+            Join<BenefitEntity, CafeEntity> cafe = root.join("cafe", JoinType.LEFT);
+            return builder.or(builder.isNull(cafe), builder.equal(cafe.get("externalId"), cafeExternalId));
+        };
     }
 
     public static Specification<BenefitEntity> ofCafe(UUID cafeExternalId) {

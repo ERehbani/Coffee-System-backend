@@ -211,7 +211,7 @@ public class BenefitService implements IBenefitService {
     public List<BenefitResponse> getAvailableCatalog(UUID cafeId, BenefitType type) {
         return search(Specifications.allOf(
                 availableToday(),
-                BenefitSpecifications.ofCafe(cafeId),
+                BenefitSpecifications.usableAt(cafeId),
                 BenefitSpecifications.ofType(type)), BY_POINTS);
     }
 
