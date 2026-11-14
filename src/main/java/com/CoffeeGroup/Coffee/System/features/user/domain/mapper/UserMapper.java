@@ -25,13 +25,15 @@ public class UserMapper {
         return new UserResponse(
                 user.getExternalId(),
                 user.getEmail().value(),
-                user.getState());
+                user.getState(),
+                user.getCreationDate());
     }
 
     public UserResponse toResponse(UserEntity user, UUID customExternalId) {
         return new UserResponse(
                 customExternalId,
                 user.getEmail().value(),
-                user.getState());
+                user.getState(),
+                user.getCreationDate());
     }
 }
