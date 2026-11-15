@@ -116,8 +116,10 @@ public class PurchaseService implements IPurchaseService {
         PurchaseEntity purchase = findPurchase(externalId);
         cafeAccessGuard.assertCanManage(purchase.getCafe());
         purchase.changeStatus(request.status());
-        int revokedPoints = revert(purchase);
-        eventPublisher.publishEvent(new PurchaseCancelledEvent(PurchaseReceipt.of(purchase), revokedPoints));
+        if (request.status().isCancellation()) {
+            int revokedPoints = revert(purchase);
+            eventPublisher.publishEvent(new PurchaseCancelledEvent(PurchaseReceipt.of(purchase), revokedPoints));
+        }
         return purchaseMapper.toResponse(purchase);
     }
 
@@ -179,7 +181,7 @@ public class PurchaseService implements IPurchaseService {
         Page<PurchaseEntity> page = purchaseRepository.findAll(Specifications.allOf(
                 PurchaseSpecifications.ofCafe(cafe),
                 PurchaseSpecifications.ofClient(client),
-                PurchaseSpecifications.hasStatus(filter.status()),
+                PurchaseSpecifications.hasStatusIn(filter.statuses()),
                 PurchaseSpecifications.from(filter.from()),
                 PurchaseSpecifications.to(filter.to())), pageable);
         return new PageResponse<>(purchaseMapper.toResponses(page.getContent()), page.getNumber(), page.getSize(),

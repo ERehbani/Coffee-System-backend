@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 import org.springframework.data.jpa.domain.Specification;
 
@@ -26,11 +27,11 @@ public final class PurchaseSpecifications {
         return (root, query, builder) -> builder.equal(root.get("client"), client);
     }
 
-    public static Specification<PurchaseEntity> hasStatus(PurchaseStatus status) {
-        if (status == null) {
+    public static Specification<PurchaseEntity> hasStatusIn(Collection<PurchaseStatus> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
             return null;
         }
-        return (root, query, builder) -> builder.equal(root.get("status"), status);
+        return (root, query, builder) -> root.get("status").in(statuses);
     }
 
     public static Specification<PurchaseEntity> from(LocalDate from) {

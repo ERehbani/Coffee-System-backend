@@ -1,11 +1,31 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
+import java.util.Set;
+
+// Constant order matches the MySQL enum (V13): new values are appended
 public enum PurchaseStatus {
     CONFIRMED,
     CANCELLED,
-    REFUNDED;
+    REFUNDED,
+    IN_PREPARATION,
+    READY,
+    DELIVERED;
 
     public boolean canTransitionTo(PurchaseStatus next) {
-        return this == CONFIRMED && next != CONFIRMED;
+        return allowedNext().contains(next);
+    }
+
+    public boolean isCancellation() {
+        return this == CANCELLED || this == REFUNDED;
+    }
+
+    private Set<PurchaseStatus> allowedNext() {
+        return switch (this) {
+            case CONFIRMED -> Set.of(IN_PREPARATION, CANCELLED, REFUNDED);
+            case IN_PREPARATION -> Set.of(READY, CANCELLED, REFUNDED);
+            case READY -> Set.of(DELIVERED, CANCELLED, REFUNDED);
+            case DELIVERED -> Set.of(REFUNDED);
+            case CANCELLED, REFUNDED -> Set.of();
+        };
     }
 }
