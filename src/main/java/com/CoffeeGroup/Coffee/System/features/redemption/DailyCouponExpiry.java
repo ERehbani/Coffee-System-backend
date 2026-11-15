@@ -1,7 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
 import java.time.Clock;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -22,7 +22,8 @@ public class DailyCouponExpiry {
     @Scheduled(cron = "0 0 0 * * *", zone = "${app.timezone}")
     @Transactional
     public void expireCouponsOfEndedBenefits() {
-        int expired = redemptionRepository.expireActiveOfBenefitsEndedBefore(LocalDate.now(clock));
+        LocalDateTime now = LocalDateTime.now(clock);
+        int expired = redemptionRepository.expireActiveOfBenefitsEndedBefore(now.toLocalDate(), now);
         log.info("Daily expiry: {} coupons marked as expired", expired);
     }
 }

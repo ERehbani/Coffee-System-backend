@@ -30,10 +30,12 @@ public interface RedemptionRepository
     long countByBenefitCafeAndStatusAndUsedAtBetween(CafeEntity cafe, RedemptionStatus status, LocalDateTime from,
             LocalDateTime to);
 
+    // Bumps the version so a transaction that loaded the coupon as ACTIVE fails instead of overwriting EXPIRED
     @Modifying
     @Query("update RedemptionEntity r "
-            + "set r.status = com.CoffeeGroup.Coffee.System.features.redemption.RedemptionStatus.EXPIRED "
+            + "set r.status = com.CoffeeGroup.Coffee.System.features.redemption.RedemptionStatus.EXPIRED, "
+            + "r.version = r.version + 1, r.updatedAt = :now "
             + "where r.status = com.CoffeeGroup.Coffee.System.features.redemption.RedemptionStatus.ACTIVE "
             + "and r.benefit in (select b from BenefitEntity b where b.endDate < :today)")
-    int expireActiveOfBenefitsEndedBefore(@Param("today") LocalDate today);
+    int expireActiveOfBenefitsEndedBefore(@Param("today") LocalDate today, @Param("now") LocalDateTime now);
 }

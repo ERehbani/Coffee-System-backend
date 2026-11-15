@@ -152,10 +152,10 @@ public class PurchaseService implements IPurchaseService {
         if (!coupon.belongsTo(client)) {
             throw new AccessDeniedException("This code belongs to another client");
         }
+        coupon.ensureUsableOn(LocalDate.now(clock));
         if (!coupon.isActive()) {
             throw new BusinessRuleException("Code already used");
         }
-        coupon.ensureUsableOn(LocalDate.now(clock));
         BenefitEntity benefit = coupon.getBenefit();
         if (!benefit.isUsableAt(draft.cafe())) {
             throw new BusinessRuleException("This code does not belong to this cafe");

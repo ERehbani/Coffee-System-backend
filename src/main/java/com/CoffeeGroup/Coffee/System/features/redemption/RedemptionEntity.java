@@ -72,7 +72,7 @@ public class RedemptionEntity extends AuditableEntity {
     }
 
     public void ensureUsableOn(LocalDate today) {
-        if (benefit.hasEndedBy(today)) {
+        if (status == RedemptionStatus.EXPIRED || benefit.hasEndedBy(today)) {
             throw new BusinessRuleException("Code has expired");
         }
     }

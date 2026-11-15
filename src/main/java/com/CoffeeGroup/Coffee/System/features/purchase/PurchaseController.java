@@ -79,8 +79,9 @@ public class PurchaseController {
 
     @PatchMapping("/{externalId}/status")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Cancel or refund a purchase",
-            description = "Takes back the points it gave, reactivates the coupon and emails the client")
+    @Operation(summary = "Change the status of a purchase",
+            description = "Moves the order through IN_PREPARATION, READY and DELIVERED. Only CANCELLED or REFUNDED "
+                    + "takes back the points it gave, reactivates the coupon and emails the client")
     public ResponseEntity<PurchaseResponse> updateStatus(
             @Parameter(description = "Purchase external ID") @PathVariable UUID externalId,
             @Valid @RequestBody UpdatePurchaseStatusRequest request) {
