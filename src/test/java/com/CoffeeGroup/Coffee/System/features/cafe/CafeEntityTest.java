@@ -49,15 +49,13 @@ class CafeEntityTest {
     }
 
     @Test
-    void theProfileIsCompleteWithAddressPhoneImagesAndHours() {
+    void theProfileIsCompleteWithAddressPhoneAndHoursEvenWithoutImages() {
         CafeEntity cafe = openOnSaturdays();
         cafe.setAddress("Av Siempreviva 123");
-        cafe.setPhoneNumber("1111111111");
-        cafe.setLogo("https://img/logo.png");
 
         assertThat(cafe.hasCompleteProfile()).isFalse();
 
-        cafe.setImage("https://img/cover.png");
+        cafe.setPhoneNumber("1111111111");
 
         assertThat(cafe.hasCompleteProfile()).isTrue();
     }

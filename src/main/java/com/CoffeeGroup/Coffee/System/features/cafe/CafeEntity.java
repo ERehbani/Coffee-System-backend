@@ -75,8 +75,7 @@ public class CafeEntity extends AuditableEntity {
     }
 
     public boolean hasCompleteProfile() {
-        return hasText(address) && hasText(phoneNumber) && hasText(logo) && hasText(image)
-                && !openingHours.isEmpty();
+        return hasText(address) && hasText(phoneNumber) && !openingHours.isEmpty();
     }
 
     public void replaceOpeningHours(List<OpeningHours> newHours) {
