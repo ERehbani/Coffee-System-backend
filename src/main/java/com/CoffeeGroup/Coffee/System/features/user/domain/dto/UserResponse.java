@@ -7,6 +7,7 @@ public record UserResponse(
         UUID externalId,
         String email,
         Boolean state,
+        String role,
         LocalDateTime creationDate
 ) {
 }

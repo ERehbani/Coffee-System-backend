@@ -94,13 +94,16 @@ public class UserService implements IUserService {
                 .orElseThrow(() -> new EntityNotFoundException("Role " + roleName + " not found"));
         UserEntity user = UserEntity.builder().email(email).active(true).build();
         userRepository.save(user);
-        credentialsRepository.save(CredentialsEntity.builder()
+        CredentialsEntity credentials = CredentialsEntity.builder()
                 .username(emailAddress)
                 .password(passwordEncoder.encode(password))
                 .enabled(true)
                 .user(user)
                 .roles(Set.of(role))
-                .build());
+                .build();
+        credentialsRepository.save(credentials);
+        // Keep the inverse side in sync so the response can read the role in this same transaction.
+        user.setCredentials(credentials);
         return user;
     }
 

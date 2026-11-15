@@ -15,6 +15,6 @@ public class UserMapper {
     }
 
     public UserResponse toResponse(UserEntity user, UUID externalId) {
-        return new UserResponse(externalId, user.emailAddress(), user.isActive(), user.getCreatedAt());
+        return new UserResponse(externalId, user.emailAddress(), user.isActive(), user.roleName(), user.getCreatedAt());
     }
 }

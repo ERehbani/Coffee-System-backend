@@ -52,4 +52,15 @@ public class UserEntity extends AuditableEntity {
     public String emailAddress() {
         return email == null ? null : email.value();
     }
+
+    // Every account is created with exactly one role, so the first one is the user's role.
+    public String roleName() {
+        if (credentials == null) {
+            return null;
+        }
+        return credentials.getRoles().stream()
+                .findFirst()
+                .map(role -> role.getRole().name())
+                .orElse(null);
+    }
 }
