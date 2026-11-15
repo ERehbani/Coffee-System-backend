@@ -26,6 +26,7 @@ public record RedemptionResponse(
         BigDecimal discountPercentage,
         UUID productId,
         String productName,
-        BigDecimal productPrice
+        BigDecimal productPrice,
+        UUID catalogProductId
 ) {
 }

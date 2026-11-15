@@ -22,6 +22,7 @@ public class CartMapper {
     private static CartItemResponse toItemResponse(CartItemEntity item) {
         return new CartItemResponse(
                 item.getProduct().getExternalId(),
+                item.getProduct().getCatalogProduct().getExternalId(),
                 item.getProduct().name(),
                 item.getQuantity(),
                 item.getProduct().getPrice(),
