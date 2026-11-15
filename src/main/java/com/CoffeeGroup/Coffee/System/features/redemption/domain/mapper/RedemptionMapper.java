@@ -35,7 +35,8 @@ public class RedemptionMapper {
                 benefit.getDiscountPercentage(),
                 product == null ? null : product.getExternalId(),
                 productName(benefit),
-                product == null ? null : product.getPrice());
+                product == null ? null : product.getPrice(),
+                benefit.getCatalogProduct() == null ? null : benefit.getCatalogProduct().getExternalId());
     }
 
     private static String productName(BenefitEntity benefit) {

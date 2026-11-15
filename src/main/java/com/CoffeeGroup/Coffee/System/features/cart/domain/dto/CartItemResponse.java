@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public record CartItemResponse(
         UUID productId,
+        UUID catalogProductId,
         String productName,
         Integer quantity,
         BigDecimal unitPrice,
