@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 // Constant order matches the MySQL enum (V13): new values are appended
@@ -17,6 +19,10 @@ public enum PurchaseStatus {
 
     public boolean isCancellation() {
         return this == CANCELLED || this == REFUNDED;
+    }
+
+    public static List<PurchaseStatus> cancellations() {
+        return Arrays.stream(values()).filter(PurchaseStatus::isCancellation).toList();
     }
 
     private Set<PurchaseStatus> allowedNext() {

@@ -8,6 +8,7 @@ public record CafeDashboardResponse(
         long activeBenefits,
         long redemptionsToday,
         long purchasesToday,
-        BigDecimal salesToday
+        BigDecimal salesToday,
+        long pointsAwardedToday
 ) {
 }
