@@ -1,7 +1,5 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -100,17 +98,15 @@ public class ClientDashboardService implements IClientDashboardService {
                 .collect(Collectors.toMap(CafeProductRepository.CafeMaxPoints::getCafeId,
                         CafeProductRepository.CafeMaxPoints::getMaxPoints));
         return cafes.stream()
-                .map(cafe -> toNearbyCafe(cafe, reviewsByCafe.get(cafe.getId()), maxPointsByCafe.get(cafe.getId())))
+                .map(cafe -> toNearbyCafe(cafe,
+                        reviewsByCafe.getOrDefault(cafe.getId(), ReviewRepository.CafeReviewSummary.NONE),
+                        maxPointsByCafe.get(cafe.getId())))
                 .toList();
     }
 
     private static NearbyCafe toNearbyCafe(CafeEntity cafe, ReviewRepository.CafeReviewSummary reviews, Integer maxPoints) {
-        double rating = reviews == null || reviews.getAverageRating() == null
-                ? 0.0
-                : BigDecimal.valueOf(reviews.getAverageRating()).setScale(1, RoundingMode.HALF_UP).doubleValue();
-        int reviewCount = reviews == null || reviews.getReviewCount() == null ? 0 : reviews.getReviewCount().intValue();
-        return new NearbyCafe(cafe.getExternalId(), cafe.getName(), cafe.getImage(), rating, reviewCount, false, null,
-                maxPoints, orEmpty(cafe.getDescription()));
+        return new NearbyCafe(cafe.getExternalId(), cafe.getName(), cafe.getImage(), reviews.rating(),
+                reviews.reviewCount(), false, null, maxPoints, orEmpty(cafe.getDescription()));
     }
 
     private static List<FeaturedBenefit> featuredBenefits(List<TierBenefitResponse> benefits) {

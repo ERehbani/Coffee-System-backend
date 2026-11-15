@@ -18,7 +18,6 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseRepository;
-import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseStatus;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewResponse;
 import com.CoffeeGroup.Coffee.System.features.review.domain.dto.ReviewUpdateRequest;
@@ -52,8 +51,8 @@ public class ReviewService implements IReviewService {
         if (!purchase.isFrom(cafe)) {
             throw new BusinessRuleException("The purchase does not belong to this cafe");
         }
-        if (purchase.getStatus() != PurchaseStatus.CONFIRMED) {
-            throw new BusinessRuleException("Only confirmed purchases can be reviewed");
+        if (purchase.getStatus().isCancellation()) {
+            throw new BusinessRuleException("Cancelled or refunded purchases cannot be reviewed");
         }
         if (reviewRepository.existsByPurchaseExternalId(purchase.getExternalId())) {
             throw new EntityAlreadyExistsException("This purchase already has a review");

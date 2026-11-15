@@ -47,15 +47,17 @@ class CafeDashboardServiceTest {
         when(benefitRepository.countByCafeAndActiveTrue(central)).thenReturn(2L);
         when(redemptionRepository.countByBenefitCafeAndStatusAndUsedAtBetween(central, RedemptionStatus.USED, from, to))
                 .thenReturn(3L);
-        when(purchaseRepository.countByCafeAndStatusAndDateBetween(central, PurchaseStatus.CONFIRMED, from, to))
-                .thenReturn(5L);
-        when(purchaseRepository.sumPriceByCafeAndStatusAndDateBetween(central, PurchaseStatus.CONFIRMED, from, to))
-                .thenReturn(new BigDecimal("12500"));
+        when(purchaseRepository.countByCafeAndStatusNotInAndDateBetween(central, PurchaseStatus.cancellations(), from,
+                to)).thenReturn(5L);
+        when(purchaseRepository.sumPriceByCafeAndStatusNotInAndDateBetween(central, PurchaseStatus.cancellations(),
+                from, to)).thenReturn(new BigDecimal("12500"));
+        when(purchaseRepository.sumGeneratedPointsByCafeAndStatusNotInAndDateBetween(central,
+                PurchaseStatus.cancellations(), from, to)).thenReturn(40L);
         CafeDashboardService service = new CafeDashboardService(securityUtils, cafeProductRepository,
                 benefitRepository, redemptionRepository, purchaseRepository, TestData.fixedClock());
 
         CafeDashboardResponse dashboard = service.getMine();
 
-        assertThat(dashboard).isEqualTo(new CafeDashboardResponse(4, 1, 2, 3, 5, new BigDecimal("12500")));
+        assertThat(dashboard).isEqualTo(new CafeDashboardResponse(4, 1, 2, 3, 5, new BigDecimal("12500"), 40));
     }
 }

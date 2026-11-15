@@ -46,7 +46,7 @@ public class RedemptionController {
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE', 'ROLE_SUPERADMIN')")
     @Operation(summary = "List redemptions", description = "Paginated, newest first; clients only see their own")
     public ResponseEntity<PageResponse<RedemptionResponse>> getAll(
-            @Parameter(description = "ACTIVE, USED or CANCELLED") @RequestParam(required = false) RedemptionStatus status,
+            @Parameter(description = "ACTIVE, USED, CANCELLED or EXPIRED") @RequestParam(required = false) RedemptionStatus status,
             @PageableDefault(size = 20, sort = "redeemedAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(redemptionService.findAll(status, pageable));
     }

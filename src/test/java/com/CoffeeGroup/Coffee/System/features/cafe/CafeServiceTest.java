@@ -20,6 +20,7 @@ import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.OpeningHoursReques
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.OpeningHoursResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
+import com.CoffeeGroup.Coffee.System.features.review.ReviewRepository;
 import com.CoffeeGroup.Coffee.System.support.TestData;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,13 +32,16 @@ class CafeServiceTest {
     private SecurityUtils securityUtils;
     @Mock
     private CafeAccessGuard cafeAccessGuard;
+    @Mock
+    private ReviewRepository reviewRepository;
 
     private CafeService service;
     private final CafeEntity central = TestData.cafe("Cafe Central");
 
     @BeforeEach
     void setUp() {
-        service = new CafeService(cafeRepository, new CafeMapper(TestData.fixedClock()), securityUtils, cafeAccessGuard);
+        service = new CafeService(cafeRepository, new CafeMapper(TestData.fixedClock(), reviewRepository),
+                securityUtils, cafeAccessGuard);
     }
 
     private UpdateCafeRequest completeProfile(List<OpeningHoursRequest> hours) {

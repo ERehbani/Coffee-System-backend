@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -50,7 +51,8 @@ public class PurchaseController {
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @Operation(summary = "List purchases", description = "Paginated; each role only sees what belongs to it")
     public ResponseEntity<PageResponse<PurchaseResponse>> findAll(
-            @Parameter(description = "Filter by purchase status") @RequestParam(required = false) PurchaseStatus status,
+            @Parameter(description = "Filter by purchase status, several separated by commas")
+            @RequestParam(required = false) List<PurchaseStatus> status,
             @Parameter(description = "From date (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "To date (yyyy-MM-dd)") @RequestParam(required = false)
@@ -77,8 +79,9 @@ public class PurchaseController {
 
     @PatchMapping("/{externalId}/status")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Cancel or refund a purchase",
-            description = "Takes back the points it gave, reactivates the coupon and emails the client")
+    @Operation(summary = "Change the status of a purchase",
+            description = "Moves the order through IN_PREPARATION, READY and DELIVERED. Only CANCELLED or REFUNDED "
+                    + "takes back the points it gave, reactivates the coupon and emails the client")
     public ResponseEntity<PurchaseResponse> updateStatus(
             @Parameter(description = "Purchase external ID") @PathVariable UUID externalId,
             @Valid @RequestBody UpdatePurchaseStatusRequest request) {
@@ -90,7 +93,8 @@ public class PurchaseController {
     @Operation(summary = "Purchase history of a cafe")
     public ResponseEntity<PageResponse<PurchaseResponse>> getHistoryByCafe(
             @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Filter by purchase status") @RequestParam(required = false) PurchaseStatus status,
+            @Parameter(description = "Filter by purchase status, several separated by commas")
+            @RequestParam(required = false) List<PurchaseStatus> status,
             @Parameter(description = "From date (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @Parameter(description = "To date (yyyy-MM-dd)") @RequestParam(required = false)

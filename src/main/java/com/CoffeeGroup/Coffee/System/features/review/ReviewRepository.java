@@ -1,5 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.review;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,10 +28,38 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     List<CafeReviewSummary> summarizeByCafe(@Param("cafes") List<CafeEntity> cafes);
 
     interface CafeReviewSummary {
+
+        CafeReviewSummary NONE = new CafeReviewSummary() {
+            @Override
+            public Long getCafeId() {
+                return null;
+            }
+
+            @Override
+            public Double getAverageRating() {
+                return null;
+            }
+
+            @Override
+            public Long getReviewCount() {
+                return null;
+            }
+        };
+
         Long getCafeId();
 
         Double getAverageRating();
 
         Long getReviewCount();
+
+        default double rating() {
+            return getAverageRating() == null
+                    ? 0.0
+                    : BigDecimal.valueOf(getAverageRating()).setScale(1, RoundingMode.HALF_UP).doubleValue();
+        }
+
+        default int reviewCount() {
+            return getReviewCount() == null ? 0 : getReviewCount().intValue();
+        }
     }
 }

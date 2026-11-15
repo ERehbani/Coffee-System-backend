@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,12 +38,14 @@ public class CafeDashboardService implements ICafeDashboardService {
         LocalDate today = LocalDate.now(clock);
         LocalDateTime from = today.atStartOfDay();
         LocalDateTime to = today.atTime(LocalTime.MAX);
+        List<PurchaseStatus> cancellations = PurchaseStatus.cancellations();
         return new CafeDashboardResponse(
                 cafeProductRepository.countByCafeAndActiveTrue(cafe),
                 cafeProductRepository.countByCafeAndActiveTrueAndAvailableFalse(cafe),
                 benefitRepository.countByCafeAndActiveTrue(cafe),
                 redemptionRepository.countByBenefitCafeAndStatusAndUsedAtBetween(cafe, RedemptionStatus.USED, from, to),
-                purchaseRepository.countByCafeAndStatusAndDateBetween(cafe, PurchaseStatus.CONFIRMED, from, to),
-                purchaseRepository.sumPriceByCafeAndStatusAndDateBetween(cafe, PurchaseStatus.CONFIRMED, from, to));
+                purchaseRepository.countByCafeAndStatusNotInAndDateBetween(cafe, cancellations, from, to),
+                purchaseRepository.sumPriceByCafeAndStatusNotInAndDateBetween(cafe, cancellations, from, to),
+                purchaseRepository.sumGeneratedPointsByCafeAndStatusNotInAndDateBetween(cafe, cancellations, from, to));
     }
 }

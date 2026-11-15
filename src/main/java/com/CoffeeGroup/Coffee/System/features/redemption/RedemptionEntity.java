@@ -1,8 +1,10 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.InvalidStatusTransitionException;
 import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
@@ -67,6 +69,12 @@ public class RedemptionEntity extends AuditableEntity {
 
     public boolean isActive() {
         return status == RedemptionStatus.ACTIVE;
+    }
+
+    public void ensureUsableOn(LocalDate today) {
+        if (status == RedemptionStatus.EXPIRED || benefit.hasEndedBy(today)) {
+            throw new BusinessRuleException("Code has expired");
+        }
     }
 
     public CafeEntity cafe() {

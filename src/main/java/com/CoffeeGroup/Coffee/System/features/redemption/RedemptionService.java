@@ -87,6 +87,7 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse validate(String validationCode) {
         RedemptionEntity redemption = redemptionHandledByCurrentUser(validationCode);
+        redemption.ensureUsableOn(LocalDate.now(clock));
         ensureProductCanBeDelivered(redemption.getBenefit());
         redemption.markUsed(LocalDateTime.now(clock));
         return redemptionMapper.toResponse(redemption);
@@ -96,6 +97,7 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse cancel(String validationCode) {
         RedemptionEntity redemption = redemptionHandledByCurrentUser(validationCode);
+        redemption.ensureUsableOn(LocalDate.now(clock));
         redemption.cancel();
         redemption.getClient().refundPoints(redemption.getUsedPoints());
         benefitRepository.releaseRedemption(redemption.getBenefit().getId());

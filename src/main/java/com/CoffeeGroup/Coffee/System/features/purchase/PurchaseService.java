@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -115,8 +116,10 @@ public class PurchaseService implements IPurchaseService {
         PurchaseEntity purchase = findPurchase(externalId);
         cafeAccessGuard.assertCanManage(purchase.getCafe());
         purchase.changeStatus(request.status());
-        int revokedPoints = revert(purchase);
-        eventPublisher.publishEvent(new PurchaseCancelledEvent(PurchaseReceipt.of(purchase), revokedPoints));
+        if (request.status().isCancellation()) {
+            int revokedPoints = revert(purchase);
+            eventPublisher.publishEvent(new PurchaseCancelledEvent(PurchaseReceipt.of(purchase), revokedPoints));
+        }
         return purchaseMapper.toResponse(purchase);
     }
 
@@ -149,6 +152,7 @@ public class PurchaseService implements IPurchaseService {
         if (!coupon.belongsTo(client)) {
             throw new AccessDeniedException("This code belongs to another client");
         }
+        coupon.ensureUsableOn(LocalDate.now(clock));
         if (!coupon.isActive()) {
             throw new BusinessRuleException("Code already used");
         }
@@ -177,7 +181,7 @@ public class PurchaseService implements IPurchaseService {
         Page<PurchaseEntity> page = purchaseRepository.findAll(Specifications.allOf(
                 PurchaseSpecifications.ofCafe(cafe),
                 PurchaseSpecifications.ofClient(client),
-                PurchaseSpecifications.hasStatus(filter.status()),
+                PurchaseSpecifications.hasStatusIn(filter.statuses()),
                 PurchaseSpecifications.from(filter.from()),
                 PurchaseSpecifications.to(filter.to())), pageable);
         return new PageResponse<>(purchaseMapper.toResponses(page.getContent()), page.getNumber(), page.getSize(),
