@@ -5,9 +5,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.util.HexFormat;
+import java.util.UUID;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.features.media.domain.dto.UploadSignatureResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -19,17 +22,31 @@ public class CloudinaryUploadSigner implements IMediaService {
 
     private final CloudinaryProperties properties;
     private final Clock clock;
+    private final SecurityUtils securityUtils;
 
     @Override
-    public UploadSignatureResponse signImageUpload() {
+    public UploadSignatureResponse signImageUpload(UploadTarget target) {
+        UUID ownerId = ownerIdOf(target);
         if (!properties.isConfigured()) {
             throw new MediaUploadNotConfiguredException();
         }
+        String folder = target.folderUnder(properties.folder(), ownerId);
         long timestamp = clock.instant().getEpochSecond();
         // Cloudinary signs the params sorted by name; these are already in alphabetical order.
-        String params = "allowed_formats=" + ALLOWED_FORMATS + "&folder=" + properties.folder() + "&timestamp=" + timestamp;
+        String params = "allowed_formats=" + ALLOWED_FORMATS + "&folder=" + folder + "&timestamp=" + timestamp;
         return new UploadSignatureResponse(properties.cloudName(), properties.apiKey(), timestamp,
-                properties.folder(), ALLOWED_FORMATS, sha1Hex(params + properties.apiSecret()));
+                folder, ALLOWED_FORMATS, sha1Hex(params + properties.apiSecret()));
+    }
+
+    // The folder comes from the authenticated user so nobody can sign uploads into another owner's folder.
+    private UUID ownerIdOf(UploadTarget target) {
+        if (target.owner() == UploadTarget.Owner.CAFE && securityUtils.isCafe()) {
+            return securityUtils.currentCafe().getExternalId();
+        }
+        if (target.owner() == UploadTarget.Owner.CLIENT && securityUtils.isClient()) {
+            return securityUtils.currentClient().getExternalId();
+        }
+        throw new AccessDeniedException("You cannot upload a " + target + " image");
     }
 
     private static String sha1Hex(String value) {
