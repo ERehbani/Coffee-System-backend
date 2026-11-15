@@ -15,6 +15,7 @@ public class ReviewMapper {
                 review.getRating(),
                 review.getDate(),
                 review.getClient() == null ? null : review.getClient().getExternalId(),
+                review.getClient() == null ? null : review.getClient().fullName(),
                 review.getCafe() == null ? null : review.getCafe().getExternalId(),
                 review.getPurchase() == null ? null : review.getPurchase().getExternalId());
     }

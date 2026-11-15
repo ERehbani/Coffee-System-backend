@@ -11,6 +11,7 @@ public record ReviewResponse (
         Integer rating,
         LocalDate date,
         UUID clientId,
+        String clientName,
         UUID cafeId,
         UUID purchaseId
 
