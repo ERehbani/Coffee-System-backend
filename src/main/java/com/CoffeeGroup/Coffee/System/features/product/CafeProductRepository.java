@@ -22,6 +22,10 @@ public interface CafeProductRepository
 
     boolean existsByCafeAndCatalogProductAndActiveTrue(CafeEntity cafe, CatalogProductEntity catalogProduct);
 
+    long countByCafeAndActiveTrue(CafeEntity cafe);
+
+    long countByCafeAndActiveTrueAndAvailableFalse(CafeEntity cafe);
+
     @Modifying
     @Query("update CafeProductEntity p set p.available = true where p.available = false")
     int markEverythingAvailable();

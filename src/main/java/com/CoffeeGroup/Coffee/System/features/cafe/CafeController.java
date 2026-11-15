@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateCafeAccountRequest;
+import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeDashboardResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.user.IUserService;
@@ -35,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class CafeController {
 
     private final ICafeService cafeService;
+    private final ICafeDashboardService cafeDashboardService;
     private final IUserService userService;
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
@@ -73,6 +75,13 @@ public class CafeController {
     @Operation(summary = "Get my cafe")
     public ResponseEntity<CafeResponse> getMine() {
         return ResponseEntity.ok(cafeService.getMine());
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
+    @GetMapping("/me/dashboard")
+    @Operation(summary = "Get the dashboard of my cafe", description = "Products, benefits and today's activity")
+    public ResponseEntity<CafeDashboardResponse> getMyDashboard() {
+        return ResponseEntity.ok(cafeDashboardService.getMine());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")

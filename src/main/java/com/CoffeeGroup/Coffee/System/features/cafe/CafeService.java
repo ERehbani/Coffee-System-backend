@@ -55,7 +55,6 @@ public class CafeService implements ICafeService {
                 .address(request.address())
                 .phoneNumber(request.phoneNumber())
                 .description(request.description())
-                .schedule(request.schedule())
                 .active(true)
                 .user(user)
                 .build();
@@ -70,8 +69,11 @@ public class CafeService implements ICafeService {
         cafe.setAddress(request.address());
         cafe.setPhoneNumber(request.phoneNumber());
         cafe.setDescription(request.description());
-        cafe.setSchedule(request.schedule());
+        cafe.setLogo(request.logo());
         cafe.setImage(request.image());
+        if (request.openingHours() != null) {
+            cafe.replaceOpeningHours(cafeMapper.toOpeningHours(request.openingHours()));
+        }
         return cafeMapper.toResponse(cafe);
     }
 

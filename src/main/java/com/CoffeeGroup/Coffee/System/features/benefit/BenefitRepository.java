@@ -11,12 +11,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatUsage;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 
 public interface BenefitRepository extends JpaRepository<BenefitEntity, Long>, JpaSpecificationExecutor<BenefitEntity> {
 
     Optional<BenefitEntity> findByExternalId(UUID externalId);
 
     List<BenefitEntity> findByTierIsNotNull();
+
+    long countByCafeAndActiveTrue(CafeEntity cafe);
 
     @Modifying(flushAutomatically = true)
     @Query("update BenefitEntity b set b.redeemedCount = b.redeemedCount + 1 "

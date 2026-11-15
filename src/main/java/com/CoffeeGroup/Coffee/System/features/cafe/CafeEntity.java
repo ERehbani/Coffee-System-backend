@@ -1,15 +1,24 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,11 +47,16 @@ public class CafeEntity extends AuditableEntity {
     @Column(name = "active", nullable = false)
     private Boolean active;
 
-    @Column(name = "image")
+    @Column(name = "logo", length = 500)
+    private String logo;
+
+    @Column(name = "image", length = 500)
     private String image;
 
-    @Column(name = "schedule")
-    private String schedule;
+    @ElementCollection
+    @CollectionTable(name = "cafe_opening_hours", joinColumns = @JoinColumn(name = "cafe_id"))
+    @Builder.Default
+    private List<OpeningHours> openingHours = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
@@ -54,6 +68,30 @@ public class CafeEntity extends AuditableEntity {
 
     public void deactivate() {
         active = false;
+    }
+
+    public boolean isOpenAt(LocalDateTime moment) {
+        return isActive() && openingHours.stream().anyMatch(hours -> hours.includes(moment));
+    }
+
+    public boolean hasCompleteProfile() {
+        return hasText(address) && hasText(phoneNumber) && hasText(logo) && hasText(image)
+                && !openingHours.isEmpty();
+    }
+
+    public void replaceOpeningHours(List<OpeningHours> newHours) {
+        long distinctDays = newHours.stream().map(OpeningHours::getDay).distinct().count();
+        if (distinctDays != newHours.size()) {
+            throw new BusinessRuleException("Each day can only have one opening hours");
+        }
+        openingHours.clear();
+        newHours.stream()
+                .sorted(Comparator.comparing(OpeningHours::getDay, Comparator.comparingInt(DayOfWeek::getValue)))
+                .forEach(openingHours::add);
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 
     public String email() {

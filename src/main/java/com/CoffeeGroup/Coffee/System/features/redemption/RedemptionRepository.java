@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 
 public interface RedemptionRepository
@@ -20,4 +22,7 @@ public interface RedemptionRepository
     List<RedemptionEntity> findByClientAndStatusOrderByRedeemedAtDesc(ClientEntity client, RedemptionStatus status);
 
     long countByClientAndBenefitAndStatusNot(ClientEntity client, BenefitEntity benefit, RedemptionStatus status);
+
+    long countByBenefitCafeAndStatusAndUsedAtBetween(CafeEntity cafe, RedemptionStatus status, LocalDateTime from,
+            LocalDateTime to);
 }

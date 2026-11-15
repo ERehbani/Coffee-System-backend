@@ -2,7 +2,10 @@ package com.CoffeeGroup.Coffee.System.common.seed;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -21,6 +24,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitFormatReposi
 import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
+import com.CoffeeGroup.Coffee.System.features.cafe.OpeningHours;
 import com.CoffeeGroup.Coffee.System.features.catalog.CatalogProductEntity;
 import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
 import com.CoffeeGroup.Coffee.System.features.catalog.domain.dto.CatalogProductRequest;
@@ -41,6 +45,10 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     static final String DEMO_PASSWORD_CAFE = "Cafe1234";
     static final String DEMO_CLIENT_EMAIL = "cliente@test.com";
+    static final String DEMO_LOGO = "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200";
+    static final String DEMO_COVER = "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200";
+    static final List<DayOfWeek> WEEKDAYS = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
     static final String DEMO_CLIENT_PASSWORD = "Cliente123";
 
     private final CredentialsRepository credentialsRepository;
@@ -64,9 +72,11 @@ public class DemoDataSeeder implements ApplicationRunner {
             return;
         }
         CafeEntity central = createCafe("cafe.central@test.com", "Cafe Central", "Av Siempreviva 123",
-                "Cafeteria de prueba en el centro", "+54 11 1111-1111", "Lun a Vie 8-20");
+                "Cafeteria de prueba en el centro", "1111111111");
+        completeProfile(central, openEvery(WEEKDAYS, LocalTime.of(8, 0), LocalTime.of(20, 0)));
         CafeEntity north = createCafe("cafe.norte@test.com", "Cafe Norte", "Calle Falsa 456",
-                "Cafeteria de prueba zona norte", "+54 11 2222-2222", "Lun a Dom 9-22");
+                "Cafeteria de prueba zona norte", "2222222222");
+        completeProfile(north, openEvery(List.of(DayOfWeek.values()), LocalTime.of(9, 0), LocalTime.of(22, 0)));
 
         CafeProductEntity capuccino = sell(central, "Capuccino", "Cafe", "Capuccino clasico", "2500", 80);
         sell(central, "Medialuna", "Pasteleria", "Medialuna de manteca", "800", 50);
@@ -89,12 +99,22 @@ public class DemoDataSeeder implements ApplicationRunner {
         benefitRepository.save(twoForOne);
     }
 
-    private CafeEntity createCafe(String email, String name, String address, String description, String phone,
-            String schedule) {
+    private CafeEntity createCafe(String email, String name, String address, String description, String phone) {
         var account = userService.saveCafe(new CreateCafeAccountRequest(email, DEMO_PASSWORD_CAFE, name, address,
-                description, phone, schedule));
+                description, phone));
         return cafeRepository.findByExternalId(account.externalId())
                 .orElseThrow(() -> new EntityNotFoundException("Demo cafe not found"));
+    }
+
+    private void completeProfile(CafeEntity cafe, List<OpeningHours> hours) {
+        cafe.setLogo(DEMO_LOGO);
+        cafe.setImage(DEMO_COVER);
+        cafe.replaceOpeningHours(hours);
+        cafeRepository.save(cafe);
+    }
+
+    private static List<OpeningHours> openEvery(List<DayOfWeek> days, LocalTime opensAt, LocalTime closesAt) {
+        return days.stream().map(day -> OpeningHours.of(day, opensAt, closesAt)).toList();
     }
 
     private CafeProductEntity sell(CafeEntity cafe, String name, String category, String description, String price,
