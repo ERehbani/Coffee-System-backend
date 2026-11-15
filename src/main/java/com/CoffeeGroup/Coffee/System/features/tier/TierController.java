@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class TierController {
     private final ITierService tierService;
 
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping
     @Operation(summary = "List all tiers", description = "Retrieves all loyalty tiers")
     @ApiResponses
@@ -40,7 +40,7 @@ public class TierController {
         return ResponseEntity.ok(tierService.getAll());
     }
 
-    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @GetMapping("/{externalId}")
     @Operation(summary = "Get tier by ID", description = "Retrieves a specific tier by its external ID")
     @ApiResponses
