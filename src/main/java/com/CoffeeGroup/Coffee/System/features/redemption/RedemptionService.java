@@ -87,6 +87,7 @@ public class RedemptionService implements IRedemptionService {
     @Transactional
     public RedemptionResponse validate(String validationCode) {
         RedemptionEntity redemption = redemptionHandledByCurrentUser(validationCode);
+        redemption.ensureUsableOn(LocalDate.now(clock));
         ensureProductCanBeDelivered(redemption.getBenefit());
         redemption.markUsed(LocalDateTime.now(clock));
         return redemptionMapper.toResponse(redemption);

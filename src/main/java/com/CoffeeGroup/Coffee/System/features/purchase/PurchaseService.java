@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.purchase;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -152,6 +153,7 @@ public class PurchaseService implements IPurchaseService {
         if (!coupon.isActive()) {
             throw new BusinessRuleException("Code already used");
         }
+        coupon.ensureUsableOn(LocalDate.now(clock));
         BenefitEntity benefit = coupon.getBenefit();
         if (!benefit.isUsableAt(draft.cafe())) {
             throw new BusinessRuleException("This code does not belong to this cafe");

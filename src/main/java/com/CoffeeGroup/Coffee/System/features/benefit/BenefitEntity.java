@@ -118,7 +118,11 @@ public class BenefitEntity extends AuditableEntity {
     }
 
     public boolean isInsideDates(LocalDate today) {
-        return (startDate == null || !startDate.isAfter(today)) && (endDate == null || !endDate.isBefore(today));
+        return (startDate == null || !startDate.isAfter(today)) && !hasEndedBy(today);
+    }
+
+    public boolean hasEndedBy(LocalDate today) {
+        return endDate != null && endDate.isBefore(today);
     }
 
     public boolean isVisibleOn(LocalDate today) {
@@ -158,7 +162,7 @@ public class BenefitEntity extends AuditableEntity {
         if (startDate != null && startDate.isAfter(today)) {
             throw new BusinessRuleException("Benefit is not available yet");
         }
-        if (endDate != null && endDate.isBefore(today)) {
+        if (hasEndedBy(today)) {
             throw new BusinessRuleException("Benefit has expired");
         }
         if (requiresHigherTierThan(client.getTier())) {
