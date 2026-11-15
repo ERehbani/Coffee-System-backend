@@ -21,7 +21,9 @@ public class ClientMapper {
                 client.getTier().getExternalId(),
                 client.getTier().getName(),
                 client.getUser().getExternalId(),
-                client.getUser().isActive());
+                client.getUser().isActive(),
+                client.email(),
+                client.getUser().getCreatedAt());
     }
 
     public ClientPointsResponse toPointsResponse(ClientEntity client) {
