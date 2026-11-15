@@ -15,6 +15,7 @@ import com.CoffeeGroup.Coffee.System.common.persistence.Specifications;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.CafeResponse;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.dto.UpdateCafeRequest;
 import com.CoffeeGroup.Coffee.System.features.cafe.domain.mapper.CafeMapper;
+import com.CoffeeGroup.Coffee.System.features.review.ReviewRepository.CafeReviewSummary;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class CafeService implements ICafeService {
                 .user(user)
                 .build();
         cafeRepository.save(cafe);
-        return cafeMapper.toResponse(cafe);
+        return cafeMapper.toResponse(cafe, CafeReviewSummary.NONE);
     }
 
     @Override
@@ -92,12 +93,9 @@ public class CafeService implements ICafeService {
     }
 
     private List<CafeResponse> search(String name, String address, Boolean active) {
-        return cafeRepository.findAll(Specifications.allOf(
-                        CafeSpecifications.nameContains(name),
-                        CafeSpecifications.addressContains(address),
-                        CafeSpecifications.hasActive(active)), BY_NAME)
-                .stream()
-                .map(cafeMapper::toResponse)
-                .toList();
+        return cafeMapper.toResponses(cafeRepository.findAll(Specifications.allOf(
+                CafeSpecifications.nameContains(name),
+                CafeSpecifications.addressContains(address),
+                CafeSpecifications.hasActive(active)), BY_NAME));
     }
 }

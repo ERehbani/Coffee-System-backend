@@ -2,6 +2,7 @@ package com.CoffeeGroup.Coffee.System.features.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -95,7 +96,7 @@ class ClientDashboardServiceTest {
         CafeEntity central = TestData.cafe("Cafe Central");
         central.setId(7L);
         when(cafeRepository.findByActiveTrueOrderByNameAsc()).thenReturn(List.of(central));
-        ReviewRepository.CafeReviewSummary reviews = mock(ReviewRepository.CafeReviewSummary.class);
+        ReviewRepository.CafeReviewSummary reviews = mock(ReviewRepository.CafeReviewSummary.class, CALLS_REAL_METHODS);
         when(reviews.getCafeId()).thenReturn(7L);
         when(reviews.getAverageRating()).thenReturn(4.26);
         when(reviews.getReviewCount()).thenReturn(3L);

@@ -15,6 +15,8 @@ public record CafeResponse(
         String image,
         List<OpeningHoursResponse> openingHours,
         boolean openNow,
-        boolean profileComplete
+        boolean profileComplete,
+        Double rating,
+        Integer reviewCount
 ) {
 }
