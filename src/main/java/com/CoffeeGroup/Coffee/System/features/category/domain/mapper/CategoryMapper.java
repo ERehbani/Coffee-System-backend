@@ -8,7 +8,7 @@ import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryRespon
 @Component
 public class CategoryMapper {
 
-    public CategoryResponse toResponse(CategoryEntity category) {
-        return new CategoryResponse(category.getExternalId(), category.getName());
+    public CategoryResponse toResponse(CategoryEntity category, long productCount) {
+        return new CategoryResponse(category.getExternalId(), category.getName(), productCount);
     }
 }

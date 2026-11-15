@@ -2,7 +2,9 @@ package com.CoffeeGroup.Coffee.System.features.category;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,15 +27,18 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public List<CategoryResponse> getAllCategories() {
+        Map<Long, Long> productCounts = categoryRepository.countProductsByCategory().stream()
+                .collect(Collectors.toMap(CategoryRepository.CategoryProductCount::getCategoryId,
+                        CategoryRepository.CategoryProductCount::getProductCount));
         return categoryRepository.findAll().stream()
                 .sorted(Comparator.comparing(CategoryEntity::getName, String.CASE_INSENSITIVE_ORDER))
-                .map(categoryMapper::toResponse)
+                .map(category -> categoryMapper.toResponse(category, productCounts.getOrDefault(category.getId(), 0L)))
                 .toList();
     }
 
     @Override
     public CategoryResponse getCategoryByExternalId(UUID externalId) {
-        return categoryMapper.toResponse(findCategory(externalId));
+        return withProductCount(findCategory(externalId));
     }
 
     @Override
@@ -45,7 +50,7 @@ public class CategoryService implements ICategoryService {
         }
         CategoryEntity category = CategoryEntity.builder().name(name).build();
         categoryRepository.save(category);
-        return categoryMapper.toResponse(category);
+        return categoryMapper.toResponse(category, 0);
     }
 
     @Override
@@ -57,7 +62,7 @@ public class CategoryService implements ICategoryService {
             throw new EntityAlreadyExistsException("A category named " + name + " already exists");
         }
         category.setName(name);
-        return categoryMapper.toResponse(category);
+        return withProductCount(category);
     }
 
     @Override
@@ -65,6 +70,10 @@ public class CategoryService implements ICategoryService {
     public void delete(UUID externalId) {
         categoryRepository.delete(findCategory(externalId));
         categoryRepository.flush();
+    }
+
+    private CategoryResponse withProductCount(CategoryEntity category) {
+        return categoryMapper.toResponse(category, categoryRepository.countProducts(category));
     }
 
     private CategoryEntity findCategory(UUID externalId) {
