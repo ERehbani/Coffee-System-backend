@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.ProductNotAvailableException;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.CartItemEntity;
@@ -63,6 +64,9 @@ public class PurchaseDraft {
     }
 
     public void addGift(CafeProductEntity product) {
+        if (product.isActive() && product.belongsTo(cafe) && !product.isAvailable()) {
+            throw new ProductNotAvailableException("The coupon product " + product.name() + " is sold out for today");
+        }
         product.ensureCanBeSoldBy(cafe);
         details.add(PurchaseDetailEntity.gift(product));
     }
