@@ -5,7 +5,7 @@ import com.CoffeeGroup.Coffee.System.auth.dto.AuthRequest;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
 import com.CoffeeGroup.Coffee.System.auth.dto.SessionResponse;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
-import com.CoffeeGroup.Coffee.System.features.user.UserService;
+import com.CoffeeGroup.Coffee.System.features.user.IUserService;
 import com.CoffeeGroup.Coffee.System.features.user.domain.dto.UserResponse;
 
 import jakarta.validation.Valid;
@@ -34,7 +34,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
 public class AuthController {
     private final AuthService authService;
-    private final UserService userService;
+    private final IUserService userService;
     private final JwtService jwtService;
     private final AuthCookieService authCookieService;
 

@@ -1,14 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
-
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientPointsResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientResponse;
@@ -18,131 +17,78 @@ import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ClientService implements IClientService {
+
     private final ClientRepository clientRepository;
     private final TierRepository tierRepository;
     private final ClientMapper clientMapper;
+    private final SecurityUtils securityUtils;
 
-
-
+    @Override
     @Transactional
     public ClientEntity create(String name, UserEntity user) {
-
         TierEntity initialTier = tierRepository.findByMinPoints(0)
                 .orElseThrow(() -> new EntityNotFoundException("Initial tier not found"));
-
-        ClientEntity client = ClientEntity.builder()
-                .externalId(UUID.randomUUID())
-                .name(name)
-                .profilePhoto(null)
-                .currentPoints(0)
-                .historicalPoints(0)
-                .tier(initialTier)
-                .user(user)
-                .build();
-
-        ClientEntity clientSaved = clientRepository.save(client);
-        clientRepository.save(clientSaved);
-
-        return clientSaved;
+        ClientEntity client = ClientEntity.builder().name(name).tier(initialTier).user(user).build();
+        clientRepository.save(client);
+        return client;
     }
 
+    @Override
     public List<ClientResponse> findAll() {
-        return clientRepository.findAll()
-                .stream()
-                .map(clientMapper::toResponse)
-                .toList();
+        return clientRepository.findAll().stream().map(clientMapper::toResponse).toList();
     }
 
+    @Override
     public ClientResponse getById(UUID externalId) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
+        return clientMapper.toResponse(accessibleClient(externalId));
+    }
 
-        ClientEntity client;
-        if (isAdmin) {
-            client = clientRepository.findByExternalId(externalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-        } else {
-            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, auth.getName())
-                    .orElseThrow(() -> new AccessDeniedException("Access denied"));
+    @Override
+    @Transactional
+    public ClientResponse update(UUID externalId, UpdateClientRequest request) {
+        ClientEntity client = accessibleClient(externalId);
+        if (request.name() != null) {
+            client.setName(request.name());
+        }
+        if (request.lastName() != null) {
+            client.setLastName(request.lastName());
+        }
+        if (request.phone() != null) {
+            client.setPhone(request.phone());
+        }
+        if (request.profilePhoto() != null) {
+            client.setProfilePhoto(request.profilePhoto());
         }
         return clientMapper.toResponse(client);
     }
 
-    @Transactional
-    public ClientResponse update(UUID externalId, UpdateClientRequest request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        assert auth != null;
-        boolean isAdmin = auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
-
-        ClientEntity client;
-        if (isAdmin) {
-            client = clientRepository.findByExternalId(externalId)
-                    .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-        } else {
-            String username = auth.getName();
-            client = clientRepository.findByExternalIdAndUser_Credentials_Username(externalId, username)
-                    .orElse(null);
-            
-            if (client == null) {
-                var clientById = clientRepository.findByExternalId(externalId);
-                if (clientById.isPresent()) {
-                    throw new AccessDeniedException("Access denied: You can only update your own client data");
-                }
-                throw new EntityNotFoundException("Client not found with externalId: " + externalId);
-            }
-        }
-
-        if (request.name() != null) {
-            client.setName(request.name());
-        }
-
-        if (request.lastName() != null) {
-            client.setLastName(request.lastName());
-        }
-
-        if (request.phone() != null) {
-            client.setPhone(request.phone());
-        }
-
-        if (request.profilePhoto() != null) {
-            client.setProfilePhoto(request.profilePhoto());
-        }
-
-        ClientEntity clientUpdated = clientRepository.save(client);
-
-        return clientMapper.toResponse(clientUpdated);
-    }
-
-
-
+    @Override
     @Transactional
     public void delete(UUID externalId) {
-        ClientEntity client = clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-
-        client.getUser().setState(false);
-        clientRepository.save(client);
+        findClient(externalId).getUser().deactivate();
     }
 
     @Override
     public ClientPointsResponse viewMyPoints() {
-        String username = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+        return clientMapper.toPointsResponse(securityUtils.currentClient());
+    }
 
-        ClientEntity client = clientRepository.findByUser_Credentials_Username(username)
+    private ClientEntity accessibleClient(UUID externalId) {
+        ClientEntity client = findClient(externalId);
+        if (!securityUtils.isAdmin() && !client.isSameAs(securityUtils.currentClient())) {
+            throw new AccessDeniedException("You can only access your own client data");
+        }
+        return client;
+    }
+
+    private ClientEntity findClient(UUID externalId) {
+        return clientRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-        return clientMapper.toResponsePoints(client);
     }
 }

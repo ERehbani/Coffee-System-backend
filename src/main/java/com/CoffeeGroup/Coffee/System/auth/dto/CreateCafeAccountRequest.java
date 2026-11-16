@@ -33,9 +33,6 @@ public record CreateCafeAccountRequest(
                 regexp = "^[0-9+\\-\\s()]{6,20}$",
                 message = "The phone number is not in a valid format"
         )
-        String phoneNumber,
-
-        @Size(max = 150, message = "The time cannot exceed 150 characters")
-        String schedule
+        String phoneNumber
 ) {
 }

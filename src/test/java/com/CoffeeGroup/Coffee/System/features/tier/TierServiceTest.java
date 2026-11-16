@@ -18,11 +18,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityAlreadyExistsException;
 import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.CreateTierRequest;
 import com.CoffeeGroup.Coffee.System.features.tier.domain.dto.TierResponse;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.mapper.NewTierMapperImpl;
-import com.CoffeeGroup.Coffee.System.features.tier.domain.mapper.TierResponseMapperImpl;
+import com.CoffeeGroup.Coffee.System.features.tier.domain.mapper.TierMapper;
 
 @ExtendWith(MockitoExtension.class)
 class TierServiceTest {
@@ -37,14 +37,13 @@ class TierServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new TierService(tierRepository, new NewTierMapperImpl(), new TierResponseMapperImpl());
+        service = new TierService(tierRepository, new TierMapper());
     }
 
     private TierEntity tier(UUID externalId, String name, int minPoints) {
         return TierEntity.builder().externalId(externalId).name(name).minPoints(minPoints).build();
     }
 
-    // create
 
     @Test
     void createSavesTheTierWithTheTrimmedName() {
@@ -54,7 +53,6 @@ class TierServiceTest {
         verify(tierRepository).save(saved.capture());
         assertThat(saved.getValue().getName()).isEqualTo("Plata");
         assertThat(saved.getValue().getMinPoints()).isEqualTo(1000);
-        assertThat(saved.getValue().getExternalId()).isNotNull();
         assertThat(response.name()).isEqualTo("Plata");
         assertThat(response.minPoints()).isEqualTo(1000);
     }
@@ -89,13 +87,11 @@ class TierServiceTest {
         verify(tierRepository, never()).save(any());
     }
 
-    // update
 
     @Test
     void updateSavesTheTrimmedNameAndPoints() {
         TierEntity plata = tier(plataId, "PLATA", 1000);
         when(tierRepository.findByExternalId(plataId)).thenReturn(Optional.of(plata));
-        when(tierRepository.save(plata)).thenReturn(plata);
 
         TierResponse response = service.update(plataId, new CreateTierRequest("  Plata Plus ", 1200));
 
@@ -133,7 +129,6 @@ class TierServiceTest {
     void updateAllowsKeepingTheSameNameAndPoints() {
         TierEntity plata = tier(plataId, "PLATA", 1000);
         when(tierRepository.findByExternalId(plataId)).thenReturn(Optional.of(plata));
-        when(tierRepository.save(plata)).thenReturn(plata);
 
         TierResponse response = service.update(plataId, new CreateTierRequest("plata", 1000));
 
@@ -149,7 +144,7 @@ class TierServiceTest {
         when(tierRepository.findByExternalId(baseId)).thenReturn(Optional.of(base));
 
         assertThatThrownBy(() -> service.update(baseId, new CreateTierRequest("BRONCE", 500)))
-                .isInstanceOf(IllegalStateException.class)
+                .isInstanceOf(BusinessRuleException.class)
                 .hasMessage("The base tier must keep 0 points");
         assertThat(base.getMinPoints()).isZero();
         verify(tierRepository, never()).save(any());
@@ -159,7 +154,6 @@ class TierServiceTest {
     void updateAllowsRenamingTheBaseTierKeepingZeroPoints() {
         TierEntity base = tier(baseId, "BRONCE", 0);
         when(tierRepository.findByExternalId(baseId)).thenReturn(Optional.of(base));
-        when(tierRepository.save(base)).thenReturn(base);
 
         TierResponse response = service.update(baseId, new CreateTierRequest(" Inicial ", 0));
 
@@ -167,7 +161,6 @@ class TierServiceTest {
         assertThat(response.minPoints()).isZero();
     }
 
-    // list
 
     @Test
     void getAllReturnsTheTiersOrderedByMinPointsAscending() {

@@ -5,10 +5,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ClientRepository extends JpaRepository<ClientEntity,Long> {
-    Optional<ClientEntity> findByExternalId(UUID externalId);
+public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
 
-    Optional<ClientEntity> findByExternalIdAndUser_Credentials_Username(UUID externalId, String username);
+    Optional<ClientEntity> findByExternalId(UUID externalId);
 
     Optional<ClientEntity> findByUser_Credentials_Username(String username);
 }

@@ -31,9 +31,8 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.GlobalExceptionHandler;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.BenefitFormatResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.CreateBenefitFormatRequest;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto.UpdateBenefitFormatRequest;
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 
-/** Pins the request validation and error bodies the frontend consumes. Method security is not exercised here. */
 @ExtendWith(MockitoExtension.class)
 class BenefitFormatControllerValidationTest {
 
@@ -134,24 +133,24 @@ class BenefitFormatControllerValidationTest {
     }
 
     @Test
-    void duplicatesAnswerConflictWithThePlainMessage() throws Exception {
+    void duplicatesAnswerConflictWithTheProblemDetail() throws Exception {
         when(service.create(any())).thenThrow(new EntityAlreadyExistsException("The format DOS_POR_UNO is already in the catalog"));
 
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "2x1", "Dos por uno", true)))
                 .andExpect(status().isConflict())
-                .andExpect(content().string("The format DOS_POR_UNO is already in the catalog"));
+                .andExpect(jsonPath("$.detail").value("The format DOS_POR_UNO is already in the catalog"));
     }
 
     @Test
-    void anUnknownFormatOnPutAnswersNotFoundWithThePlainMessage() throws Exception {
+    void anUnknownFormatOnPutAnswersNotFoundWithTheProblemDetail() throws Exception {
         when(service.update(eq(externalId), any(UpdateBenefitFormatRequest.class)))
                 .thenThrow(new EntityNotFoundException("Benefit format not found"));
 
         mockMvc.perform(put("/benefit-formats/" + externalId).contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody("2x1", "Dos por uno", true)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Benefit format not found"));
+                .andExpect(jsonPath("$.detail").value("Benefit format not found"));
     }
 
     @Test

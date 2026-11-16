@@ -3,7 +3,7 @@ package com.CoffeeGroup.Coffee.System.features.benefit;
 import java.util.List;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -148,7 +148,7 @@ public class BenefitController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE','ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping("/available")
-    @Operation(summary = "Available benefits catalog", description = "Lists every public and active benefit, optionally filtered by cafe and benefit type")
+    @Operation(summary = "Available benefits catalog", description = "Lists every public and active benefit, optionally filtered by benefit type and by the cafe where it can be used (its own benefits plus the global ones)")
     @ApiResponses
     ResponseEntity<List<BenefitResponse>> availableCatalog(
             @Parameter(description = "Cafe external ID") @RequestParam(required = false) UUID cafeId,

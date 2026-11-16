@@ -1,12 +1,18 @@
 package com.CoffeeGroup.Coffee.System.features.benefit.domain.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
+
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public record BenefitCreateRequest(
         @NotBlank(message = "The name is required")
@@ -18,6 +24,7 @@ public record BenefitCreateRequest(
         String conditions,
 
         @NotNull(message = "The pointsCost is required")
+        @PositiveOrZero(message = "The pointsCost cannot be negative")
         Integer pointsCost,
 
         @FutureOrPresent
@@ -26,15 +33,26 @@ public record BenefitCreateRequest(
         @FutureOrPresent
         LocalDate endDate,
 
-        @NotNull(message = "The maxRedemptions is required")
         @Positive(message = "The maxRedemptions must be bigger than 0")
         Integer maxRedemptions,
 
-        @NotNull(message = "The typeId is required")
-        UUID typeId,
+        @Positive(message = "The maxPerClient must be bigger than 0")
+        Integer maxPerClient,
+
+        @NotNull(message = "The type is required")
+        BenefitType type,
+
+        @DecimalMin(value = "0.01", message = "The discount must be bigger than 0")
+        @DecimalMax(value = "100", message = "The discount cannot be bigger than 100")
+        BigDecimal discountPercentage,
+
+        UUID productId,
+
+        UUID catalogProductId,
 
         UUID cafeId,
 
         @NotNull(message = "The tierId is required")
         UUID tierId
-) {}
+) {
+}

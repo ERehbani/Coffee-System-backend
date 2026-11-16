@@ -1,14 +1,6 @@
 package com.CoffeeGroup.Coffee.System.auth.filters;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.AccountExpiredException;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -21,41 +13,32 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ProblemResponseWriter problemResponseWriter;
+
     @Override
-    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception)
+            throws IOException {
+        problemResponseWriter.writeUnauthorized(request, response, messageFor(exception));
+    }
 
-        String errorMessage = switch (authException) {
-            case BadCredentialsException badCredentialsException ->
-                    "Credenciales inválidas";
-            case DisabledException disabledException ->
-                    "Cuenta deshabilitada";
-            case LockedException lockedException ->
-                    "Cuenta bloqueada";
-            case AccountExpiredException accountExpiredException ->
-                    "Cuenta expirada";
-            case CredentialsExpiredException credentialsExpiredException
-                    ->
-                    "Credenciales expiradas";
-            case InsufficientAuthenticationException
-                         insufficientAuthenticationException ->
-                    "Autenticación insuficiente";
-            case AuthenticationServiceException
-                         authenticationServiceException ->
-                    "Error en el servicio de autenticación";
-            default -> "Error de autenticación: " +
-                    authException.getMessage();
+    private static String messageFor(AuthenticationException exception) {
+        return switch (exception) {
+            case BadCredentialsException ignored -> "Credenciales inválidas";
+            case DisabledException ignored -> "Cuenta deshabilitada";
+            case LockedException ignored -> "Cuenta bloqueada";
+            case AccountExpiredException ignored -> "Cuenta expirada";
+            case CredentialsExpiredException ignored -> "Credenciales expiradas";
+            case InsufficientAuthenticationException ignored -> "Autenticación insuficiente";
+            case AuthenticationServiceException ignored -> "Error en el servicio de autenticación";
+            default -> "Error de autenticación: " + exception.getMessage();
         };
-
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("error", errorMessage);
-        responseData.put("status", HttpServletResponse.SC_UNAUTHORIZED);
-        responseData.put("path", request.getRequestURI());
-        response.getWriter().write(mapper.writeValueAsString(responseData));
-        response.getWriter().flush();
     }
 }

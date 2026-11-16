@@ -1,10 +1,12 @@
 package com.CoffeeGroup.Coffee.System.common.exceptions;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.ProblemDetail;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,78 +17,52 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(ex.getMessage());
-    }
-
-    @ExceptionHandler(EntityAlreadyExistsException.class)
-    public ResponseEntity<String> handleEntityAlreadyExists(EntityAlreadyExistsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(ex.getMessage());
-    }
-
-    @ExceptionHandler(CartHasNoProductsException.class)
-    public ResponseEntity<String> handleCartHasNoProducts(CartHasNoProductsException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(ex.getMessage());
+    @ExceptionHandler(DomainException.class)
+    public ProblemDetail handleDomain(DomainException ex) {
+        return problem(ex.status(), ex.title(), ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("errors", errors);
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ProblemDetail handleInvalidBody(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            errors.putIfAbsent(error.getField(), error.getDefaultMessage());
+        }
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "Validation failed", "The request has invalid fields");
+        problem.setProperty("errors", errors);
+        return problem;
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleMethodValidationExceptions(HandlerMethodValidationException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Validation failed");
-        response.put("message", ex.getMessage());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ProblemDetail handleInvalidParameters(HandlerMethodValidationException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Validation failed", ex.getMessage());
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ProblemDetail handleBadRequest(RuntimeException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Bad request", ex.getMessage());
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", ex.getMessage());
-        response.put("status", HttpStatus.BAD_REQUEST.value());
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleIntegrity(DataIntegrityViolationException ex) {
+        return problem(HttpStatus.CONFLICT, "Data conflict",
+                "The operation conflicts with existing data (duplicated value or a record still in use)");
+    }
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ProblemDetail handleConcurrentUpdate(ObjectOptimisticLockingFailureException ex) {
+        return problem(HttpStatus.CONFLICT, "Concurrent update",
+                "The resource was modified by another request, try again");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("error", "Access denied");
-        response.put("message", ex.getMessage());
-        response.put("status", HttpStatus.FORBIDDEN.value());
+    public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Access denied", ex.getMessage());
+    }
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    private static ProblemDetail problem(HttpStatus status, String title, String detail) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setTitle(title);
+        return problem;
     }
 }

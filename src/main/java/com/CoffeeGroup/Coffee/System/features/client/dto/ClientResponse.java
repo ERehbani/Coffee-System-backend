@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.client.dto;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record ClientResponse (
@@ -13,6 +14,8 @@ public record ClientResponse (
         UUID tierExternalId,
         String tierName,
         UUID userExternalId,
-        Boolean state
+        Boolean state,
+        String email,
+        LocalDateTime creationDate
 ){
 }

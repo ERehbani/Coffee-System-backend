@@ -29,12 +29,12 @@ class ProductRequestValidationTest {
 
     private static ProductRequest request(String name, String description, BigDecimal price, Integer awardedPoints,
             UUID categoryId, String image) {
-        return new ProductRequest(name, description, price, awardedPoints, categoryId, image, null);
+        return new ProductRequest(null, name, categoryId, null, description, price, awardedPoints, image, null);
     }
 
     private static ProductRequest requestWithTags(List<String> tags) {
-        return new ProductRequest("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), 100, UUID.randomUUID(),
-                null, tags);
+        return new ProductRequest(null, "Cappuccino", UUID.randomUUID(), null, "Hot drink 12oz", new BigDecimal("1500"),
+                100, null, tags);
     }
 
     private static ProductRequest validRequest() {
@@ -55,15 +55,12 @@ class ProductRequestValidationTest {
     }
 
     @Test
-    void missingCategoryIdIsInvalid() {
-        ProductRequest request = request("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), 100, null, null);
+    void pickingFromTheCatalogNeedsNeitherNameNorCategory() {
+        ProductRequest request = new ProductRequest(UUID.randomUUID(), null, null, null, null, new BigDecimal("1500"),
+                100, null, null);
 
-        Set<ConstraintViolation<ProductRequest>> violations = validator.validate(request);
-
-        assertThat(violations).hasSize(1);
-        ConstraintViolation<ProductRequest> violation = violations.iterator().next();
-        assertThat(violation.getPropertyPath()).hasToString("categoryId");
-        assertThat(violation.getMessage()).isEqualTo("The category is required");
+        assertThat(validator.validate(request)).isEmpty();
+        assertThat(request.picksFromCatalog()).isTrue();
     }
 
     @Test

@@ -4,7 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-/** Everything the client's profile home shows, in one payload. Field names mirror the frontend ProfileDashboardDto. */
 public record ClientDashboardResponse(
         Profile client,
         Loyalty loyalty,

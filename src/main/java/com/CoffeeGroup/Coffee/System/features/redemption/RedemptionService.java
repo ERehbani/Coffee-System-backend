@@ -1,245 +1,146 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsEntity;
-import com.CoffeeGroup.Coffee.System.auth.credentials.CredentialsRepository;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BenefitSoldOutException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.InsufficientPointsException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.ProductNotAvailableException;
+import com.CoffeeGroup.Coffee.System.common.persistence.Specifications;
+import com.CoffeeGroup.Coffee.System.common.web.PageResponse;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientRepository;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionCreateMapper;
-import com.CoffeeGroup.Coffee.System.features.redemption.domain.Mappers.IRedemptionResponseMapper;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionCreateRequest;
 import com.CoffeeGroup.Coffee.System.features.redemption.domain.dto.RedemptionResponse;
-import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
+import com.CoffeeGroup.Coffee.System.features.redemption.domain.mapper.RedemptionMapper;
 
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RedemptionService implements IRedemptionService {
 
-    private final IRedemptionRepository redemptionRepository;
-    private final IRedemptionResponseMapper responseMapper;
-    private final IRedemptionCreateMapper createMapper;
+    private final RedemptionRepository redemptionRepository;
+    private final RedemptionMapper redemptionMapper;
+    private final BenefitRepository benefitRepository;
     private final ClientRepository clientRepository;
-    private final IBenefitRepository benefitRepository;
-    private final CredentialsRepository credentialsRepository;
-    private final CafeRepository cafeRepository;
     private final SecurityUtils securityUtils;
+    private final Clock clock;
 
     @Override
     @Transactional
-    public RedemptionResponse create(RedemptionCreateRequest redemptionCreateRequest) {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) {
-            throw new EntityNotFoundException("Client not found");
-        }
-
-        BenefitEntity benefit = benefitRepository.findByExternalId(redemptionCreateRequest.benefitId())
+    public RedemptionResponse create(RedemptionCreateRequest request) {
+        ClientEntity client = securityUtils.currentClient();
+        BenefitEntity benefit = benefitRepository.findByExternalId(request.benefitId())
                 .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
 
-        CafeEntity cafe = benefit.getCafeEntity();
+        benefit.ensureRedeemableBy(client, LocalDate.now(clock));
+        ensureClientLimit(client, benefit);
+        if (!client.canAfford(benefit.getPointsCost())) {
+            throw new InsufficientPointsException("Client does not have enough points");
+        }
+        if (benefitRepository.consumeRedemption(benefit.getId()) == 0) {
+            throw new BenefitSoldOutException("Benefit is sold out");
+        }
+        client.spendPoints(benefit.getPointsCost());
 
-        if (!benefit.getStatus() || !benefit.getIsPublic()) {
-            throw new IllegalStateException("Benefit is not enabled");
-        }
-        if (benefit.getStartDate() != null && benefit.getStartDate().isAfter(LocalDate.now())) {
-            throw new IllegalStateException("Benefit is not available yet");
-        }
-        if (benefit.getEndDate() != null && benefit.getEndDate().isBefore(LocalDate.now())) {
-            throw new IllegalStateException("Benefit has expired");
-        }
-        if (requiresHigherTier(benefit, client)) {
-            throw new IllegalStateException("Benefit requires a higher tier");
-        }
-        if (benefit.getMaxRedemptions() <= 0) {
-            throw new IllegalStateException("Benefit has no available redemptions");
-        }
-        if (client.getCurrentPoints() < benefit.getPointsCost()) {
-            throw new IllegalStateException("Client does not have enough points");
-        }
-
-        client.setCurrentPoints(client.getCurrentPoints() - benefit.getPointsCost());
-        clientRepository.save(client);
-
-        benefit.setMaxRedemptions(benefit.getMaxRedemptions() - 1);
-        benefitRepository.save(benefit);
-
-        RedemptionEntity redemption = createMapper.toEntity(redemptionCreateRequest);
-        redemption.setExternalId(UUID.randomUUID());
-        redemption.setClient(client);
-        redemption.setBenefit(benefit);
-        redemption.setCafeEntity(cafe);
-        redemption.setState(true);
-        redemption.setDate(LocalDateTime.now());
-        redemption.setValidationCode(UUID.randomUUID().toString());
-        redemption.setUsedPoints(benefit.getPointsCost());
+        RedemptionEntity redemption = RedemptionEntity.of(client, benefit, LocalDateTime.now(clock));
         redemptionRepository.save(redemption);
-        return responseMapper.toDto(redemption);
-    }
-
-    private static boolean requiresHigherTier(BenefitEntity benefit, ClientEntity client) {
-        TierEntity benefitTier = benefit.getTierEntity();
-        return benefitTier != null && benefitTier.getMinPoints() > client.getTier().getMinPoints();
+        return redemptionMapper.toResponse(redemption);
     }
 
     @Override
-    @Transactional
-    public void deleteById(UUID externalId) {
-
-        RedemptionEntity redemptionEntity = redemptionRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
-        redemptionRepository.delete(redemptionEntity);
-    }
-
-    @Override
-    public List<RedemptionResponse> findAll(Boolean state, Boolean used) {
-        List<RedemptionEntity> redemptions;
-        boolean onlyUsed = Boolean.TRUE.equals(used);
-
-        if (securityUtils.isAdmin()) {
-            if (onlyUsed) {
-                return redemptionRepository.findByUsedDateIsNotNullOrderByUsedDateDesc().stream()
-                        .map(responseMapper::toDto)
-                        .toList();
-            }
-            redemptions = (state != null)
-                    ? redemptionRepository.findByStateOrderByDateDesc(state)
-                    : redemptionRepository.findAllByOrderByDateDesc();
-        } else if (securityUtils.isCliente()) {
-            ClientEntity client = securityUtils.getCurrentClient();
-            if (client == null) {
-                throw new EntityNotFoundException("Client not found");
-            }
-            if (onlyUsed) {
-                redemptions = redemptionRepository.findByClientAndUsedDateIsNotNullOrderByUsedDateDesc(client);
-            } else {
-                redemptions = (state != null)
-                        ? redemptionRepository.findByClientAndStateOrderByDateDesc(client, state)
-                        : redemptionRepository.findByClientOrderByDateDesc(client);
-            }
-        } else {
-            throw new AccessDeniedException("Access denied");
-        }
-
-        return redemptions.stream().map(responseMapper::toDto).toList();
+    public PageResponse<RedemptionResponse> findAll(RedemptionStatus status, Pageable pageable) {
+        ClientEntity client = securityUtils.isAdmin() ? null : securityUtils.currentClient();
+        return PageResponse.of(redemptionRepository.findAll(Specifications.allOf(
+                        RedemptionSpecifications.ofClient(client),
+                        RedemptionSpecifications.hasStatus(status)), pageable),
+                redemptionMapper::toResponse);
     }
 
     @Override
     public RedemptionResponse getById(UUID externalId) {
         RedemptionEntity redemption = redemptionRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
-
-        if (securityUtils.isAdmin()) {
-            return responseMapper.toDto(redemption);
+        if (!securityUtils.isAdmin() && !redemption.belongsTo(securityUtils.currentClient())) {
+            throw new AccessDeniedException("You can only view your own redemptions");
         }
-
-        if (securityUtils.isCliente()) {
-            ClientEntity client = securityUtils.getCurrentClient();
-            if (client == null || !client.getExternalId().equals(redemption.getClient().getExternalId())) {
-                throw new AccessDeniedException("You can only view your own redemptions");
-            }
-            return responseMapper.toDto(redemption);
-        }
-
-        throw new AccessDeniedException("Access denied");
+        return redemptionMapper.toResponse(redemption);
     }
 
     @Override
     @Transactional
     public RedemptionResponse validate(String validationCode) {
-        RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
-
-        if (!redemption.getState()) {
-            throw new IllegalStateException("This code has already been used");
-        }
-
-        if (redemption.getBenefit().getCafeEntity() == null) {
-            if (!securityUtils.isAdmin()) {
-                throw new IllegalArgumentException("Only admin can validate global benefits");
-            }
-        } else {
-            String username = SecurityContextHolder.getContext()
-                    .getAuthentication().getName();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!redemption.getBenefit().getCafeEntity().getExternalId()
-                    .equals(cafe.getExternalId())) {
-                throw new IllegalArgumentException("This redemption does not belong to your cafe");
-            }
-        }
-
-        redemption.setState(false);
-        redemption.setUsedDate(LocalDateTime.now());
-        redemptionRepository.save(redemption);
-        return responseMapper.toDto(redemption);
+        RedemptionEntity redemption = redemptionHandledByCurrentUser(validationCode);
+        redemption.ensureUsableOn(LocalDate.now(clock));
+        ensureProductCanBeDelivered(redemption.getBenefit());
+        redemption.markUsed(LocalDateTime.now(clock));
+        return redemptionMapper.toResponse(redemption);
     }
 
     @Override
     @Transactional
     public RedemptionResponse cancel(String validationCode) {
-        RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
-
-        if (!redemption.getState()) {
-            throw new IllegalStateException("This code has already been used");
-        }
-
-        if (redemption.getBenefit().getCafeEntity() == null) {
-            if (!securityUtils.isAdmin()) {
-                throw new IllegalArgumentException("Only admin can cancel global benefits");
-            }
-        } else {
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            CredentialsEntity credentials = credentialsRepository.findByUsername(username)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
-            CafeEntity cafe = cafeRepository.findByUser(credentials.getUsuario())
-                    .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-            if (!redemption.getBenefit().getCafeEntity().getExternalId().equals(cafe.getExternalId())) {
-                throw new IllegalArgumentException("This redemption does not belong to your cafe");
-            }
-        }
-        ClientEntity client = redemption.getClient();
-        client.setCurrentPoints(client.getCurrentPoints() + redemption.getUsedPoints());
-        clientRepository.save(client);
-
-        BenefitEntity benefit = redemption.getBenefit();
-        benefit.setMaxRedemptions(benefit.getMaxRedemptions() + 1);
-        benefitRepository.save(benefit);
-
-        redemption.setState(false);
-        redemptionRepository.save(redemption);
-        return responseMapper.toDto(redemption);
+        RedemptionEntity redemption = redemptionHandledByCurrentUser(validationCode);
+        redemption.ensureUsableOn(LocalDate.now(clock));
+        redemption.cancel();
+        redemption.getClient().refundPoints(redemption.getUsedPoints());
+        benefitRepository.releaseRedemption(redemption.getBenefit().getId());
+        return redemptionMapper.toResponse(redemption);
     }
 
     @Override
     public List<RedemptionResponse> getAllByClient(UUID clientExternalId) {
-
         ClientEntity client = clientRepository.findByExternalId(clientExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-        return redemptionRepository.findByClientOrderByDateDesc(client).stream()
-                .map(responseMapper::toDto)
+        return redemptionRepository.findAll(RedemptionSpecifications.ofClient(client)).stream()
+                .map(redemptionMapper::toResponse)
                 .toList();
     }
 
+    private void ensureClientLimit(ClientEntity client, BenefitEntity benefit) {
+        if (benefit.getMaxPerClient() == null) {
+            return;
+        }
+        long redemptionsOfClient = redemptionRepository.countByClientAndBenefitAndStatusNot(
+                client, benefit, RedemptionStatus.CANCELLED);
+        if (benefit.reachedClientLimit(redemptionsOfClient)) {
+            throw new BusinessRuleException("You already used this benefit the maximum number of times");
+        }
+    }
+
+    private RedemptionEntity redemptionHandledByCurrentUser(String validationCode) {
+        RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
+                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
+        if (securityUtils.isAdmin()) {
+            return redemption;
+        }
+        CafeEntity validatingCafe = securityUtils.currentCafe();
+        if (!redemption.getBenefit().isUsableAt(validatingCafe)) {
+            throw new AccessDeniedException("This redemption does not belong to your cafe");
+        }
+        return redemption;
+    }
+
+    private static void ensureProductCanBeDelivered(BenefitEntity benefit) {
+        if (!benefit.isProductAvailable()) {
+            throw new ProductNotAvailableException(
+                    "The product of this benefit is sold out for today, cancel the redemption to give the points back");
+        }
+    }
 }

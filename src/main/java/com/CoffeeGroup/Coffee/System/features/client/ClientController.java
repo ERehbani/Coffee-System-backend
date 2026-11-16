@@ -38,8 +38,6 @@ public class ClientController {
     private final IClientDashboardService clientDashboardService;
 
 
-    //Elimine el endpoint de "crear" ya que se crea automaticamente con usuario, no tiene sentido
-    //crear un cliente aislado de un usuario, por lo tanto se le pega al endpount auth/register
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping

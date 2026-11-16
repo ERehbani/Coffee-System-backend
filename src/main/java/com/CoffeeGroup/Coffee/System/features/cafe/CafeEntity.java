@@ -1,80 +1,107 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.common.model.Email;
-import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
-import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
-import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
-import com.CoffeeGroup.Coffee.System.features.review.ReviewEntity;
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.user.UserEntity;
 
-import jakarta.persistence.*;
-
-import lombok.AllArgsConstructor;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "cafes")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@ToString
-@Builder
-public class CafeEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@SuperBuilder
+public class CafeEntity extends AuditableEntity {
 
-    @Column(name = "external_id", nullable = false, unique = true)
-    private UUID externalId;
-
-    @Column(nullable = false, name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(nullable = false,name = "address")
+    @Column(name = "address", nullable = false)
     private String address;
-
-    @Embedded
-    @AttributeOverride(name = "value", column = @Column(name = "email_address", unique = true, nullable = false))
-    private Email email;
 
     @Column(name = "phone_number")
     private String phoneNumber;
 
-
-    @Column(length = 500, name = "description")
+    @Column(name = "description", length = 500)
     private String description;
 
-    @Column(nullable = false,name = "state")
-    private Boolean state;
+    @Column(name = "active", nullable = false)
+    private Boolean active;
 
-    @Column(name= "image")
+    @Column(name = "logo", length = 500)
+    private String logo;
+
+    @Column(name = "image", length = 500)
     private String image;
-    @Column(name = "schedule")
-    private String schedule;
+
+    @ElementCollection
+    @CollectionTable(name = "cafe_opening_hours", joinColumns = @JoinColumn(name = "cafe_id"))
+    @Builder.Default
+    private List<OpeningHours> openingHours = new ArrayList<>();
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private UserEntity user;
 
-    @OneToMany(mappedBy = "cafe", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private List<ProductEntity> products;
+    public boolean isActive() {
+        return Boolean.TRUE.equals(active);
+    }
 
+    public void deactivate() {
+        active = false;
+    }
 
-    @OneToMany(mappedBy = "cafe")
-    private List<ReviewEntity> review;
+    public boolean isOpenAt(LocalDateTime moment) {
+        return isActive() && openingHours.stream().anyMatch(hours -> hours.includes(moment));
+    }
 
-    @OneToMany(mappedBy = "cafeEntity")
-    private List<RedemptionEntity> redemptionList;
+    public boolean hasCompleteProfile() {
+        return hasText(address) && hasText(phoneNumber) && !openingHours.isEmpty();
+    }
 
-    @OneToMany(mappedBy = "cafeEntity", cascade = CascadeType.ALL)
-    private List<CartEntity> carts;
+    public void replaceOpeningHours(List<OpeningHours> newHours) {
+        long distinctDays = newHours.stream().map(OpeningHours::getDay).distinct().count();
+        if (distinctDays != newHours.size()) {
+            throw new BusinessRuleException("Each day can only have one opening hours");
+        }
+        openingHours.clear();
+        newHours.stream()
+                .sorted(Comparator.comparing(OpeningHours::getDay, Comparator.comparingInt(DayOfWeek::getValue)))
+                .forEach(openingHours::add);
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    public String email() {
+        return user == null ? null : user.emailAddress();
+    }
+
+    public boolean hasExternalId(UUID otherExternalId) {
+        return getExternalId() != null && getExternalId().equals(otherExternalId);
+    }
+
+    public boolean isSameAs(CafeEntity other) {
+        return other != null && hasExternalId(other.getExternalId());
+    }
 }

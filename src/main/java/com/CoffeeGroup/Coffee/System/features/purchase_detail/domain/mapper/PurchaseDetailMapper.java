@@ -1,5 +1,4 @@
 package com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.mapper;
-import java.math.BigDecimal;
 
 import org.springframework.stereotype.Component;
 
@@ -8,20 +7,15 @@ import com.CoffeeGroup.Coffee.System.features.purchase_detail.domain.dto.Purchas
 
 @Component
 public class PurchaseDetailMapper {
-    public PurchaseDetailResponse toResponse(PurchaseDetailEntity entity) {
-        BigDecimal subtotal = entity.getUnitPrice()
-                .multiply(BigDecimal.valueOf(entity.getAmount()));
 
+    public PurchaseDetailResponse toResponse(PurchaseDetailEntity detail) {
         return new PurchaseDetailResponse(
-                entity.getExternalId(),
-                entity.getProduct().getExternalId(),
-                entity.getProduct().getName(),
-                entity.getAmount(),
-                entity.getUnitPrice(),
-                entity.getGeneratedPoints(),
-                subtotal
-        );
+                detail.getExternalId(),
+                detail.getProduct().getExternalId(),
+                detail.getProduct().name(),
+                detail.getAmount(),
+                detail.getUnitPrice(),
+                detail.getGeneratedPoints(),
+                detail.subtotal());
     }
-
-
 }

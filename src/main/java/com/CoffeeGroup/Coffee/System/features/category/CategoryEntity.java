@@ -1,37 +1,23 @@
 package com.CoffeeGroup.Coffee.System.features.category;
 
-import java.util.UUID;
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table (name = "categories")
+@Table(name = "categories")
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class CategoryEntity {
-    @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
-    private Long id;
+@SuperBuilder
+public class CategoryEntity extends AuditableEntity {
 
-    @Column(name = "external_id", nullable = false, unique = true)
-    private UUID externalId;
-
-    @Column(name = "name")
+    @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
-
 }
-

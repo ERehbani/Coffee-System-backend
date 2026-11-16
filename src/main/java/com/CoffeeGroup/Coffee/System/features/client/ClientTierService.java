@@ -1,9 +1,11 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -11,9 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
-import com.CoffeeGroup.Coffee.System.features.benefit.IBenefitRepository;
+import com.CoffeeGroup.Coffee.System.features.benefit.BenefitRepository;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierLevelResponse;
@@ -24,35 +25,31 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ClientTierService implements IClientTierService {
 
     private static final Comparator<TierEntity> BY_MIN_POINTS = Comparator.comparing(TierEntity::getMinPoints);
 
     private final SecurityUtils securityUtils;
     private final TierRepository tierRepository;
-    private final IBenefitRepository benefitRepository;
+    private final BenefitRepository benefitRepository;
+    private final Clock clock;
 
     @Override
-    @Transactional(readOnly = true)
     public ClientTierResponse viewMyTier() {
-        return tierOf(currentClient());
+        return tierOf(securityUtils.currentClient());
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ClientTierResponse tierOf(ClientEntity client) {
         TierEntity current = client.getTier();
-        int lifetimePoints = valueOrZero(client.getHistoricalPoints());
-
-        List<TierEntity> tiers = tierRepository.findAll().stream().sorted(BY_MIN_POINTS).toList();
-        TierEntity next = tiers.stream()
-                .filter(tier -> tier.getMinPoints() > current.getMinPoints())
-                .findFirst()
-                .orElse(null);
+        int lifetimePoints = client.getHistoricalPoints();
+        List<TierEntity> tiers = tierRepository.findAllByOrderByMinPointsAsc();
+        TierEntity next = tiers.stream().filter(tier -> tier.isAbove(current)).findFirst().orElse(null);
 
         return new ClientTierResponse(
                 current.getName(),
-                valueOrZero(client.getCurrentPoints()),
+                client.getCurrentPoints(),
                 lifetimePoints,
                 current.getMinPoints(),
                 next == null ? null : next.getName(),
@@ -62,45 +59,49 @@ public class ClientTierService implements IClientTierService {
                 levels(tiers));
     }
 
-    /** Enabled benefits of the client's tier and of every lower tier, ordered by tier threshold, then name. */
     @Override
-    @Transactional(readOnly = true)
     public List<TierBenefitResponse> viewMyBenefits() {
-        return benefitsOf(currentClient());
+        return benefitsOf(securityUtils.currentClient());
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<TierBenefitResponse> benefitsOf(ClientEntity client) {
         int clientThreshold = client.getTier().getMinPoints();
-        LocalDate today = LocalDate.now();
-
-        return benefitRepository.findByTierEntityIsNotNull().stream()
-                .filter(benefit -> benefit.isEnabledOn(today))
-                .filter(benefit -> benefit.getTierEntity().getMinPoints() <= clientThreshold)
+        return visibleTierBenefits().stream()
+                .filter(benefit -> benefit.getTier().getMinPoints() <= clientThreshold)
                 .sorted(Comparator
-                        .comparing((BenefitEntity benefit) -> benefit.getTierEntity().getMinPoints())
+                        .comparing((BenefitEntity benefit) -> benefit.getTier().getMinPoints())
                         .thenComparing(BenefitEntity::getName, String.CASE_INSENSITIVE_ORDER))
                 .map(ClientTierService::toTierBenefitResponse)
                 .toList();
     }
 
-    /** The tier only ever moves up: a client keeps a higher tier than their lifetime points alone would give. */
     @Override
     public boolean upgradeTierIfReached(ClientEntity client) {
-        int lifetimePoints = valueOrZero(client.getHistoricalPoints());
-        int currentThreshold = client.getTier().getMinPoints();
-
-        TierEntity reached = tierRepository.findAll().stream()
-                .filter(tier -> tier.getMinPoints() <= lifetimePoints)
-                .max(BY_MIN_POINTS)
-                .orElse(null);
-
-        if (reached == null || reached.getMinPoints() <= currentThreshold) {
+        Optional<TierEntity> reached = highestTierReachedWith(client.getHistoricalPoints());
+        if (reached.isEmpty() || !reached.get().isAbove(client.getTier())) {
             return false;
         }
-        client.setTier(reached);
+        client.setTier(reached.get());
         return true;
+    }
+
+    @Override
+    public void recalculateTier(ClientEntity client) {
+        highestTierReachedWith(client.getHistoricalPoints()).ifPresent(client::setTier);
+    }
+
+    private Optional<TierEntity> highestTierReachedWith(int lifetimePoints) {
+        return tierRepository.findAll().stream()
+                .filter(tier -> tier.getMinPoints() <= lifetimePoints)
+                .max(BY_MIN_POINTS);
+    }
+
+    private List<BenefitEntity> visibleTierBenefits() {
+        LocalDate today = LocalDate.now(clock);
+        return benefitRepository.findByTierIsNotNull().stream()
+                .filter(benefit -> benefit.isVisibleOn(today))
+                .toList();
     }
 
     private static TierBenefitResponse toTierBenefitResponse(BenefitEntity benefit) {
@@ -110,47 +111,33 @@ public class ClientTierService implements IClientTierService {
                 benefit.getDescription(),
                 benefit.getPointsCost(),
                 benefit.getEndDate(),
-                benefit.getCafeEntity() == null ? null : benefit.getCafeEntity().getName(),
-                benefit.getTierEntity().getName(),
-                benefit.getBenefitType() == null ? null : benefit.getBenefitType().getName().name());
+                benefit.isGlobal() ? null : benefit.getCafe().getName(),
+                benefit.getTier().getName(),
+                benefit.type().name(),
+                benefit.isSoldOut(),
+                benefit.remainingRedemptions(),
+                benefit.isProductAvailable());
     }
 
-    private ClientEntity currentClient() {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) {
-            throw new EntityNotFoundException("Client not found");
-        }
-        return client;
-    }
-
-    private static int valueOrZero(Integer value) {
-        return value == null ? 0 : value;
-    }
-
-    /** Share of the way from the current threshold to the next one, floored and kept within 0..100. */
     private static int progressPercent(int lifetimePoints, TierEntity current, TierEntity next) {
         if (next == null) {
             return 100;
         }
         long span = next.getMinPoints() - current.getMinPoints();
         long gained = (long) lifetimePoints - current.getMinPoints();
-        long percent = Math.floorDiv(gained * 100, span);
-        return Math.clamp(percent, 0, 100);
+        return (int) Math.clamp(Math.floorDiv(gained * 100, span), 0, 100);
     }
 
     private List<TierLevelResponse> levels(List<TierEntity> tiers) {
-        LocalDate today = LocalDate.now();
-        Map<UUID, List<String>> enabledBenefitNamesByTier = benefitRepository.findByTierEntityIsNotNull().stream()
-                .filter(benefit -> benefit.isEnabledOn(today))
+        Map<UUID, List<String>> benefitNamesByTier = visibleTierBenefits().stream()
                 .collect(Collectors.groupingBy(
-                        benefit -> benefit.getTierEntity().getExternalId(),
+                        benefit -> benefit.getTier().getExternalId(),
                         Collectors.mapping(BenefitEntity::getName, Collectors.toList())));
-
         return tiers.stream()
                 .map(tier -> new TierLevelResponse(
                         tier.getName(),
                         tier.getMinPoints(),
-                        enabledBenefitNamesByTier.getOrDefault(tier.getExternalId(), List.of()).stream()
+                        benefitNamesByTier.getOrDefault(tier.getExternalId(), List.of()).stream()
                                 .sorted(String.CASE_INSENSITIVE_ORDER)
                                 .toList()))
                 .toList();

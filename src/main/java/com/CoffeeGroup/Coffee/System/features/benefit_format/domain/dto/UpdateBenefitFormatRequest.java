@@ -12,6 +12,5 @@ public record UpdateBenefitFormatRequest(
         @Size(max = 200, message = "The description must have at most 200 characters")
         String description,
 
-        /** Keeps the current value when null. */
         Boolean active) {
 }

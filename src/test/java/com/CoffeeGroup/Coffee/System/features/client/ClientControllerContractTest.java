@@ -24,7 +24,6 @@ import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierLevelResponse;
 
-/** Pins the JSON field names the frontend consumes. Method security is covered by ClientControllerSecurityTest. */
 @ExtendWith(MockitoExtension.class)
 class ClientControllerContractTest {
 
@@ -81,7 +80,7 @@ class ClientControllerContractTest {
         UUID id = UUID.fromString("11111111-1111-1111-1111-111111111111");
         when(clientTierService.viewMyBenefits()).thenReturn(List.of(
                 new TierBenefitResponse(id, "Cafe de cortesia", "Un cafe gratis", 300,
-                        LocalDate.of(2026, 12, 31), null, "BRONCE", "PRODUCTO_GRATIS_SOCIO")));
+                        LocalDate.of(2026, 12, 31), null, "BRONCE", "PRODUCTO_GRATIS_SOCIO", false, 10, true)));
 
         mockMvc.perform(get("/clients/me/benefits"))
                 .andExpect(status().isOk())

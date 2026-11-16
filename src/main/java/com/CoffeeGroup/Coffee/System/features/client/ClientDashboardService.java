@@ -1,9 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.client;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
-import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
@@ -25,15 +22,17 @@ import com.CoffeeGroup.Coffee.System.features.client.dto.ClientDashboardResponse
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientDashboardResponse.Profile;
 import com.CoffeeGroup.Coffee.System.features.client.dto.ClientTierResponse;
 import com.CoffeeGroup.Coffee.System.features.client.dto.TierBenefitResponse;
-import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
-import com.CoffeeGroup.Coffee.System.features.redemption.IRedemptionRepository;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
 import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionEntity;
-import com.CoffeeGroup.Coffee.System.features.review.IReviewRepository;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionRepository;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionStatus;
+import com.CoffeeGroup.Coffee.System.features.review.ReviewRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ClientDashboardService implements IClientDashboardService {
 
     private static final int MAX_CAFES = 6;
@@ -41,19 +40,15 @@ public class ClientDashboardService implements IClientDashboardService {
 
     private final SecurityUtils securityUtils;
     private final IClientTierService clientTierService;
-    private final IRedemptionRepository redemptionRepository;
+    private final RedemptionRepository redemptionRepository;
     private final CafeRepository cafeRepository;
-    private final IReviewRepository reviewRepository;
-    private final IProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final CafeProductRepository cafeProductRepository;
+    private final Clock clock;
 
     @Override
-    @Transactional(readOnly = true)
     public ClientDashboardResponse viewMyDashboard() {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) {
-            throw new EntityNotFoundException("Client not found");
-        }
-
+        ClientEntity client = securityUtils.currentClient();
         return new ClientDashboardResponse(
                 profile(client),
                 loyalty(clientTierService.tierOf(client)),
@@ -63,35 +58,21 @@ public class ClientDashboardService implements IClientDashboardService {
     }
 
     private static Profile profile(ClientEntity client) {
-        String email = client.getUser() == null || client.getUser().getEmail() == null
-                ? null
-                : client.getUser().getEmail().value();
-        return new Profile(client.getExternalId(), client.getName(), client.getLastName(), email, client.getPhone(),
-                client.getProfilePhoto());
+        return new Profile(client.getExternalId(), client.getName(), client.getLastName(), client.email(),
+                client.getPhone(), client.getProfilePhoto());
     }
 
     private static Loyalty loyalty(ClientTierResponse tier) {
-        return new Loyalty(
-                tier.tier(),
-                tier.availablePoints(),
-                tier.lifetimePoints(),
-                tier.nextTier(),
-                tier.nextTierThreshold(),
-                tier.progressPercent(),
-                tier.pointsToNextTier());
+        return new Loyalty(tier.tier(), tier.availablePoints(), tier.lifetimePoints(), tier.nextTier(),
+                tier.nextTierThreshold(), tier.progressPercent(), tier.pointsToNextTier());
     }
 
-    /** Newest first. A benefit without end date never expires; one ending today is still usable. */
     private List<ActiveRedemption> activeRedemptions(ClientEntity client) {
-        LocalDate today = LocalDate.now();
-        return redemptionRepository.findByClientAndStateOrderByDateDesc(client, true).stream()
-                .filter(redemption -> !isExpired(redemption.getBenefit(), today))
+        LocalDate today = LocalDate.now(clock);
+        return redemptionRepository.findByClientAndStatusOrderByRedeemedAtDesc(client, RedemptionStatus.ACTIVE).stream()
+                .filter(redemption -> redemption.getBenefit().isInsideDates(today))
                 .map(ClientDashboardService::toActiveRedemption)
                 .toList();
-    }
-
-    private static boolean isExpired(BenefitEntity benefit, LocalDate today) {
-        return benefit.getEndDate() != null && benefit.getEndDate().isBefore(today);
     }
 
     private static ActiveRedemption toActiveRedemption(RedemptionEntity redemption) {
@@ -102,62 +83,38 @@ public class ClientDashboardService implements IClientDashboardService {
                 orEmpty(benefit.getDescription()),
                 redemption.getValidationCode(),
                 benefit.getEndDate(),
-                benefit.getCafeEntity() == null ? null : benefit.getCafeEntity().getName());
+                benefit.isGlobal() ? null : benefit.getCafe().getName());
     }
 
-    /**
-     * Without geolocation there is no real "nearby": the first active cafes by name are shown. Their review and
-     * points figures come from one aggregate query each instead of one query per cafe.
-     */
     private List<NearbyCafe> nearbyCafes() {
-        List<CafeEntity> cafes = cafeRepository.findByState(true).stream()
-                .sorted(Comparator.comparing(CafeEntity::getName, String.CASE_INSENSITIVE_ORDER))
-                .limit(MAX_CAFES)
-                .toList();
+        List<CafeEntity> cafes = cafeRepository.findByActiveTrueOrderByNameAsc().stream().limit(MAX_CAFES).toList();
         if (cafes.isEmpty()) {
             return List.of();
         }
-
-        Map<Long, IReviewRepository.CafeReviewSummary> reviewsByCafe = reviewRepository.summarizeByCafe(cafes).stream()
-                .collect(Collectors.toMap(IReviewRepository.CafeReviewSummary::getCafeId, Function.identity()));
-        Map<Long, Integer> maxPointsByCafe = productRepository.findMaxPointsByCafe(cafes).stream()
+        Map<Long, ReviewRepository.CafeReviewSummary> reviewsByCafe = reviewRepository.summarizeByCafe(cafes).stream()
+                .collect(Collectors.toMap(ReviewRepository.CafeReviewSummary::getCafeId, Function.identity()));
+        Map<Long, Integer> maxPointsByCafe = cafeProductRepository.findMaxPointsByCafe(cafes).stream()
                 .filter(row -> row.getMaxPoints() != null)
-                .collect(Collectors.toMap(IProductRepository.CafeMaxPoints::getCafeId,
-                        IProductRepository.CafeMaxPoints::getMaxPoints));
-
+                .collect(Collectors.toMap(CafeProductRepository.CafeMaxPoints::getCafeId,
+                        CafeProductRepository.CafeMaxPoints::getMaxPoints));
         return cafes.stream()
-                .map(cafe -> toNearbyCafe(cafe, reviewsByCafe.get(cafe.getId()), maxPointsByCafe.get(cafe.getId())))
+                .map(cafe -> toNearbyCafe(cafe,
+                        reviewsByCafe.getOrDefault(cafe.getId(), ReviewRepository.CafeReviewSummary.NONE),
+                        maxPointsByCafe.get(cafe.getId())))
                 .toList();
     }
 
-    /** The cafe schedule is free text, so "open now" cannot be derived reliably and is reported as false. */
-    private static NearbyCafe toNearbyCafe(CafeEntity cafe, IReviewRepository.CafeReviewSummary reviews,
-                                           Integer maxPoints) {
-        double rating = reviews == null || reviews.getAverageRating() == null
-                ? 0.0
-                : BigDecimal.valueOf(reviews.getAverageRating()).setScale(1, RoundingMode.HALF_UP).doubleValue();
-        int reviewCount = reviews == null || reviews.getReviewCount() == null ? 0 : reviews.getReviewCount().intValue();
-        return new NearbyCafe(
-                cafe.getExternalId(),
-                cafe.getName(),
-                cafe.getImage(),
-                rating,
-                reviewCount,
-                false,
-                null,
-                maxPoints,
-                orEmpty(cafe.getDescription()));
+    private static NearbyCafe toNearbyCafe(CafeEntity cafe, ReviewRepository.CafeReviewSummary reviews, Integer maxPoints) {
+        return new NearbyCafe(cafe.getExternalId(), cafe.getName(), cafe.getImage(), reviews.rating(),
+                reviews.reviewCount(), false, null, maxPoints, orEmpty(cafe.getDescription()));
     }
 
     private static List<FeaturedBenefit> featuredBenefits(List<TierBenefitResponse> benefits) {
         return benefits.stream()
+                .filter(benefit -> !benefit.soldOut())
                 .limit(MAX_FEATURED_BENEFITS)
-                .map(benefit -> new FeaturedBenefit(
-                        benefit.externalId(),
-                        benefit.name(),
-                        orEmpty(benefit.description()),
-                        null,
-                        benefit.pointsCost()))
+                .map(benefit -> new FeaturedBenefit(benefit.externalId(), benefit.name(),
+                        orEmpty(benefit.description()), null, benefit.pointsCost()))
                 .toList();
     }
 

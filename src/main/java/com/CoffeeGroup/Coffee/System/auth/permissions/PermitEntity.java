@@ -7,24 +7,21 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
+@Table(name = "permissions")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class PermitEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, unique = true)
-    Permits permit;
-}
+    private Long id;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "permit", nullable = false, unique = true)
+    private Permits permit;
+}

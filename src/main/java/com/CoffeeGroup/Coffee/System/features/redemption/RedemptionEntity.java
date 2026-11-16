@@ -1,74 +1,109 @@
 package com.CoffeeGroup.Coffee.System.features.redemption;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.CoffeeGroup.Coffee.System.common.exceptions.BusinessRuleException;
+import com.CoffeeGroup.Coffee.System.common.exceptions.InvalidStatusTransitionException;
+import com.CoffeeGroup.Coffee.System.common.persistence.AuditableEntity;
 import com.CoffeeGroup.Coffee.System.features.benefit.BenefitEntity;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
-import com.CoffeeGroup.Coffee.System.features.purchase.PurchaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(name = "redemptions")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
+public class RedemptionEntity extends AuditableEntity {
 
-public class RedemptionEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "redeemed_at", nullable = false)
+    private LocalDateTime redeemedAt;
 
-    @Column(name = "external_id", nullable = false,unique = true)
-    private UUID externalId;
+    @Column(name = "used_at")
+    private LocalDateTime usedAt;
 
-
-    @Column(name = "date_redemption")
-    private LocalDateTime date;
-
-    @Column(name = "used_date")
-    private LocalDateTime usedDate;
-
-    @Column(name = "used_points")
+    @Column(name = "used_points", nullable = false)
     private Integer usedPoints;
 
-    @Column(name = "state")
-    private Boolean state;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private RedemptionStatus status = RedemptionStatus.ACTIVE;
 
-    @Column(name = "validation_code")
+    @Column(name = "validation_code", nullable = false, unique = true, length = 36)
     private String validationCode;
 
-    @OneToOne
-    @JoinColumn(name = "purchase_id")
-    private PurchaseEntity purchase;
-
     @ManyToOne
-    @JoinColumn(name = "client_id")
+    @JoinColumn(name = "client_id", nullable = false)
     private ClientEntity client;
 
     @ManyToOne
-    @JoinColumn(name = "benefit_id")
+    @JoinColumn(name = "benefit_id", nullable = false)
     private BenefitEntity benefit;
 
-    @ManyToOne
-    @JoinColumn(name = "cafe_id", nullable = true)
-    private CafeEntity cafeEntity;
+    public static RedemptionEntity of(ClientEntity client, BenefitEntity benefit, LocalDateTime now) {
+        return RedemptionEntity.builder()
+                .client(client)
+                .benefit(benefit)
+                .usedPoints(benefit.getPointsCost())
+                .redeemedAt(now)
+                .validationCode(UUID.randomUUID().toString())
+                .build();
+    }
 
+    public boolean isActive() {
+        return status == RedemptionStatus.ACTIVE;
+    }
+
+    public void ensureUsableOn(LocalDate today) {
+        if (status == RedemptionStatus.EXPIRED || benefit.hasEndedBy(today)) {
+            throw new BusinessRuleException("Code has expired");
+        }
+    }
+
+    public CafeEntity cafe() {
+        return benefit.getCafe();
+    }
+
+    public boolean belongsTo(ClientEntity otherClient) {
+        return client != null && client.isSameAs(otherClient);
+    }
+
+    public void markUsed(LocalDateTime now) {
+        moveTo(RedemptionStatus.USED);
+        usedAt = now;
+    }
+
+    public void reactivate() {
+        moveTo(RedemptionStatus.ACTIVE);
+        usedAt = null;
+    }
+
+    public void cancel() {
+        moveTo(RedemptionStatus.CANCELLED);
+    }
+
+    private void moveTo(RedemptionStatus next) {
+        if (!status.canTransitionTo(next)) {
+            throw new InvalidStatusTransitionException(
+                    "A redemption cannot go from " + status + " to " + next);
+        }
+        status = next;
+    }
 }

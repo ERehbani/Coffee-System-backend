@@ -1,157 +1,85 @@
 package com.CoffeeGroup.Coffee.System.features.cart;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
-import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
-import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
 import com.CoffeeGroup.Coffee.System.common.exceptions.EntityNotFoundException;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.CafeRepository;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartItemRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.CartResponse;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.dto.UpdateCartItemRequest;
 import com.CoffeeGroup.Coffee.System.features.cart.domain.mapper.CartMapper;
-import com.CoffeeGroup.Coffee.System.features.product.IProductRepository;
-import com.CoffeeGroup.Coffee.System.features.product.ProductEntity;
+import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
+import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
 
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CartService implements ICartService {
 
-    private final ICartRepository cartRepository;
+    private final CartRepository cartRepository;
     private final CartMapper cartMapper;
     private final SecurityUtils securityUtils;
-    private final IProductRepository productRepository;
+    private final CafeProductRepository cafeProductRepository;
     private final CafeRepository cafeRepository;
 
     @Override
     public List<CartResponse> getMyCart() {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) throw new EntityNotFoundException("Client not found");
-
-        return cartRepository.findByClient(client).stream()
-                .map(cartMapper::toDto)
+        return cartRepository.findByClient(securityUtils.currentClient()).stream()
+                .map(cartMapper::toResponse)
                 .toList();
     }
 
     @Override
     @Transactional
     public CartResponse addItem(UUID cafeExternalId, CartItemRequest request) {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) throw new EntityNotFoundException("Client not found");
-
+        ClientEntity client = securityUtils.currentClient();
         CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
                 .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
-
-        ensureProductBelongsToCafe(request.productId(), cafeExternalId);
-
-        CartEntity cart = cartRepository.findByClientAndCafeEntity(client, cafe)
-                .orElseGet(() -> CartEntity.builder()
-                        .externalId(UUID.randomUUID())
-                        .client(client)
-                        .cafeEntity(cafe)
-                        .items(new ArrayList<>())
-                        .totalPrice(BigDecimal.ZERO)
-                        .build());
-
-        List<CartItem> items = cart.getItems();
-        boolean exists = false;
-        for (CartItem item : items) {
-            if (item.getProductId().equals(request.productId())) {
-                item.setQuantity(item.getQuantity() + request.quantity());
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            items.add(CartItem.builder()
-                    .productId(request.productId())
-                    .quantity(request.quantity())
-                    .build());
-        }
-
-        cart.setTotalPrice(calculateTotalPrice(items));
-        return cartMapper.toDto(cartRepository.save(cart));
-    }
-
-    private void ensureProductBelongsToCafe(UUID productExternalId, UUID cafeExternalId) {
-        productRepository.findByExternalIdAndCafeExternalId(productExternalId, cafeExternalId)
+        CafeProductEntity product = cafeProductRepository.findByExternalIdAndCafe(request.productId(), cafe)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
+
+        CartEntity cart = cartRepository.findByClientAndCafe(client, cafe)
+                .orElseGet(() -> CartEntity.openFor(client, cafe));
+        cart.add(product, request.quantity());
+        cartRepository.save(cart);
+        return cartMapper.toResponse(cart);
     }
 
     @Override
     @Transactional
     public CartResponse updateItemQuantity(UUID productExternalId, UpdateCartItemRequest request) {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) throw new EntityNotFoundException("Client not found");
-
-        List<CartEntity> carts = cartRepository.findByClient(client);
-        CartEntity cart = carts.stream()
-                .filter(c -> c.getItems().stream().anyMatch(item -> item.getProductId().equals(productExternalId)))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
-
-        for (CartItem item : cart.getItems()) {
-            if (item.getProductId().equals(productExternalId)) {
-                item.setQuantity(request.quantity());
-                break;
-            }
-        }
-
-        cart.setTotalPrice(calculateTotalPrice(cart.getItems()));
-        return cartMapper.toDto(cartRepository.save(cart));
+        CartEntity cart = cartContaining(productExternalId);
+        cart.changeQuantity(productExternalId, request.quantity());
+        return cartMapper.toResponse(cart);
     }
 
     @Override
     @Transactional
     public CartResponse removeItem(UUID productExternalId) {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) throw new EntityNotFoundException("Client not found");
-
-        List<CartEntity> carts = cartRepository.findByClient(client);
-        CartEntity cart = carts.stream()
-                .filter(c -> c.getItems().stream().anyMatch(item -> item.getProductId().equals(productExternalId)))
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
-
-        boolean removed = cart.getItems()
-                .removeIf(item -> item.getProductId().equals(productExternalId));
-
-        if (!removed) throw new EntityNotFoundException("Product not found in cart");
-
-        cart.setTotalPrice(calculateTotalPrice(cart.getItems()));
-        return cartMapper.toDto(cartRepository.save(cart));
+        CartEntity cart = cartContaining(productExternalId);
+        cart.remove(productExternalId);
+        return cartMapper.toResponse(cart);
     }
 
     @Override
     @Transactional
     public void clearCart() {
-        ClientEntity client = securityUtils.getCurrentClient();
-        if (client == null) throw new EntityNotFoundException("Client not found");
-
-        List<CartEntity> carts = cartRepository.findByClient(client);
-        carts.forEach(cart -> {
-            cart.getItems().clear();
-            cart.setTotalPrice(BigDecimal.ZERO);
-        });
-        cartRepository.saveAll(carts);
+        cartRepository.findByClient(securityUtils.currentClient()).forEach(CartEntity::clear);
     }
 
-    private BigDecimal calculateTotalPrice(List<CartItem> items) {
-        return items.stream()
-                .map(item -> {
-                    ProductEntity product = productRepository.findByExternalId(item.getProductId())
-                            .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-                    return product.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    private CartEntity cartContaining(UUID productExternalId) {
+        return cartRepository.findByClient(securityUtils.currentClient()).stream()
+                .filter(cart -> cart.contains(productExternalId))
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
     }
 }

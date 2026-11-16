@@ -1,16 +1,20 @@
 package com.CoffeeGroup.Coffee.System.common.exceptions;
 
-import java.time.Instant;
+import org.springframework.http.HttpStatus;
 
-import lombok.Getter;
-
-@Getter
-public class CartHasNoProductsException extends RuntimeException {
-
-    private final Instant timestamp;
+public class CartHasNoProductsException extends DomainException {
 
     public CartHasNoProductsException(String message) {
         super(message);
-        this.timestamp = Instant.now();
+    }
+
+    @Override
+    public HttpStatus status() {
+        return HttpStatus.BAD_REQUEST;
+    }
+
+    @Override
+    public String title() {
+        return "Empty cart";
     }
 }

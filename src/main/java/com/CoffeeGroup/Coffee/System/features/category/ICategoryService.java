@@ -16,7 +16,5 @@ public interface ICategoryService {
 
     CategoryResponse update(UUID externalId, CategoryRequest categoryRequest);
 
-    List<CategoryResponse> searchByName(String nameFragment);
-
     void delete(UUID externalId);
 }

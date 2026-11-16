@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -28,12 +27,12 @@ class ProductUpdateRequestValidationTest {
     }
 
     private static UpdateProductRequest request(String name, String description, BigDecimal price,
-            Integer awardedPoints, UUID categoryId, String image) {
-        return new UpdateProductRequest(name, description, price, awardedPoints, categoryId, image, null);
+            Integer awardedPoints, String image) {
+        return new UpdateProductRequest(name, description, price, awardedPoints, image, null);
     }
 
     private static UpdateProductRequest requestWithTags(List<String> tags) {
-        return new UpdateProductRequest(null, null, null, null, null, null, tags);
+        return new UpdateProductRequest(null, null, null, null, null, tags);
     }
 
     private static Set<String> invalidProperties(UpdateProductRequest request) {
@@ -45,62 +44,62 @@ class ProductUpdateRequestValidationTest {
 
     @Test
     void emptyBodyIsValid() {
-        assertThat(validator.validate(request(null, null, null, null, null, null))).isEmpty();
+        assertThat(validator.validate(request(null, null, null, null, null))).isEmpty();
     }
 
     @Test
     void fullyPopulatedRequestIsValid() {
         UpdateProductRequest request = request("Latte", "Milk coffee 12oz", new BigDecimal("1800"), 120,
-                UUID.randomUUID(), "https://cdn.example.com/latte.png");
+                "https://cdn.example.com/latte.png");
 
         assertThat(validator.validate(request)).isEmpty();
     }
 
     @Test
     void priceZeroIsInvalid() {
-        assertThat(invalidProperties(request(null, null, BigDecimal.ZERO, null, null, null)))
+        assertThat(invalidProperties(request(null, null, BigDecimal.ZERO, null, null)))
                 .containsExactly("price");
     }
 
     @Test
     void priceAboveMaximumIsInvalid() {
-        assertThat(invalidProperties(request(null, null, new BigDecimal("50001"), null, null, null)))
+        assertThat(invalidProperties(request(null, null, new BigDecimal("50001"), null, null)))
                 .containsExactly("price");
     }
 
     @Test
     void awardedPointsBelowMinimumIsInvalid() {
-        assertThat(invalidProperties(request(null, null, null, 10, null, null)))
+        assertThat(invalidProperties(request(null, null, null, 10, null)))
                 .containsExactly("awardedPoints");
     }
 
     @Test
     void awardedPointsAboveMaximumIsInvalid() {
-        assertThat(invalidProperties(request(null, null, null, 3001, null, null)))
+        assertThat(invalidProperties(request(null, null, null, 3001, null)))
                 .containsExactly("awardedPoints");
     }
 
     @Test
     void blankNameIsInvalid() {
-        assertThat(invalidProperties(request("   ", null, null, null, null, null)))
+        assertThat(invalidProperties(request("   ", null, null, null, null)))
                 .containsExactly("name");
     }
 
     @Test
     void nameWithDigitsIsInvalid() {
-        assertThat(invalidProperties(request("Latte2", null, null, null, null, null)))
+        assertThat(invalidProperties(request("Latte2", null, null, null, null)))
                 .containsExactly("name");
     }
 
     @Test
     void blankDescriptionIsInvalid() {
-        assertThat(invalidProperties(request(null, "      ", null, null, null, null)))
+        assertThat(invalidProperties(request(null, "      ", null, null, null)))
                 .containsExactly("description");
     }
 
     @Test
     void imageLongerThan500CharactersIsInvalid() {
-        assertThat(invalidProperties(request(null, null, null, null, null, "x".repeat(501))))
+        assertThat(invalidProperties(request(null, null, null, null, "x".repeat(501))))
                 .containsExactly("image");
     }
 

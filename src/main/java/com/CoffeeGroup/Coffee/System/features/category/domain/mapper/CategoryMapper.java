@@ -1,24 +1,14 @@
 package com.CoffeeGroup.Coffee.System.features.category.domain.mapper;
 
-import com.CoffeeGroup.Coffee.System.common.model.IMapper;
+import org.springframework.stereotype.Component;
+
 import com.CoffeeGroup.Coffee.System.features.category.CategoryEntity;
 import com.CoffeeGroup.Coffee.System.features.category.domain.dto.CategoryResponse;
 
-import org.springframework.stereotype.Component;
-
 @Component
-public class CategoryMapper implements IMapper<CategoryEntity, CategoryResponse> {
+public class CategoryMapper {
 
-    @Override
-    public CategoryEntity toEntity(CategoryResponse categoryResponse) {
-        return CategoryEntity.builder()
-                .externalId(categoryResponse.categoryId())
-                .name(categoryResponse.name())
-                .build();
-    }
-
-    @Override
-    public CategoryResponse toDto(CategoryEntity entity) {
-        return new CategoryResponse(entity.getExternalId(), entity.getName());
+    public CategoryResponse toResponse(CategoryEntity category, long productCount) {
+        return new CategoryResponse(category.getExternalId(), category.getName(), productCount);
     }
 }

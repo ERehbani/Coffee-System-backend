@@ -1,6 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.benefit_format.domain.dto;
 
-import com.CoffeeGroup.Coffee.System.features.benefit_type.domain.TypeBenefit.BenefitType;
+import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +18,5 @@ public record CreateBenefitFormatRequest(
         @Size(max = 200, message = "The description must have at most 200 characters")
         String description,
 
-        /** Defaults to true when null. */
         Boolean active) {
 }
