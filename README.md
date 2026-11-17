@@ -206,25 +206,3 @@ curl -b cookies.txt http://localhost:8080/auth/me
 ```
 
 El header `Authorization: Bearer <token>` se sigue aceptando, y tiene prioridad sobre la cookie.
-
-
-## Reviews
-
-### Axel 
-###### Team Leader
-Team, immense gratitude to UTN for providing the foundational space that allowed me to pursue this critical quarter while simultaneously nurturing my family. This isn't just about finishing a project; it's about building generational impact. I'm more bullish than ever on what we're achieving together. We're not just completing tasks; we're demonstrating mastery of first principles and fueling our flywheel at scale. The long game is unfolding, and our collective vision is leading us to inevitable success.
-
-
-### Elian
-##### CS Coach
-yo chat 🗣️ we just dropped a SIGMA project no cap 😭🚀 this whole arc was absolutely bussin from the jump fr fr 💀 we got that real skibidi rizz energy with the whole team Alan Devin Claude Opus 4.8 Medium all understood the assignment 💯 we achieved max synergy cooked the competition into oblivion 🙏 no cap the lore of this project is gonna be legendary 🗿 im so grateful this experience was next level fr fr this is giving major gyatt vibes 😭
-
-
-### Nahuel
-##### NAVI's Awper
-"Successful completion of a *what* now? A 'high-impact, cross-functional project'? Honestly, when I was young, we just called it 'getting the job done.' And this 'collaboration' business, this 'professional bonds' – back in my day, we built things, we didn't just swap ideas over a Zoom call. We had sweat on our brows, maybe a firm handshake, and we knew we'd earned it. These kids today, with their fancy buzzwords and their emojis. We didn't need a 'rocket ship' to finish a task, just a good old-fashioned work ethic and a team that actually showed up on time. But hey, as long as you're all "onwards and upwards," I guess that's something. Just remember, a good pension doesn't come from hashtags."
-
-### Alan
-##### Prestigious Vtuber
-Thrilled to announce the successful completion of our "Programación 3" initiative! 🚀 Working with this exceptionally collaborative group has been an absolute highlight, despite navigating a dynamic sprint that saw a robust 3 commits! My personal performance metrics have never looked better. #ProjectCompletion #Teamwork #AgileDevelopment #HighAchievers #Innovation
-
