@@ -30,14 +30,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/carts")
-@Tag(name = "Cart", description = "Endpoints for managing shopping cart")
+@Tag(name = "Carrito", description = "Endpoints para administrar el carrito de compras")
 public class CartController {
 
     private final ICartService cartService;
 
     @GetMapping("/myCart")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Get my cart", description = "Retrieves the current user's shopping cart")
+    @Operation(summary = "Obtener mi carrito", description = "Obtiene el carrito del usuario actual")
     @ApiResponses
     ResponseEntity<List<CartResponse>> getMyCart() {
         return ResponseEntity.ok(cartService.getMyCart());
@@ -45,35 +45,35 @@ public class CartController {
 
     @PostMapping("/{cafeExternalId}/items")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Add item to cart", description = "Adds a product to the user's shopping cart")
+    @Operation(summary = "Agregar producto al carrito", description = "Agrega un producto al carrito del usuario")
     @ApiResponses
     ResponseEntity<CartResponse> addItem(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeExternalId,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeExternalId,
             @Valid @RequestBody CartItemRequest request) {
         return new ResponseEntity<>(cartService.addItem(cafeExternalId, request), HttpStatus.CREATED);
     }
 
     @PutMapping("/items/{productExternalId}")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Update item quantity", description = "Updates the quantity of a product in the user's shopping cart")
+    @Operation(summary = "Actualizar cantidad del producto", description = "Actualiza la cantidad de un producto en el carrito del usuario")
     @ApiResponses
     ResponseEntity<CartResponse> updateItemQuantity(
-            @Parameter(description = "Product external ID") @PathVariable UUID productExternalId,
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productExternalId,
             @Valid @RequestBody UpdateCartItemRequest request) {
         return ResponseEntity.ok(cartService.updateItemQuantity(productExternalId, request));
     }
 
     @DeleteMapping("/items/{productExternalId}")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Remove item from cart", description = "Removes a product from the user's shopping cart")
+    @Operation(summary = "Quitar producto del carrito", description = "Quita un producto del carrito del usuario")
     @ApiResponses
-    ResponseEntity<CartResponse> removeItem(@Parameter(description = "Product external ID") @PathVariable UUID productExternalId) {
+    ResponseEntity<CartResponse> removeItem(@Parameter(description = "ID externo del producto") @PathVariable UUID productExternalId) {
         return ResponseEntity.ok(cartService.removeItem(productExternalId));
     }
 
     @DeleteMapping("/clear")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Clear cart", description = "Clears all items from the user's shopping cart")
+    @Operation(summary = "Vaciar carrito", description = "Vacía el carrito del usuario")
     @ApiResponses
     ResponseEntity<Void> clearCart() {
         cartService.clearCart();

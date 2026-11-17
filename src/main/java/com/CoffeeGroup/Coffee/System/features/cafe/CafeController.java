@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cafes")
-@Tag(name = "Cafes", description = "Endpoints for managing cafeterias")
+@Tag(name = "Cafeterías", description = "Endpoints para administrar cafeterías")
 public class CafeController {
 
     private final ICafeService cafeService;
@@ -41,64 +41,64 @@ public class CafeController {
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping("/register")
-    @Operation(summary = "Register cafe", description = "Creates the cafe account and its cafe")
+    @Operation(summary = "Registrar cafetería", description = "Crea la cuenta de la cafetería y la cafetería")
     public ResponseEntity<UserResponse> registerCafe(@Valid @RequestBody CreateCafeAccountRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.saveCafe(request));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update cafe")
+    @Operation(summary = "Actualizar cafetería")
     public ResponseEntity<CafeResponse> update(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID externalId,
             @Valid @RequestBody UpdateCafeRequest request) {
         return ResponseEntity.ok(cafeService.update(externalId, request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Deactivate cafe")
-    public ResponseEntity<Void> delete(@Parameter(description = "Cafe external ID") @PathVariable UUID externalId) {
+    @Operation(summary = "Desactivar cafetería")
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo de la cafetería") @PathVariable UUID externalId) {
         cafeService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping
-    @Operation(summary = "List cafes", description = "Clients only see active cafes")
+    @Operation(summary = "Listar cafeterías", description = "Los clientes solo ven las cafeterías activas")
     public ResponseEntity<List<CafeResponse>> getAll() {
         return ResponseEntity.ok(cafeService.getAll());
     }
 
     @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
     @GetMapping("/me")
-    @Operation(summary = "Get my cafe")
+    @Operation(summary = "Obtener mi cafetería")
     public ResponseEntity<CafeResponse> getMine() {
         return ResponseEntity.ok(cafeService.getMine());
     }
 
     @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
     @GetMapping("/me/dashboard")
-    @Operation(summary = "Get the dashboard of my cafe", description = "Products, benefits and today's activity")
+    @Operation(summary = "Obtener el dashboard de mi cafetería", description = "Productos, beneficios y actividad de hoy")
     public ResponseEntity<CafeDashboardResponse> getMyDashboard() {
         return ResponseEntity.ok(cafeDashboardService.getMine());
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get cafe by ID")
+    @Operation(summary = "Obtener cafetería por ID")
     public ResponseEntity<CafeResponse> getByExternalId(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID externalId) {
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID externalId) {
         return ResponseEntity.ok(cafeService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping("/filter")
-    @Operation(summary = "Filter cafes", description = "Only the admin can filter by the active state")
+    @Operation(summary = "Filtrar cafeterías", description = "Solo el administrador puede filtrar por estado activo")
     public ResponseEntity<List<CafeResponse>> filterCafes(
-            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
-            @Parameter(description = "Filter by address") @RequestParam(required = false) String address,
-            @Parameter(description = "Filter by active state") @RequestParam(required = false) Boolean state) {
+            @Parameter(description = "Filtra por nombre") @RequestParam(required = false) String name,
+            @Parameter(description = "Filtra por dirección") @RequestParam(required = false) String address,
+            @Parameter(description = "Filtra por estado activo") @RequestParam(required = false) Boolean state) {
         return ResponseEntity.ok(cafeService.filterCafes(name, address, state));
     }
 }

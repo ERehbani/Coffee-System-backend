@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
+@Tag(name = "Autenticación", description = "Endpoints para autenticar y registrar usuarios")
 public class AuthController {
     private final AuthService authService;
     private final IUserService userService;
@@ -39,7 +39,7 @@ public class AuthController {
     private final AuthCookieService authCookieService;
 
     @PostMapping("/login")
-    @Operation(summary = "Authenticate user", description = "Authenticates a user with email and password and sets the session cookie")
+    @Operation(summary = "Autenticar usuario", description = "Autentica al usuario con email y contraseña y guarda la cookie de sesión")
     @ApiResponses
     public ResponseEntity<SessionResponse> authenticateUser(@RequestBody @Valid AuthRequest authRequest){
         UserDetails user = authService.authenticate(authRequest);
@@ -50,7 +50,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    @Operation(summary = "Log out", description = "Removes the session cookie")
+    @Operation(summary = "Cerrar sesión", description = "Elimina la cookie de sesión")
     @ApiResponses
     public ResponseEntity<Void> logout() {
         return ResponseEntity.noContent()
@@ -59,14 +59,14 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Current session", description = "Returns the email and roles of the authenticated user")
+    @Operation(summary = "Sesión actual", description = "Devuelve el email y los roles del usuario autenticado")
     @ApiResponses
     public ResponseEntity<SessionResponse> currentSession(Authentication authentication) {
         return ResponseEntity.ok(SessionResponse.of(authentication.getName(), authentication.getAuthorities()));
     }
 
     @PostMapping("/register")
-    @Operation(summary = "Register new user", description = "Creates a new user account with client profile")
+    @Operation(summary = "Registrar usuario nuevo", description = "Crea una cuenta de usuario con perfil de cliente")
     @ApiResponses
     public ResponseEntity<UserResponse> registerUser(@RequestBody @Valid CreateAccountRequest newAccountRequest){
         return new ResponseEntity<>(userService.save(newAccountRequest), HttpStatus.CREATED);

@@ -35,21 +35,21 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/cafes/{cafeId}/products")
 @RequiredArgsConstructor
-@Tag(name = "Cafe products", description = "What each cafe sells, with its own price, points and availability")
+@Tag(name = "Productos de la cafetería", description = "Lo que vende cada cafetería, con su propio precio, puntos y disponibilidad")
 public class CafeProductController {
 
     private final ICafeProductService cafeProductService;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "List the products of a cafe", description = "Paginated; clients only see active products")
+    @Operation(summary = "Listar los productos de una cafetería", description = "Paginado; los clientes solo ven los productos activos")
     public ResponseEntity<PageResponse<ProductResponse>> list(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Name fragment") @RequestParam(required = false) String name,
-            @Parameter(description = "Category external ID") @RequestParam(required = false) UUID categoryId,
-            @Parameter(description = "Exact price") @RequestParam(required = false) BigDecimal price,
-            @Parameter(description = "Exact awarded points") @RequestParam(required = false) Integer awardedPoints,
-            @Parameter(description = "Only available or sold out for today") @RequestParam(required = false) Boolean available,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "Fragmento del nombre") @RequestParam(required = false) String name,
+            @Parameter(description = "ID externo de la categoría") @RequestParam(required = false) UUID categoryId,
+            @Parameter(description = "Precio exacto") @RequestParam(required = false) BigDecimal price,
+            @Parameter(description = "Puntos otorgados exactos") @RequestParam(required = false) Integer awardedPoints,
+            @Parameter(description = "Solo disponibles o agotados por hoy") @RequestParam(required = false) Boolean available,
             @PageableDefault(size = 20) Pageable pageable) {
         ProductFilter filter = new ProductFilter(name, categoryId, price, awardedPoints, available);
         return ResponseEntity.ok(cafeProductService.listByCafe(cafeId, filter, pageable));
@@ -57,50 +57,50 @@ public class CafeProductController {
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Add a product to the cafe",
-            description = "Pick a catalog product or send the name and category of a new one, which joins the catalog")
+    @Operation(summary = "Agregar un producto a la cafetería",
+            description = "Elige un producto del catálogo o envía el nombre y la categoría de uno nuevo, que se suma al catálogo")
     public ResponseEntity<ProductResponse> create(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
             @Valid @RequestBody ProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cafeProductService.create(cafeId, request));
     }
 
     @PutMapping("/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Update a product of the cafe")
+    @Operation(summary = "Actualizar un producto de la cafetería")
     public ResponseEntity<ProductResponse> update(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Product external ID") @PathVariable UUID productId,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId,
             @Valid @RequestBody UpdateProductRequest request) {
         return ResponseEntity.ok(cafeProductService.update(productId, request));
     }
 
     @PatchMapping("/{productId}/availability")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Mark as sold out for today or available again",
-            description = "Every product is available again at midnight")
+    @Operation(summary = "Marcar como agotado por hoy o disponible otra vez",
+            description = "Todos los productos vuelven a estar disponibles a la medianoche")
     public ResponseEntity<ProductResponse> changeAvailability(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Product external ID") @PathVariable UUID productId,
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId,
             @Valid @RequestBody AvailabilityRequest request) {
         return ResponseEntity.ok(cafeProductService.changeAvailability(productId, request.available()));
     }
 
     @PatchMapping("/{productId}/activate")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Sell a deactivated product again")
+    @Operation(summary = "Volver a vender un producto desactivado")
     public ResponseEntity<ProductResponse> activate(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Product external ID") @PathVariable UUID productId) {
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId) {
         return ResponseEntity.ok(cafeProductService.activate(productId));
     }
 
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Stop selling a product", description = "Logical delete, the purchase history is kept")
+    @Operation(summary = "Dejar de vender un producto", description = "Eliminación lógica, se conserva el historial de compras")
     public ResponseEntity<Void> delete(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Product external ID") @PathVariable UUID productId) {
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId) {
         cafeProductService.deactivate(productId);
         return ResponseEntity.noContent().build();
     }

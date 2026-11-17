@@ -28,49 +28,49 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/catalog-products")
 @RequiredArgsConstructor
-@Tag(name = "Catalog products", description = "General products shared by every cafe")
+@Tag(name = "Productos del catálogo", description = "Productos generales compartidos por todas las cafeterías")
 public class CatalogProductController {
 
     private final ICatalogProductService catalogProductService;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Search catalog products", description = "Active products ordered by name, optionally by name fragment")
+    @Operation(summary = "Buscar productos del catálogo", description = "Productos activos ordenados por nombre, opcionalmente por un fragmento del nombre")
     public ResponseEntity<List<CatalogProductResponse>> search(
-            @Parameter(description = "Name fragment") @RequestParam(required = false) String name) {
+            @Parameter(description = "Fragmento del nombre") @RequestParam(required = false) String name) {
         return ResponseEntity.ok(catalogProductService.search(name));
     }
 
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Get catalog product")
+    @Operation(summary = "Obtener producto del catálogo")
     public ResponseEntity<CatalogProductResponse> getById(
-            @Parameter(description = "Catalog product external ID") @PathVariable UUID externalId) {
+            @Parameter(description = "ID externo del producto del catálogo") @PathVariable UUID externalId) {
         return ResponseEntity.ok(catalogProductService.getById(externalId));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Add catalog product",
-            description = "Creates the product, or returns the existing one when the name is already in the catalog")
+    @Operation(summary = "Agregar producto al catálogo",
+            description = "Crea el producto, o devuelve el existente si el nombre ya está en el catálogo")
     public ResponseEntity<CatalogProductResponse> create(@Valid @RequestBody CatalogProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(catalogProductService.create(request));
     }
 
     @PutMapping("/{externalId}")
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
-    @Operation(summary = "Update catalog product")
+    @Operation(summary = "Actualizar producto del catálogo")
     public ResponseEntity<CatalogProductResponse> update(
-            @Parameter(description = "Catalog product external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo del producto del catálogo") @PathVariable UUID externalId,
             @Valid @RequestBody CatalogProductRequest request) {
         return ResponseEntity.ok(catalogProductService.update(externalId, request));
     }
 
     @DeleteMapping("/{externalId}")
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
-    @Operation(summary = "Deactivate catalog product")
+    @Operation(summary = "Desactivar producto del catálogo")
     public ResponseEntity<Void> deactivate(
-            @Parameter(description = "Catalog product external ID") @PathVariable UUID externalId) {
+            @Parameter(description = "ID externo del producto del catálogo") @PathVariable UUID externalId) {
         catalogProductService.deactivate(externalId);
         return ResponseEntity.noContent().build();
     }

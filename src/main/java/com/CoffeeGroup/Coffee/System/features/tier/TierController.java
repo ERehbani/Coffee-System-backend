@@ -28,13 +28,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/tiers")
 @RequiredArgsConstructor
-@Tag(name = "Tiers", description = "Endpoints for managing loyalty tiers")
+@Tag(name = "Tiers", description = "Endpoints para administrar los tiers de fidelidad")
 public class TierController {
     private final ITierService tierService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @GetMapping
-    @Operation(summary = "List all tiers", description = "Retrieves all loyalty tiers")
+    @Operation(summary = "Listar todos los tiers", description = "Obtiene todos los tiers de fidelidad")
     @ApiResponses
     public ResponseEntity<List<TierResponse>> getAll() {
         return ResponseEntity.ok(tierService.getAll());
@@ -42,15 +42,15 @@ public class TierController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get tier by ID", description = "Retrieves a specific tier by its external ID")
+    @Operation(summary = "Obtener tier por ID", description = "Obtiene un tier por su ID externo")
     @ApiResponses
-    public ResponseEntity<TierResponse> getById(@Parameter(description = "Tier external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<TierResponse> getById(@Parameter(description = "ID externo del tier") @PathVariable UUID externalId) {
         return ResponseEntity.ok(tierService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @PostMapping
-    @Operation(summary = "Create tier", description = "Creates a new loyalty tier")
+    @Operation(summary = "Crear tier", description = "Crea un tier de fidelidad nuevo")
     @ApiResponses
     public ResponseEntity<TierResponse> create(@Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.create(request));
@@ -58,19 +58,19 @@ public class TierController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update tier", description = "Updates tier information")
+    @Operation(summary = "Actualizar tier", description = "Actualiza los datos de un tier")
     @ApiResponses
     public ResponseEntity<TierResponse> update(
-            @Parameter(description = "Tier external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo del tier") @PathVariable UUID externalId,
             @Valid @RequestBody CreateTierRequest request) {
         return ResponseEntity.ok(tierService.update(externalId, request));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Delete tier", description = "Deletes a tier by its external ID")
+    @Operation(summary = "Eliminar tier", description = "Elimina un tier por su ID externo")
     @ApiResponses
-    public ResponseEntity<Void> delete(@Parameter(description = "Tier external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo del tier") @PathVariable UUID externalId) {
         tierService.delete(externalId);
         return ResponseEntity.noContent().build();
     }

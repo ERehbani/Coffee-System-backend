@@ -30,54 +30,54 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/reviews")
-@Tag(name = "Reviews", description = "Endpoints for managing cafe reviews")
+@Tag(name = "Reseñas", description = "Endpoints para administrar las reseñas de las cafeterías")
 public class ReviewController {
 
     private final IReviewService reviewService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE')")
     @PostMapping
-    @Operation(summary = "Create review", description = "Creates a new review for a cafeteria")
+    @Operation(summary = "Crear reseña", description = "Crea una reseña nueva para una cafetería")
     @ApiResponses
     ResponseEntity<ReviewResponse> create(@Valid @RequestBody ReviewCreateRequest reviewCreateRequest) {
         return new ResponseEntity<>(reviewService.create(reviewCreateRequest), HttpStatus.CREATED);
     }
 
     @GetMapping
-    @Operation(summary = "List all reviews", description = "Retrieves all reviews")
+    @Operation(summary = "Listar todas las reseñas", description = "Obtiene todas las reseñas")
     @ApiResponses
     ResponseEntity<List<ReviewResponse>> getAll() {
         return ResponseEntity.ok(reviewService.getAll());
     }
 
     @GetMapping("/cafe/{cafeExternalId}")
-    @Operation(summary = "Get reviews by cafe", description = "Retrieves all reviews for a specific cafeteria")
+    @Operation(summary = "Obtener reseñas por cafetería", description = "Obtiene todas las reseñas de una cafetería")
     @ApiResponses
-    ResponseEntity<List<ReviewResponse>> getByCafe(@Parameter(description = "Cafe external ID") @PathVariable UUID cafeExternalId) {
+    ResponseEntity<List<ReviewResponse>> getByCafe(@Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeExternalId) {
         return ResponseEntity.ok(reviewService.getByCafe(cafeExternalId));
     }
 
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get review by ID", description = "Retrieves a specific review by its external ID")
+    @Operation(summary = "Obtener reseña por ID", description = "Obtiene una reseña por su ID externo")
     @ApiResponses
-    ResponseEntity<ReviewResponse> getById(@Parameter(description = "Review external ID") @PathVariable UUID externalId) {
+    ResponseEntity<ReviewResponse> getById(@Parameter(description = "ID externo de la reseña") @PathVariable UUID externalId) {
         return ResponseEntity.ok(reviewService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_CLIENTE')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update review", description = "Updates an existing review")
+    @Operation(summary = "Actualizar reseña", description = "Actualiza una reseña existente")
     @ApiResponses
-    ResponseEntity<ReviewResponse> update(@Parameter(description = "Review external ID") @PathVariable UUID externalId,
+    ResponseEntity<ReviewResponse> update(@Parameter(description = "ID externo de la reseña") @PathVariable UUID externalId,
             @RequestBody ReviewUpdateRequest reviewUpdateRequest) {
         return ResponseEntity.ok(reviewService.update(externalId, reviewUpdateRequest));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Delete review", description = "Deletes a review by its external ID")
+    @Operation(summary = "Eliminar reseña", description = "Elimina una reseña por su ID externo")
     @ApiResponses
-    ResponseEntity<Void> delete(@Parameter(description = "Review external ID") @PathVariable UUID externalId) {
+    ResponseEntity<Void> delete(@Parameter(description = "ID externo de la reseña") @PathVariable UUID externalId) {
         reviewService.deleteById(externalId);
         return ResponseEntity.noContent().build();
     }
