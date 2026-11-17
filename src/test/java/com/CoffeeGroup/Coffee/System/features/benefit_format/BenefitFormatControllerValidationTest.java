@@ -68,7 +68,7 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody(null, "2x1", "Dos por uno", true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.code").value("The format is required"))
+                .andExpect(jsonPath("$.errors.code").value("El formato es obligatorio"))
                 .andExpect(jsonPath("$.status").value(400));
         verify(service, never()).create(any());
     }
@@ -78,7 +78,7 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "   ", "Dos por uno", true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.displayName").value("The name is required"));
+                .andExpect(jsonPath("$.errors.displayName").value("El nombre es obligatorio"));
         verify(service, never()).create(any());
     }
 
@@ -87,7 +87,7 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "a".repeat(41), "Dos por uno", true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.displayName").value("The name must have at most 40 characters"));
+                .andExpect(jsonPath("$.errors.displayName").value("El nombre puede tener hasta 40 caracteres"));
     }
 
     @Test
@@ -95,7 +95,7 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "2x1", "", true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.description").value("The description is required"));
+                .andExpect(jsonPath("$.errors.description").value("La descripción es obligatoria"));
     }
 
     @Test
@@ -103,7 +103,7 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "2x1", "a".repeat(201), true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.description").value("The description must have at most 200 characters"));
+                .andExpect(jsonPath("$.errors.description").value("La descripción puede tener hasta 200 caracteres"));
     }
 
     @Test
@@ -111,8 +111,8 @@ class BenefitFormatControllerValidationTest {
         mockMvc.perform(put("/benefit-formats/" + externalId).contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody("", "a".repeat(201), true)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.displayName").value("The name is required"))
-                .andExpect(jsonPath("$.errors.description").value("The description must have at most 200 characters"));
+                .andExpect(jsonPath("$.errors.displayName").value("El nombre es obligatorio"))
+                .andExpect(jsonPath("$.errors.description").value("La descripción puede tener hasta 200 caracteres"));
         verify(service, never()).update(any(), any());
     }
 
@@ -134,12 +134,12 @@ class BenefitFormatControllerValidationTest {
 
     @Test
     void duplicatesAnswerConflictWithTheProblemDetail() throws Exception {
-        when(service.create(any())).thenThrow(new EntityAlreadyExistsException("The format DOS_POR_UNO is already in the catalog"));
+        when(service.create(any())).thenThrow(new EntityAlreadyExistsException("El formato DOS_POR_UNO ya está en el catálogo"));
 
         mockMvc.perform(post("/benefit-formats").contentType(MediaType.APPLICATION_JSON)
                         .content(createBody("DOS_POR_UNO", "2x1", "Dos por uno", true)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("The format DOS_POR_UNO is already in the catalog"));
+                .andExpect(jsonPath("$.detail").value("El formato DOS_POR_UNO ya está en el catálogo"));
     }
 
     @Test

@@ -109,7 +109,7 @@ class RedemptionServiceTest {
 
         assertThatThrownBy(() -> service.create(request))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("maximum number of times");
+                .hasMessageContaining("el máximo de veces");
         verify(benefitRepository, never()).consumeRedemption(any());
     }
 

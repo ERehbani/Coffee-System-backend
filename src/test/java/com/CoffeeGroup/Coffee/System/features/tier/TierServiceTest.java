@@ -63,7 +63,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.create(new CreateTierRequest("  plata ", 1000)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A tier named plata already exists");
+                .hasMessage("Ya existe un tier llamado plata");
         verify(tierRepository, never()).save(any());
     }
 
@@ -73,7 +73,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.create(new CreateTierRequest("PLATA", 1500)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A tier named PLATA already exists");
+                .hasMessage("Ya existe un tier llamado PLATA");
         verify(tierRepository, never()).save(any());
     }
 
@@ -83,7 +83,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.create(new CreateTierRequest("Otro", 1000)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A tier with 1000 points already exists");
+                .hasMessage("Ya existe un tier con 1000 puntos");
         verify(tierRepository, never()).save(any());
     }
 
@@ -109,7 +109,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.update(plataId, new CreateTierRequest(" oro ", 1000)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A tier named oro already exists");
+                .hasMessage("Ya existe un tier llamado oro");
         verify(tierRepository, never()).save(any());
     }
 
@@ -121,7 +121,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.update(plataId, new CreateTierRequest("PLATA", 3000)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A tier with 3000 points already exists");
+                .hasMessage("Ya existe un tier con 3000 puntos");
         verify(tierRepository, never()).save(any());
     }
 
@@ -145,7 +145,7 @@ class TierServiceTest {
 
         assertThatThrownBy(() -> service.update(baseId, new CreateTierRequest("BRONCE", 500)))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessage("The base tier must keep 0 points");
+                .hasMessage("El tier base debe mantener 0 puntos");
         assertThat(base.getMinPoints()).isZero();
         verify(tierRepository, never()).save(any());
     }

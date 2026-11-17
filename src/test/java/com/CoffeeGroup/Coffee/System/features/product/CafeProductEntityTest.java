@@ -42,7 +42,7 @@ class CafeProductEntityTest {
 
         assertThatThrownBy(() -> capuccino.ensureCanBeSoldBy(central))
                 .isInstanceOf(ProductNotAvailableException.class)
-                .hasMessage("Product Capuccino is not available");
+                .hasMessage("El producto Capuccino no está disponible");
     }
 
     @Test
@@ -51,7 +51,7 @@ class CafeProductEntityTest {
 
         assertThatThrownBy(() -> capuccino.ensureCanBeSoldBy(central))
                 .isInstanceOf(ProductNotAvailableException.class)
-                .hasMessage("Product Capuccino is sold out for today");
+                .hasMessage("El producto Capuccino está agotado por hoy");
     }
 
     @Test

@@ -24,7 +24,7 @@ public class BenefitRules {
     public BenefitRule ruleFor(BenefitEntity benefit) {
         BenefitRule rule = rulesByType.get(benefit.type());
         if (rule == null) {
-            throw new BusinessRuleException("The benefit type " + benefit.type() + " cannot be applied");
+            throw new BusinessRuleException("El tipo de beneficio " + benefit.type() + " no se puede aplicar");
         }
         return rule;
     }

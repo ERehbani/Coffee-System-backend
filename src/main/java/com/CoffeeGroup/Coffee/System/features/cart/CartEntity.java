@@ -74,7 +74,7 @@ public class CartEntity extends AuditableEntity {
 
     public void ensureNotEmpty() {
         if (items.isEmpty()) {
-            throw new CartHasNoProductsException("Cart cannot be empty");
+            throw new CartHasNoProductsException("El carrito no puede estar vacío");
         }
     }
 

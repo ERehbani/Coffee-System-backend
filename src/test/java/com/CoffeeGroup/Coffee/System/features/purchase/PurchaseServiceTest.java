@@ -166,7 +166,7 @@ class PurchaseServiceTest {
 
         assertThatThrownBy(() -> service.create(new CreatePurchaseRequest(cart.getExternalId(), "code")))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessage("This code does not belong to this cafe");
+                .hasMessage("Este código no pertenece a esta cafetería");
     }
 
     @Test

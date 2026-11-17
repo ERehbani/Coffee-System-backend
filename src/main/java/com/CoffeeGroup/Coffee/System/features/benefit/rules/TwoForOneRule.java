@@ -31,7 +31,7 @@ public class TwoForOneRule implements BenefitRule {
         Predicate<CafeProductEntity> target = ProductTargetRules.targetOf(benefit);
         int freeUnits = draft.unitsOf(target) / 2;
         if (freeUnits == 0) {
-            throw new BusinessRuleException("The 2x1 needs at least two units of the product in the cart");
+            throw new BusinessRuleException("El 2x1 necesita al menos dos unidades del producto en el carrito");
         }
         BigDecimal unitPrice = draft.details().stream()
                 .map(PurchaseDetailEntity::getProduct)

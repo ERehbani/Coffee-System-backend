@@ -52,10 +52,10 @@ public class RedemptionService implements IRedemptionService {
         benefit.ensureRedeemableBy(client, LocalDate.now(clock));
         ensureClientLimit(client, benefit);
         if (!client.canAfford(benefit.getPointsCost())) {
-            throw new InsufficientPointsException("Client does not have enough points");
+            throw new InsufficientPointsException("El cliente no tiene puntos suficientes");
         }
         if (benefitRepository.consumeRedemption(benefit.getId()) == 0) {
-            throw new BenefitSoldOutException("Benefit is sold out");
+            throw new BenefitSoldOutException("El beneficio está agotado");
         }
         client.spendPoints(benefit.getPointsCost());
 
@@ -76,7 +76,7 @@ public class RedemptionService implements IRedemptionService {
     @Override
     public RedemptionResponse getById(UUID externalId) {
         RedemptionEntity redemption = redemptionRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Canje no encontrado"));
         if (!securityUtils.isAdmin() && !redemption.belongsTo(securityUtils.currentClient())) {
             throw new AccessDeniedException("Solo puedes ver tus propios canjes");
         }
@@ -120,19 +120,19 @@ public class RedemptionService implements IRedemptionService {
         long redemptionsOfClient = redemptionRepository.countByClientAndBenefitAndStatusNot(
                 client, benefit, RedemptionStatus.CANCELLED);
         if (benefit.reachedClientLimit(redemptionsOfClient)) {
-            throw new BusinessRuleException("You already used this benefit the maximum number of times");
+            throw new BusinessRuleException("Ya usaste este beneficio el máximo de veces permitido");
         }
     }
 
     private RedemptionEntity redemptionHandledByCurrentUser(String validationCode) {
         RedemptionEntity redemption = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Canje no encontrado"));
         if (securityUtils.isAdmin()) {
             return redemption;
         }
         CafeEntity validatingCafe = securityUtils.currentCafe();
         if (!redemption.getBenefit().isUsableAt(validatingCafe)) {
-            throw new AccessDeniedException("This redemption does not belong to your cafe");
+            throw new AccessDeniedException("Este canje no pertenece a tu cafetería");
         }
         return redemption;
     }
@@ -140,7 +140,7 @@ public class RedemptionService implements IRedemptionService {
     private static void ensureProductCanBeDelivered(BenefitEntity benefit) {
         if (!benefit.isProductAvailable()) {
             throw new ProductNotAvailableException(
-                    "The product of this benefit is sold out for today, cancel the redemption to give the points back");
+                    "El producto de este beneficio está agotado por hoy, cancela el canje para devolver los puntos");
         }
     }
 }

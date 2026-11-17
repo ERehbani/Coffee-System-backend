@@ -72,7 +72,7 @@ public class ClientEntity extends AuditableEntity {
 
     public void spendPoints(int points) {
         if (!canAfford(points)) {
-            throw new InsufficientPointsException("Client does not have enough points");
+            throw new InsufficientPointsException("El cliente no tiene puntos suficientes");
         }
         currentPoints -= points;
     }

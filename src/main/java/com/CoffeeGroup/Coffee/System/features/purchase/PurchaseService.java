@@ -148,17 +148,17 @@ public class PurchaseService implements IPurchaseService {
             return null;
         }
         RedemptionEntity coupon = redemptionRepository.findByValidationCode(validationCode)
-                .orElseThrow(() -> new EntityNotFoundException("Invalid code"));
+                .orElseThrow(() -> new EntityNotFoundException("Código inválido"));
         if (!coupon.belongsTo(client)) {
-            throw new AccessDeniedException("This code belongs to another client");
+            throw new AccessDeniedException("Este código pertenece a otro cliente");
         }
         coupon.ensureUsableOn(LocalDate.now(clock));
         if (!coupon.isActive()) {
-            throw new BusinessRuleException("Code already used");
+            throw new BusinessRuleException("El código ya fue usado");
         }
         BenefitEntity benefit = coupon.getBenefit();
         if (!benefit.isUsableAt(draft.cafe())) {
-            throw new BusinessRuleException("This code does not belong to this cafe");
+            throw new BusinessRuleException("Este código no pertenece a esta cafetería");
         }
         benefitRules.ruleFor(benefit).apply(benefit, draft);
         coupon.markUsed(LocalDateTime.now(clock));

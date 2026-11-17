@@ -73,7 +73,7 @@ public class RedemptionEntity extends AuditableEntity {
 
     public void ensureUsableOn(LocalDate today) {
         if (status == RedemptionStatus.EXPIRED || benefit.hasEndedBy(today)) {
-            throw new BusinessRuleException("Code has expired");
+            throw new BusinessRuleException("El código está vencido");
         }
     }
 
@@ -102,7 +102,7 @@ public class RedemptionEntity extends AuditableEntity {
     private void moveTo(RedemptionStatus next) {
         if (!status.canTransitionTo(next)) {
             throw new InvalidStatusTransitionException(
-                    "A redemption cannot go from " + status + " to " + next);
+                    "Un canje no puede pasar de " + status + " a " + next);
         }
         status = next;
     }
