@@ -16,7 +16,7 @@ public record UpdateProductRequest(
         String name,
 
         @Size(min = 5, max = 100, message = "The description must be between 5 and 100 characters long")
-        @Pattern(regexp = "^[\\p{L}\\d\\s]+$", message = "The description can only contain letters and numbers.")
+        @Pattern(regexp = "^[\\p{L}\\d\\s.,]+$", message = "The description can only contain letters, numbers, dots and commas.")
         @Pattern(regexp = ".*\\S.*", message = "The description must not be blank")
         String description,
 
