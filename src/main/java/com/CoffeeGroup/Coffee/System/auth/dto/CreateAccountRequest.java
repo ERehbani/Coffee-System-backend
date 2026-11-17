@@ -6,18 +6,18 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateAccountRequest(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email")
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email no es válido")
         String email,
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "The password must be at least 6 characters long")
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-                message = "The password must contain at least one uppercase letter, one lowercase letter, and one number"
+                message = "La contraseña debe tener al menos una mayúscula, una minúscula y un número"
         )
         String password,
-        @NotBlank(message = "Name is required")
+        @NotBlank(message = "El nombre es obligatorio")
         String name
 
 ) {

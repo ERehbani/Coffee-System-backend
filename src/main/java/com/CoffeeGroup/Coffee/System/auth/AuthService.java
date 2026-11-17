@@ -24,6 +24,6 @@ public class AuthService {
                 )
         );
         return credentialsRepository.findByUsername(input.email())
-                        .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
     }
 }

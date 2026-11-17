@@ -42,20 +42,20 @@ public class ReviewService implements IReviewService {
     public ReviewResponse create(ReviewCreateRequest request) {
         ClientEntity client = securityUtils.currentClient();
         CafeEntity cafe = cafeRepository.findByExternalId(request.cafeId())
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"));
         PurchaseEntity purchase = purchaseRepository.findByExternalId(request.purchaseId())
-                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Compra no encontrada"));
         if (!purchase.belongsTo(client)) {
-            throw new AccessDeniedException("You can only review your own purchases");
+            throw new AccessDeniedException("Solo puedes reseñar tus propias compras");
         }
         if (!purchase.isFrom(cafe)) {
-            throw new BusinessRuleException("The purchase does not belong to this cafe");
+            throw new BusinessRuleException("La compra no pertenece a esta cafetería");
         }
         if (purchase.getStatus().isCancellation()) {
-            throw new BusinessRuleException("Cancelled or refunded purchases cannot be reviewed");
+            throw new BusinessRuleException("No se pueden reseñar las compras canceladas o reembolsadas");
         }
         if (reviewRepository.existsByPurchaseExternalId(purchase.getExternalId())) {
-            throw new EntityAlreadyExistsException("This purchase already has a review");
+            throw new EntityAlreadyExistsException("Esta compra ya tiene una reseña");
         }
         ReviewEntity review = ReviewEntity.builder()
                 .message(request.message())
@@ -101,13 +101,13 @@ public class ReviewService implements IReviewService {
     private ReviewEntity reviewOfCurrentUser(UUID externalId) {
         ReviewEntity review = findReview(externalId);
         if (!securityUtils.isAdmin() && !review.isWrittenBy(securityUtils.currentClient())) {
-            throw new AccessDeniedException("You can only change your own reviews");
+            throw new AccessDeniedException("Solo puedes modificar tus propias reseñas");
         }
         return review;
     }
 
     private ReviewEntity findReview(UUID externalId) {
         return reviewRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Review not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Reseña no encontrada"));
     }
 }

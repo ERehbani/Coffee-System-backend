@@ -7,14 +7,14 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 public record ReviewCreateRequest(
-        @NotNull(message = "the cafe not found")
+        @NotNull(message = "No se encontró la cafetería")
         UUID cafeId,
-        @NotNull(message = "the purchase not found")
+        @NotNull(message = "No se encontró la compra")
         UUID purchaseId,
-        @NotNull(message = "the rating is null")
-        @Min(value = 1, message = "the rating must be between 1 and 5")
-        @Max(value = 5, message = "the rating must be between 1 and 5")
+        @NotNull(message = "La calificación es obligatoria")
+        @Min(value = 1, message = "La calificación debe estar entre 1 y 5")
+        @Max(value = 5, message = "La calificación debe estar entre 1 y 5")
         Integer rating,
-        @NotNull(message = "the message is null")
+        @NotNull(message = "El mensaje es obligatorio")
         String message
 ) {}

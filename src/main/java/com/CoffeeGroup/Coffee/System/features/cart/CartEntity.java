@@ -92,6 +92,6 @@ public class CartEntity extends AuditableEntity {
 
     private CartItemEntity requireItem(UUID productExternalId) {
         return findItem(productExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in cart"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado en el carrito"));
     }
 }

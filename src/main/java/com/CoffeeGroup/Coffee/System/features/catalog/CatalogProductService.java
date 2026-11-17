@@ -53,7 +53,7 @@ public class CatalogProductService implements ICatalogProductService {
         CatalogProductEntity product = findProduct(externalId);
         String name = normalizeName(request.name());
         if (catalogProductRepository.existsByNameIgnoreCaseAndExternalIdNot(name, externalId)) {
-            throw new EntityAlreadyExistsException("A catalog product named " + name + " already exists");
+            throw new EntityAlreadyExistsException("Ya existe un producto del catálogo llamado " + name);
         }
         product.setName(name);
         product.setDescription(request.description());
@@ -86,7 +86,7 @@ public class CatalogProductService implements ICatalogProductService {
     public CatalogProductEntity findActive(UUID externalId) {
         CatalogProductEntity product = findProduct(externalId);
         if (!product.isActive()) {
-            throw new EntityNotFoundException("Catalog product not found");
+            throw new EntityNotFoundException("Producto del catálogo no encontrado");
         }
         return product;
     }
@@ -98,11 +98,11 @@ public class CatalogProductService implements ICatalogProductService {
 
     private CatalogProductEntity findProduct(UUID externalId) {
         return catalogProductRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Catalog product not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto del catálogo no encontrado"));
     }
 
     private CategoryEntity findCategory(UUID categoryExternalId) {
         return categoryRepository.findByExternalId(categoryExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
     }
 }

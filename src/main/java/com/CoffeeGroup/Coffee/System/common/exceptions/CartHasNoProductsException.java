@@ -15,6 +15,6 @@ public class CartHasNoProductsException extends DomainException {
 
     @Override
     public String title() {
-        return "Empty cart";
+        return "Carrito vacío";
     }
 }

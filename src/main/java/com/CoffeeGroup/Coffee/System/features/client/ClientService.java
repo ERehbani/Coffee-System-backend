@@ -33,7 +33,7 @@ public class ClientService implements IClientService {
     @Transactional
     public ClientEntity create(String name, UserEntity user) {
         TierEntity initialTier = tierRepository.findByMinPoints(0)
-                .orElseThrow(() -> new EntityNotFoundException("Initial tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier inicial no encontrado"));
         ClientEntity client = ClientEntity.builder().name(name).tier(initialTier).user(user).build();
         clientRepository.save(client);
         return client;
@@ -82,13 +82,13 @@ public class ClientService implements IClientService {
     private ClientEntity accessibleClient(UUID externalId) {
         ClientEntity client = findClient(externalId);
         if (!securityUtils.isAdmin() && !client.isSameAs(securityUtils.currentClient())) {
-            throw new AccessDeniedException("You can only access your own client data");
+            throw new AccessDeniedException("Solo puedes acceder a tus propios datos de cliente");
         }
         return client;
     }
 
     private ClientEntity findClient(UUID externalId) {
         return clientRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
     }
 }

@@ -147,7 +147,7 @@ class BenefitFormatServiceTest {
 
         assertThatThrownBy(() -> service.update(formatId, new UpdateBenefitFormatRequest("2x1", "x", true)))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("Benefit format not found");
+                .hasMessage("Tipo de beneficio no encontrado");
         verify(repository, never()).save(any());
     }
 

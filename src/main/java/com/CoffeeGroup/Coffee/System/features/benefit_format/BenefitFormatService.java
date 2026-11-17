@@ -59,7 +59,7 @@ public class BenefitFormatService implements IBenefitFormatService {
     @Transactional
     public BenefitFormatResponse update(UUID externalId, UpdateBenefitFormatRequest request) {
         BenefitFormatEntity format = formatRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit format not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tipo de beneficio no encontrado"));
         String displayName = request.displayName().trim();
         if (formatRepository.existsByDisplayNameIgnoreCaseAndExternalIdNot(displayName, externalId)) {
             throw new EntityAlreadyExistsException(duplicateName(displayName));

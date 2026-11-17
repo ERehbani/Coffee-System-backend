@@ -47,7 +47,7 @@ public class RedemptionService implements IRedemptionService {
     public RedemptionResponse create(RedemptionCreateRequest request) {
         ClientEntity client = securityUtils.currentClient();
         BenefitEntity benefit = benefitRepository.findByExternalId(request.benefitId())
-                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Beneficio no encontrado"));
 
         benefit.ensureRedeemableBy(client, LocalDate.now(clock));
         ensureClientLimit(client, benefit);
@@ -78,7 +78,7 @@ public class RedemptionService implements IRedemptionService {
         RedemptionEntity redemption = redemptionRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new EntityNotFoundException("Redemption not found"));
         if (!securityUtils.isAdmin() && !redemption.belongsTo(securityUtils.currentClient())) {
-            throw new AccessDeniedException("You can only view your own redemptions");
+            throw new AccessDeniedException("Solo puedes ver tus propios canjes");
         }
         return redemptionMapper.toResponse(redemption);
     }
@@ -107,7 +107,7 @@ public class RedemptionService implements IRedemptionService {
     @Override
     public List<RedemptionResponse> getAllByClient(UUID clientExternalId) {
         ClientEntity client = clientRepository.findByExternalId(clientExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
         return redemptionRepository.findAll(RedemptionSpecifications.ofClient(client)).stream()
                 .map(redemptionMapper::toResponse)
                 .toList();

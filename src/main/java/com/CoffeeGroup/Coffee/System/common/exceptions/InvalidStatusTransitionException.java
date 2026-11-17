@@ -15,6 +15,6 @@ public class InvalidStatusTransitionException extends DomainException {
 
     @Override
     public String title() {
-        return "Invalid status transition";
+        return "Transición de estado inválida";
     }
 }

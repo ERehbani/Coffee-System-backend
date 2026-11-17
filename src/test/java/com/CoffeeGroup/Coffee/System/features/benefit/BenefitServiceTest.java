@@ -135,14 +135,14 @@ class BenefitServiceTest {
 
         assertThatThrownBy(() -> service.save(request(BenefitType.CODIGO_DESCUENTO, BigDecimal.TEN, null)))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessage("The benefit format CODIGO_DESCUENTO is not enabled");
+                .hasMessage("El tipo de beneficio CODIGO_DESCUENTO no está habilitado");
     }
 
     @Test
     void aGlobalBenefitCannotPointToTheProductOfACafe() {
         assertThatThrownBy(() -> service.save(request(BenefitType.PRODUCTO_POR_PUNTOS, null, capuccino.getExternalId())))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessageContaining("catalog product");
+                .hasMessageContaining("producto del catálogo");
     }
 
     @Test
@@ -187,6 +187,6 @@ class BenefitServiceTest {
 
         assertThatThrownBy(() -> service.update(benefit.getExternalId(), update))
                 .isInstanceOf(BusinessRuleException.class)
-                .hasMessage("The limit cannot be lower than the redemptions already made");
+                .hasMessage("El límite no puede ser menor que los canjes ya realizados");
     }
 }

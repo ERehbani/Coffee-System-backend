@@ -145,12 +145,12 @@ class BenefitFormatControllerValidationTest {
     @Test
     void anUnknownFormatOnPutAnswersNotFoundWithTheProblemDetail() throws Exception {
         when(service.update(eq(externalId), any(UpdateBenefitFormatRequest.class)))
-                .thenThrow(new EntityNotFoundException("Benefit format not found"));
+                .thenThrow(new EntityNotFoundException("Tipo de beneficio no encontrado"));
 
         mockMvc.perform(put("/benefit-formats/" + externalId).contentType(MediaType.APPLICATION_JSON)
                         .content(updateBody("2x1", "Dos por uno", true)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.detail").value("Benefit format not found"));
+                .andExpect(jsonPath("$.detail").value("Tipo de beneficio no encontrado"));
     }
 
     @Test

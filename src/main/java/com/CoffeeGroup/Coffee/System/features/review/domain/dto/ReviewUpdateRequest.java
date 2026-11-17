@@ -5,7 +5,7 @@ import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 
 public record ReviewUpdateRequest(
-        @NotNull(message = "The review not found") UUID externalId,
+        @NotNull(message = "No se encontró la reseña") UUID externalId,
         String message
 
 ) {

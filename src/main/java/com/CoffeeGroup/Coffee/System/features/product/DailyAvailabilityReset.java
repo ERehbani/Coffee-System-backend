@@ -18,6 +18,6 @@ public class DailyAvailabilityReset {
     @Transactional
     public void makeEverythingAvailableAgain() {
         int reset = cafeProductRepository.markEverythingAvailable();
-        log.info("Daily reset: {} products marked as available again", reset);
+        log.info("Reinicio diario: {} productos marcados como disponibles otra vez", reset);
     }
 }

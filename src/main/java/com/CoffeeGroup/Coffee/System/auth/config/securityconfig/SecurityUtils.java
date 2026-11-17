@@ -61,7 +61,7 @@ public class SecurityUtils {
     private Authentication authentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
-            throw new AccessDeniedException("No authenticated user");
+            throw new AccessDeniedException("No hay un usuario autenticado");
         }
         return authentication;
     }

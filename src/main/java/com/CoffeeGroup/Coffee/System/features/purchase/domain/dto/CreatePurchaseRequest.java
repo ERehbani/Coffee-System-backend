@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreatePurchaseRequest(
-        @NotNull(message = "Cart ID is required")
+        @NotNull(message = "El ID del carrito es obligatorio")
         UUID cartId,
 
         String validationCode

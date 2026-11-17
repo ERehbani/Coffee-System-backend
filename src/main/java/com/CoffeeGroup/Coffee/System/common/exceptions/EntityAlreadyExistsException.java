@@ -15,6 +15,6 @@ public class EntityAlreadyExistsException extends DomainException {
 
     @Override
     public String title() {
-        return "Resource already exists";
+        return "El recurso ya existe";
     }
 }

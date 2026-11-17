@@ -15,6 +15,6 @@ public class EntityNotFoundException extends DomainException {
 
     @Override
     public String title() {
-        return "Resource not found";
+        return "Recurso no encontrado";
     }
 }

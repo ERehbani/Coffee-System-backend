@@ -82,7 +82,7 @@ public class CafeService implements ICafeService {
     @Transactional
     public void delete(UUID externalId) {
         cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"))
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"))
                 .deactivate();
     }
 

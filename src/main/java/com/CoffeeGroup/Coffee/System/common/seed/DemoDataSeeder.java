@@ -84,7 +84,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         CafeProductEntity northMedialuna = sell(north, "Medialuna", "Pasteleria", "Medialuna de manteca", "900", 50);
 
         TierEntity base = tierRepository.findByMinPoints(0)
-                .orElseThrow(() -> new EntityNotFoundException("Base tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier base no encontrado"));
         BenefitEntity welcome = benefit("Descuento 15% bienvenida", "Descuento de bienvenida para socios", 500,
                 BenefitType.CODIGO_DESCUENTO, base, null);
         welcome.setDiscountPercentage(BigDecimal.valueOf(15));
@@ -103,7 +103,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         var account = userService.saveCafe(new CreateCafeAccountRequest(email, DEMO_PASSWORD_CAFE, name, address,
                 description, phone));
         return cafeRepository.findByExternalId(account.externalId())
-                .orElseThrow(() -> new EntityNotFoundException("Demo cafe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería de demostración no encontrada"));
     }
 
     private void completeProfile(CafeEntity cafe, List<OpeningHours> hours) {
@@ -121,7 +121,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             int points) {
         CatalogProductEntity catalogProduct = catalogProductService.findOrCreate(new CatalogProductRequest(
                 name, description, null, categoryRepository.findByName(category)
-                        .orElseThrow(() -> new EntityNotFoundException("Category " + category + " not found"))
+                        .orElseThrow(() -> new EntityNotFoundException("Categoría " + category + " no encontrada"))
                         .getExternalId()), cafe);
         return cafeProductRepository.save(CafeProductEntity.builder()
                 .cafe(cafe)
@@ -144,7 +144,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .isPublic(true)
                 .maxRedemptions(100)
                 .format(benefitFormatRepository.findByCode(type)
-                        .orElseThrow(() -> new EntityNotFoundException("Format " + type + " not found")))
+                        .orElseThrow(() -> new EntityNotFoundException("Formato " + type + " no encontrado")))
                 .tier(tier)
                 .cafe(cafe)
                 .build();

@@ -28,36 +28,36 @@ public class GlobalExceptionHandler {
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             errors.putIfAbsent(error.getField(), error.getDefaultMessage());
         }
-        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "Validation failed", "The request has invalid fields");
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "Error de validación", "La solicitud tiene campos inválidos");
         problem.setProperty("errors", errors);
         return problem;
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ProblemDetail handleInvalidParameters(HandlerMethodValidationException ex) {
-        return problem(HttpStatus.BAD_REQUEST, "Validation failed", ex.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "Error de validación", ex.getMessage());
     }
 
     @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public ProblemDetail handleBadRequest(RuntimeException ex) {
-        return problem(HttpStatus.BAD_REQUEST, "Bad request", ex.getMessage());
+        return problem(HttpStatus.BAD_REQUEST, "Solicitud incorrecta", ex.getMessage());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ProblemDetail handleIntegrity(DataIntegrityViolationException ex) {
-        return problem(HttpStatus.CONFLICT, "Data conflict",
-                "The operation conflicts with existing data (duplicated value or a record still in use)");
+        return problem(HttpStatus.CONFLICT, "Conflicto de datos",
+                "La operación entra en conflicto con datos existentes (valor duplicado o registro en uso)");
     }
 
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ProblemDetail handleConcurrentUpdate(ObjectOptimisticLockingFailureException ex) {
-        return problem(HttpStatus.CONFLICT, "Concurrent update",
-                "The resource was modified by another request, try again");
+        return problem(HttpStatus.CONFLICT, "Actualización concurrente",
+                "El recurso fue modificado por otra solicitud, inténtalo de nuevo");
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ProblemDetail handleAccessDenied(AccessDeniedException ex) {
-        return problem(HttpStatus.FORBIDDEN, "Access denied", ex.getMessage());
+        return problem(HttpStatus.FORBIDDEN, "Acceso denegado", ex.getMessage());
     }
 
     private static ProblemDetail problem(HttpStatus status, String title, String detail) {

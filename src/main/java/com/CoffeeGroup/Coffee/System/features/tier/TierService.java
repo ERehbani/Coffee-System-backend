@@ -76,6 +76,6 @@ public class TierService implements ITierService {
 
     private TierEntity findTier(UUID externalId) {
         return tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
     }
 }

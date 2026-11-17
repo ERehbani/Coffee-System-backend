@@ -16,7 +16,7 @@ public record Email(String value) {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public Email(String value) {
         if (value == null || !EMAIL_PATTERN.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid email format: " + value);
+            throw new IllegalArgumentException("Formato de email inválido: " + value);
         }
         this.value = value;
     }

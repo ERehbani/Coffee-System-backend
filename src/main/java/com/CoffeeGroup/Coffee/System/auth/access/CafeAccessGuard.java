@@ -25,7 +25,7 @@ public class CafeAccessGuard {
         }
         CafeEntity ownCafe = securityUtils.currentCafe();
         if (!ownCafe.hasExternalId(cafeExternalId)) {
-            throw new AccessDeniedException("You can only manage your own cafe");
+            throw new AccessDeniedException("Solo puedes administrar tu propia cafetería");
         }
         return ownCafe;
     }
@@ -36,7 +36,7 @@ public class CafeAccessGuard {
         }
         CafeEntity cafe = findCafe(cafeExternalId);
         if (!securityUtils.isAdmin() && !cafe.isActive()) {
-            throw new EntityNotFoundException("Cafe not found");
+            throw new EntityNotFoundException("Cafetería no encontrada");
         }
         return cafe;
     }
@@ -46,7 +46,7 @@ public class CafeAccessGuard {
             return;
         }
         if (owner == null || !owner.isSameAs(securityUtils.currentCafe())) {
-            throw new AccessDeniedException("You can only manage resources of your own cafe");
+            throw new AccessDeniedException("Solo puedes administrar los recursos de tu propia cafetería");
         }
     }
 
@@ -56,6 +56,6 @@ public class CafeAccessGuard {
 
     private CafeEntity findCafe(UUID cafeExternalId) {
         return cafeRepository.findByExternalId(cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"));
     }
 }

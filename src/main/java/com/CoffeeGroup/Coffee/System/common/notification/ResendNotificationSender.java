@@ -32,9 +32,9 @@ public class ResendNotificationSender implements NotificationSender {
                 .build();
         try {
             CreateEmailResponse response = resend.emails().send(email);
-            log.info("Email '{}' sent with id {}", subject, response.getId());
+            log.info("Email '{}' enviado con id {}", subject, response.getId());
         } catch (ResendException e) {
-            log.error("Could not send the email '{}'", subject, e);
+            log.error("No se pudo enviar el email '{}'", subject, e);
         }
     }
 }

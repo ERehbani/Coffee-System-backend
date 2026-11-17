@@ -70,7 +70,7 @@ public class CafeProductService implements ICafeProductService {
             cafeAccessGuard.assertCanManage(product.getCafe());
         }
         if (securityUtils.isClient() && !product.isActive()) {
-            throw new AccessDeniedException("Access denied: Product is not active");
+            throw new AccessDeniedException("Acceso denegado: el producto no está activo");
         }
         return cafeProductMapper.toResponse(product);
     }
@@ -139,7 +139,7 @@ public class CafeProductService implements ICafeProductService {
 
     private void ensureNotSoldYet(CafeEntity cafe, CatalogProductEntity catalogProduct) {
         if (cafeProductRepository.existsByCafeAndCatalogProductAndActiveTrue(cafe, catalogProduct)) {
-            throw new EntityAlreadyExistsException("The cafe already sells " + catalogProduct.getName());
+            throw new EntityAlreadyExistsException("La cafetería ya vende " + catalogProduct.getName());
         }
     }
 
@@ -165,7 +165,7 @@ public class CafeProductService implements ICafeProductService {
             return catalogProductService.findActive(request.catalogProductId());
         }
         if (request.name() == null || request.name().isBlank() || request.categoryId() == null) {
-            throw new BusinessRuleException("Choose a catalog product or send the name and category of a new one");
+            throw new BusinessRuleException("Elige un producto del catálogo o envía el nombre y la categoría de uno nuevo");
         }
         return catalogProductService.findOrCreate(
                 new CatalogProductRequest(request.name(), request.description(), request.image(), request.categoryId()),
@@ -180,6 +180,6 @@ public class CafeProductService implements ICafeProductService {
 
     private CafeProductEntity findProduct(UUID productExternalId) {
         return cafeProductRepository.findByExternalId(productExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
     }
 }

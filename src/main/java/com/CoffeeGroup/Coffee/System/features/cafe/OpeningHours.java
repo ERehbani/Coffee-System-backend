@@ -39,7 +39,7 @@ public class OpeningHours {
 
     public static OpeningHours of(DayOfWeek day, LocalTime opensAt, LocalTime closesAt) {
         if (!opensAt.isBefore(closesAt)) {
-            throw new BusinessRuleException("The cafe must open before it closes on " + day);
+            throw new BusinessRuleException("La cafetería debe abrir antes de cerrar el día " + day);
         }
         return new OpeningHours(day, opensAt, closesAt);
     }

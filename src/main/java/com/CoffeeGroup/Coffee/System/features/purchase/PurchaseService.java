@@ -61,9 +61,9 @@ public class PurchaseService implements IPurchaseService {
     public PurchaseResponse create(CreatePurchaseRequest request) {
         ClientEntity client = securityUtils.currentClient();
         CartEntity cart = cartRepository.findByExternalId(request.cartId())
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Carrito no encontrado"));
         if (!cart.belongsTo(client)) {
-            throw new AccessDeniedException("Access denied: You can only create purchases from your own cart");
+            throw new AccessDeniedException("Acceso denegado: solo puedes crear compras desde tu propio carrito");
         }
 
         PurchaseDraft draft = PurchaseDraft.from(cart);
@@ -102,7 +102,7 @@ public class PurchaseService implements IPurchaseService {
     public PurchaseResponse getById(UUID externalId) {
         PurchaseEntity purchase = findPurchase(externalId);
         if (securityUtils.isClient() && !purchase.belongsTo(securityUtils.currentClient())) {
-            throw new AccessDeniedException("You can only view your own purchases");
+            throw new AccessDeniedException("Solo puedes ver tus propias compras");
         }
         if (securityUtils.isCafe()) {
             cafeAccessGuard.assertCanManage(purchase.getCafe());
@@ -131,9 +131,9 @@ public class PurchaseService implements IPurchaseService {
     @Override
     public PageResponse<PurchaseResponse> getHistoryByClient(UUID clientId, Pageable pageable) {
         ClientEntity client = clientRepository.findByExternalId(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
         if (!securityUtils.isAdmin() && !client.isSameAs(securityUtils.currentClient())) {
-            throw new AccessDeniedException("You can only view your own purchase history");
+            throw new AccessDeniedException("Solo puedes ver tu propio historial de compras");
         }
         return search(null, client, PurchaseFilter.none(), pageable);
     }
@@ -190,6 +190,6 @@ public class PurchaseService implements IPurchaseService {
 
     private PurchaseEntity findPurchase(UUID externalId) {
         return purchaseRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Purchase not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Compra no encontrada"));
     }
 }

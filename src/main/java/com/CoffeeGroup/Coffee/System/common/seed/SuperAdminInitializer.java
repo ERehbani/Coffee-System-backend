@@ -50,7 +50,7 @@ public class SuperAdminInitializer implements ApplicationRunner {
                 .enabled(true)
                 .user(user)
                 .roles(Set.of(roleRepository.findByRole(Roles.ROLE_SUPERADMIN)
-                        .orElseThrow(() -> new EntityNotFoundException("Role ROLE_SUPERADMIN not found"))))
+                        .orElseThrow(() -> new EntityNotFoundException("Rol ROLE_SUPERADMIN no encontrado"))))
                 .build());
     }
 }

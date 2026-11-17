@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record UpdatePurchaseStatusRequest(
 
-        @NotNull(message = "Status is required")
+        @NotNull(message = "El estado es obligatorio")
         PurchaseStatus status
 ){
 
