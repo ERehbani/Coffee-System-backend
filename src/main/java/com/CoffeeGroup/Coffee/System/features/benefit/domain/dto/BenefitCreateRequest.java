@@ -42,7 +42,7 @@ public record BenefitCreateRequest(
         @NotNull(message = "El tipo es obligatorio")
         BenefitType type,
 
-        @DecimalMin(value = "0.01", message = "El descuento debe ser mayor que 0")
+        @DecimalMin(value = "0.01", message = "El descuento debe ser mayor o igual que 0,01")
         @DecimalMax(value = "100", message = "El descuento no puede ser mayor que 100")
         BigDecimal discountPercentage,
 

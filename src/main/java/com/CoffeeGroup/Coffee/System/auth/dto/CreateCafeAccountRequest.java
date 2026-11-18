@@ -26,7 +26,7 @@ public record CreateCafeAccountRequest(
         @Size(min = 5, max = 150, message = "La dirección debe tener entre 5 y 150 caracteres")
         String address,
 
-        @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+        @Size(max = 500, message = "La descripción puede tener hasta 500 caracteres")
         String description,
 
         @Pattern(

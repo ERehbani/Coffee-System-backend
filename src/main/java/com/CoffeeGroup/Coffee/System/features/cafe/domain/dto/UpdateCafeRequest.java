@@ -14,13 +14,13 @@ public record UpdateCafeRequest(
         @Pattern(regexp = "^\\d{10}$", message = "El teléfono debe tener 10 dígitos")
         String phoneNumber,
 
-        @Size(max = 500, message = "La descripción no puede superar los 500 caracteres")
+        @Size(max = 500, message = "La descripción puede tener hasta 500 caracteres")
         String description,
 
-        @Size(max = 500, message = "El logo no puede superar los 500 caracteres")
+        @Size(max = 500, message = "El logo puede tener hasta 500 caracteres")
         String logo,
 
-        @Size(max = 500, message = "La imagen no puede superar los 500 caracteres")
+        @Size(max = 500, message = "La imagen puede tener hasta 500 caracteres")
         String image,
 
         List<@Valid OpeningHoursRequest> openingHours

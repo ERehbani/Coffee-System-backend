@@ -20,12 +20,12 @@ public record UpdateProductRequest(
         @Pattern(regexp = ".*\\S.*", message = "La descripción no puede estar vacía")
         String description,
 
-        @Min(value = 500, message = "El precio debe ser mayor que 500")
-        @Max(value = 50000, message = "El precio debe ser menor que 50000")
+        @Min(value = 500, message = "El precio debe ser mayor o igual que 500")
+        @Max(value = 50000, message = "El precio debe ser menor o igual que 50000")
         BigDecimal price,
 
-        @Min(value = 50, message = "Los puntos otorgados deben ser mayores que 50")
-        @Max(value = 3000, message = "Los puntos otorgados deben ser menores que 3000")
+        @Min(value = 50, message = "Los puntos otorgados deben ser mayores o iguales que 50")
+        @Max(value = 3000, message = "Los puntos otorgados deben ser menores o iguales que 3000")
         Integer awardedPoints,
 
         @Size(max = 500, message = "La imagen puede tener hasta 500 caracteres")
