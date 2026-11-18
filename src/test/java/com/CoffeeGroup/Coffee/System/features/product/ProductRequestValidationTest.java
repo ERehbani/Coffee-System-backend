@@ -102,8 +102,16 @@ class ProductRequestValidationTest {
     }
 
     @Test
-    void nullAwardedPointsIsInvalid() {
+    void nullAwardedPointsIsValidBecauseTheSuggestedPointsAreUsed() {
         ProductRequest request = request("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), null,
+                UUID.randomUUID(), null);
+
+        assertThat(validator.validate(request)).isEmpty();
+    }
+
+    @Test
+    void zeroAwardedPointsIsInvalid() {
+        ProductRequest request = request("Cappuccino", "Hot drink 12oz", new BigDecimal("1500"), 0,
                 UUID.randomUUID(), null);
 
         assertThat(invalidProperties(request)).containsExactly("awardedPoints");

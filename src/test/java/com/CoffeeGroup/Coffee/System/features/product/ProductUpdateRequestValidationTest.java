@@ -69,7 +69,7 @@ class ProductUpdateRequestValidationTest {
 
     @Test
     void awardedPointsBelowMinimumIsInvalid() {
-        assertThat(invalidProperties(request(null, null, null, 10, null)))
+        assertThat(invalidProperties(request(null, null, null, 0, null)))
                 .containsExactly("awardedPoints");
     }
 

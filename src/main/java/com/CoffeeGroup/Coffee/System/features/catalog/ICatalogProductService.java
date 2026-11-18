@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.catalog;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
@@ -22,4 +23,6 @@ public interface ICatalogProductService {
     CatalogProductEntity findOrCreate(CatalogProductRequest request, CafeEntity createdBy);
 
     CatalogProductEntity findActive(UUID externalId);
+
+    Optional<CatalogProductEntity> findByName(String name);
 }

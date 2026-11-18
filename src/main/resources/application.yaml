@@ -35,6 +35,9 @@ app:
       same-site: ${AUTH_COOKIE_SAME_SITE:Strict}
   demo-data:
     enabled: ${DEMO_DATA_ENABLED:false}
+  points:
+    pesos-per-point: ${POINTS_PESOS_PER_POINT:25}
+    max-deviation-percent: ${POINTS_MAX_DEVIATION_PERCENT:20}
   mail:
     from: ${MAIL_FROM:Coffee System <onboarding@resend.dev>}
   cloudinary:

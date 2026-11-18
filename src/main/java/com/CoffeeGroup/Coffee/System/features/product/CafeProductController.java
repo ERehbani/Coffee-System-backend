@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.CoffeeGroup.Coffee.System.common.web.PageResponse;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.AvailabilityRequest;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.PointsRangeResponse;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductFilter;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -53,6 +55,21 @@ public class CafeProductController {
             @PageableDefault(size = 20) Pageable pageable) {
         ProductFilter filter = new ProductFilter(name, categoryId, price, awardedPoints, available);
         return ResponseEntity.ok(cafeProductService.listByCafe(cafeId, filter, pageable));
+    }
+
+    @GetMapping("/points-range")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
+    @Operation(summary = "Points the cafe may award for a product at a price",
+            description = "Suggested points come from the average price of the product across every cafe that sells "
+                    + "it; the cafe can only move between the floor (min) and the cap (max)")
+    public ResponseEntity<PointsRangeResponse> pointsRange(
+            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
+            @Parameter(description = "Catalog product external ID, empty for a product new to the catalog")
+            @RequestParam(required = false) UUID catalogProductId,
+            @Parameter(description = "Product name, used to find it in the catalog when there is no catalogProductId")
+            @RequestParam(required = false) String name,
+            @Parameter(description = "Price the cafe is setting") @RequestParam @Positive BigDecimal price) {
+        return ResponseEntity.ok(cafeProductService.pointsRange(cafeId, catalogProductId, name, price));
     }
 
     @PostMapping

@@ -1,6 +1,7 @@
 package com.CoffeeGroup.Coffee.System.features.catalog;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -80,6 +81,14 @@ public class CatalogProductService implements ICatalogProductService {
                         .category(findCategory(request.categoryId()))
                         .createdByCafe(createdBy)
                         .build()));
+    }
+
+    @Override
+    public Optional<CatalogProductEntity> findByName(String name) {
+        if (name == null || name.isBlank()) {
+            return Optional.empty();
+        }
+        return catalogProductRepository.findByNameIgnoreCase(normalizeName(name));
     }
 
     @Override

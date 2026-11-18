@@ -55,11 +55,31 @@ class CafeProductServiceTest {
     @BeforeEach
     void setUp() {
         service = new CafeProductService(cafeProductRepository, new CafeProductMapper(), catalogProductService,
-                cafeAccessGuard, securityUtils);
+                cafeAccessGuard, securityUtils, new ProductPointsPolicy(cafeProductRepository, new BigDecimal("25"), 20));
     }
 
     private ProductRequest newProductNamed(String name, UUID categoryId) {
-        return new ProductRequest(null, name, categoryId, null, null, new BigDecimal("900"), 50, null, List.of("vegano"));
+        return new ProductRequest(null, name, categoryId, null, null, new BigDecimal("900"), null, null, List.of("vegano"));
+    }
+
+    private ProductRequest fromCatalog(String price, Integer points) {
+        return new ProductRequest(medialuna.getExternalId(), null, null, null, null, new BigDecimal(price), points, null,
+                null);
+    }
+
+    private void otherCafesSell(String totalPrice, long cafes) {
+        when(cafeProductRepository.priceStatsOfOtherCafes(eq(medialuna), any())).thenReturn(
+                new CafeProductRepository.PriceStats() {
+                    @Override
+                    public BigDecimal getTotal() {
+                        return new BigDecimal(totalPrice);
+                    }
+
+                    @Override
+                    public Long getCafes() {
+                        return cafes;
+                    }
+                });
     }
 
     @Test
@@ -67,6 +87,7 @@ class CafeProductServiceTest {
         UUID categoryId = UUID.randomUUID();
         when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
         when(catalogProductService.findOrCreate(any(CatalogProductRequest.class), eq(central))).thenReturn(medialuna);
+        otherCafesSell("0", 0);
 
         ProductResponse response = service.create(central.getExternalId(), newProductNamed("medialuna", categoryId));
 
@@ -153,6 +174,7 @@ class CafeProductServiceTest {
     void renamingSetsTheCustomNameOfTheCafe() {
         CafeProductEntity product = TestData.product(central, medialuna, "900", 50);
         when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        otherCafesSell("0", 0);
 
         ProductResponse response = service.update(product.getExternalId(),
                 new UpdateProductRequest("Medialuna de manteca", null, new BigDecimal("1000"), null, null, null));
@@ -160,5 +182,69 @@ class CafeProductServiceTest {
         assertThat(response.name()).isEqualTo("Medialuna de manteca");
         assertThat(response.price()).isEqualByComparingTo("1000");
         assertThat(product.getCatalogProduct()).isSameAs(medialuna);
+    }
+
+    @Test
+    void aProductWithoutPointsGetsTheSuggestedOnesFromTheAveragePriceOfEveryCafe() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(catalogProductService.findActive(medialuna.getExternalId())).thenReturn(medialuna);
+        otherCafesSell("1100", 1);
+
+        service.create(central.getExternalId(), fromCatalog("900", null));
+
+        ArgumentCaptor<CafeProductEntity> saved = ArgumentCaptor.forClass(CafeProductEntity.class);
+        verify(cafeProductRepository).save(saved.capture());
+        assertThat(saved.getValue().getAwardedPoints()).isEqualTo(40);
+    }
+
+    @Test
+    void pointsOutsideTheFloorAndTheCapAreRejected() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(catalogProductService.findActive(medialuna.getExternalId())).thenReturn(medialuna);
+        otherCafesSell("0", 0);
+
+        assertThatThrownBy(() -> service.create(central.getExternalId(), fromCatalog("1000", 100)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("Awarded points for this product must be between 32 and 48");
+        verify(cafeProductRepository, never()).save(any());
+    }
+
+    @Test
+    void changingOnlyThePriceMovesThePointsInsideTheNewRange() {
+        CafeProductEntity product = TestData.product(central, medialuna, "900", 36);
+        when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
+        otherCafesSell("0", 0);
+
+        ProductResponse response = service.update(product.getExternalId(),
+                new UpdateProductRequest(null, null, new BigDecimal("2000"), null, null, null));
+
+        assertThat(response.awardedPoints()).isEqualTo(64);
+    }
+
+    @Test
+    void theCafeAsksForThePointsRangeOfAProductAtAPrice() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(catalogProductService.findActive(medialuna.getExternalId())).thenReturn(medialuna);
+        otherCafesSell("3000", 2);
+
+        var range = service.pointsRange(central.getExternalId(), medialuna.getExternalId(), null,
+                new BigDecimal("1500"));
+
+        assertThat(range.suggested()).isEqualTo(60);
+        assertThat(range.min()).isEqualTo(48);
+        assertThat(range.max()).isEqualTo(72);
+        assertThat(range.cafesSelling()).isEqualTo(3);
+    }
+
+    @Test
+    void theRangeOfANewProductLooksForItInTheCatalogByName() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(catalogProductService.findByName("medialuna")).thenReturn(Optional.of(medialuna));
+        otherCafesSell("1100", 1);
+
+        var range = service.pointsRange(central.getExternalId(), null, "medialuna", new BigDecimal("900"));
+
+        assertThat(range.suggested()).isEqualTo(40);
+        assertThat(range.cafesSelling()).isEqualTo(2);
     }
 }

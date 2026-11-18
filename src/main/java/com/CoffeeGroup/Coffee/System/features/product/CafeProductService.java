@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.catalog.CatalogProductEntity;
 import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
 import com.CoffeeGroup.Coffee.System.features.catalog.domain.dto.CatalogProductRequest;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.PointsRangeResponse;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductFilter;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
@@ -38,6 +40,7 @@ public class CafeProductService implements ICafeProductService {
     private final ICatalogProductService catalogProductService;
     private final CafeAccessGuard cafeAccessGuard;
     private final SecurityUtils securityUtils;
+    private final ProductPointsPolicy pointsPolicy;
 
     @Override
     public PageResponse<ProductResponse> listByCafe(UUID cafeExternalId, ProductFilter filter, Pageable pageable) {
@@ -100,8 +103,12 @@ public class CafeProductService implements ICafeProductService {
         if (request.price() != null) {
             product.setPrice(request.price());
         }
-        if (request.awardedPoints() != null) {
-            product.setAwardedPoints(request.awardedPoints());
+        if (request.price() != null || request.awardedPoints() != null) {
+            PointsRangeResponse range = pointsPolicy.rangeFor(product.getCafe(), product.getCatalogProduct(),
+                    product.getPrice());
+            product.setAwardedPoints(request.awardedPoints() != null
+                    ? pointsPolicy.resolve(request.awardedPoints(), range)
+                    : range.clamp(product.getAwardedPoints()));
         }
         if (request.image() != null) {
             product.setImage(request.image());
@@ -137,6 +144,15 @@ public class CafeProductService implements ICafeProductService {
         return cafeProductMapper.toResponse(product);
     }
 
+    @Override
+    public PointsRangeResponse pointsRange(UUID cafeExternalId, UUID catalogProductId, String name, BigDecimal price) {
+        CafeEntity cafe = cafeAccessGuard.managedCafe(cafeExternalId);
+        CatalogProductEntity catalogProduct = catalogProductId != null
+                ? catalogProductService.findActive(catalogProductId)
+                : catalogProductService.findByName(name).orElse(null);
+        return pointsPolicy.rangeFor(cafe, catalogProduct, price);
+    }
+
     private void ensureNotSoldYet(CafeEntity cafe, CatalogProductEntity catalogProduct) {
         if (cafeProductRepository.existsByCafeAndCatalogProductAndActiveTrue(cafe, catalogProduct)) {
             throw new EntityAlreadyExistsException("The cafe already sells " + catalogProduct.getName());
@@ -146,6 +162,8 @@ public class CafeProductService implements ICafeProductService {
     private ProductResponse addToCafe(CafeEntity cafe, ProductRequest request) {
         CatalogProductEntity catalogProduct = resolveCatalogProduct(request, cafe);
         ensureNotSoldYet(cafe, catalogProduct);
+        int awardedPoints = pointsPolicy.resolve(request.awardedPoints(),
+                pointsPolicy.rangeFor(cafe, catalogProduct, request.price()));
         CafeProductEntity product = CafeProductEntity.builder()
                 .cafe(cafe)
                 .catalogProduct(catalogProduct)
@@ -153,7 +171,7 @@ public class CafeProductService implements ICafeProductService {
                 .description(request.description())
                 .image(request.image())
                 .price(request.price())
-                .awardedPoints(request.awardedPoints())
+                .awardedPoints(awardedPoints)
                 .tags(request.tags() == null ? new ArrayList<>() : new ArrayList<>(request.tags()))
                 .build();
         cafeProductRepository.save(product);

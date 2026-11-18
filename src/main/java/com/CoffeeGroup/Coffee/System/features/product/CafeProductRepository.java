@@ -1,5 +1,6 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +25,8 @@ public interface CafeProductRepository
 
     long countByCafeAndActiveTrue(CafeEntity cafe);
 
+    List<CafeProductEntity> findByCafeAndActiveTrueOrderByIdAsc(CafeEntity cafe);
+
     long countByCafeAndActiveTrueAndAvailableFalse(CafeEntity cafe);
 
     @Modifying
@@ -33,6 +36,17 @@ public interface CafeProductRepository
     @Query("select p.cafe.id as cafeId, max(p.awardedPoints) as maxPoints "
             + "from CafeProductEntity p where p.cafe in :cafes and p.active = true group by p.cafe.id")
     List<CafeMaxPoints> findMaxPointsByCafe(@Param("cafes") List<CafeEntity> cafes);
+
+    @Query("select coalesce(sum(p.price), 0) as total, count(p) as cafes from CafeProductEntity p "
+            + "where p.catalogProduct = :catalogProduct and p.active = true and p.cafe <> :cafe")
+    PriceStats priceStatsOfOtherCafes(@Param("catalogProduct") CatalogProductEntity catalogProduct,
+            @Param("cafe") CafeEntity cafe);
+
+    interface PriceStats {
+        BigDecimal getTotal();
+
+        Long getCafes();
+    }
 
     interface CafeMaxPoints {
         Long getCafeId();
