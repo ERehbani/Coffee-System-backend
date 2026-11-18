@@ -18,12 +18,12 @@ public class DailyCouponExpiry {
     private final RedemptionRepository redemptionRepository;
     private final Clock clock;
 
-    // No points refund: an expired coupon was redeemed and not used in time
+    // Sin devolución de puntos: el cupón se canjeó y no se usó a tiempo
     @Scheduled(cron = "0 0 0 * * *", zone = "${app.timezone}")
     @Transactional
     public void expireCouponsOfEndedBenefits() {
         LocalDateTime now = LocalDateTime.now(clock);
         int expired = redemptionRepository.expireActiveOfBenefitsEndedBefore(now.toLocalDate(), now);
-        log.info("Daily expiry: {} coupons marked as expired", expired);
+        log.info("Vencimiento diario: {} cupones marcados como vencidos", expired);
     }
 }

@@ -40,12 +40,12 @@ public class SecurityUtils {
 
     public ClientEntity currentClient() {
         return clientRepository.findByUser_Credentials_Username(currentUsername())
-                .orElseThrow(() -> new AccessDeniedException("The current user has no client profile"));
+                .orElseThrow(() -> new AccessDeniedException("El usuario actual no tiene perfil de cliente"));
     }
 
     public CafeEntity currentCafe() {
         return findCurrentCafe()
-                .orElseThrow(() -> new AccessDeniedException("The current user has no cafe"));
+                .orElseThrow(() -> new AccessDeniedException("El usuario actual no tiene cafetería"));
     }
 
     public Optional<CafeEntity> findCurrentCafe() {
@@ -61,7 +61,7 @@ public class SecurityUtils {
     private Authentication authentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
-            throw new AccessDeniedException("No authenticated user");
+            throw new AccessDeniedException("No hay un usuario autenticado");
         }
         return authentication;
     }

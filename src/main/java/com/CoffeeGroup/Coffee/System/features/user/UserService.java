@@ -91,7 +91,7 @@ public class UserService implements IUserService {
         Email email = new Email(emailAddress);
         ensureEmailIsFree(email);
         RoleEntity role = roleRepository.findByRole(roleName)
-                .orElseThrow(() -> new EntityNotFoundException("Role " + roleName + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Rol " + roleName + " no encontrado"));
         UserEntity user = UserEntity.builder().email(email).active(true).build();
         userRepository.save(user);
         CredentialsEntity credentials = CredentialsEntity.builder()
@@ -119,12 +119,12 @@ public class UserService implements IUserService {
 
     private void ensureEmailIsFree(Email email) {
         if (userRepository.existsByEmail(email) || credentialsRepository.existsByUsername(email.value())) {
-            throw new EntityAlreadyExistsException("Email already exists");
+            throw new EntityAlreadyExistsException("Ya existe una cuenta con ese email");
         }
     }
 
     private UserEntity findUser(UUID externalId) {
         return userRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
     }
 }

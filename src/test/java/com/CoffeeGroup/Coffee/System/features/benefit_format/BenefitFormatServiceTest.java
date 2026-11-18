@@ -87,7 +87,7 @@ class BenefitFormatServiceTest {
 
         assertThatThrownBy(() -> service.create(new CreateBenefitFormatRequest(BenefitType.DOS_POR_UNO, "2x1", "Dos por uno", true)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("The format DOS_POR_UNO is already in the catalog");
+                .hasMessage("El formato DOS_POR_UNO ya está en el catálogo");
         verify(repository, never()).save(any());
     }
 
@@ -98,7 +98,7 @@ class BenefitFormatServiceTest {
         assertThatThrownBy(() -> service.create(
                 new CreateBenefitFormatRequest(BenefitType.DOS_POR_UNO, "  descuento ", "Dos por uno", true)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A benefit type named descuento already exists");
+                .hasMessage("Ya existe un tipo de beneficio llamado descuento");
         verify(repository, never()).save(any());
     }
 
@@ -137,7 +137,7 @@ class BenefitFormatServiceTest {
 
         assertThatThrownBy(() -> service.update(formatId, new UpdateBenefitFormatRequest(" Descuento ", "x", true)))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("A benefit type named Descuento already exists");
+                .hasMessage("Ya existe un tipo de beneficio llamado Descuento");
         verify(repository, never()).save(any());
     }
 
@@ -147,7 +147,7 @@ class BenefitFormatServiceTest {
 
         assertThatThrownBy(() -> service.update(formatId, new UpdateBenefitFormatRequest("2x1", "x", true)))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("Benefit format not found");
+                .hasMessage("Tipo de beneficio no encontrado");
         verify(repository, never()).save(any());
     }
 

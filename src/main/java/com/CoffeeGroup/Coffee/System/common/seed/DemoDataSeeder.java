@@ -71,20 +71,20 @@ public class DemoDataSeeder implements ApplicationRunner {
         if (credentialsRepository.existsByUsername("cafe.central@test.com")) {
             return;
         }
-        CafeEntity central = createCafe("cafe.central@test.com", "Cafe Central", "Av Siempreviva 123",
-                "Cafeteria de prueba en el centro", "1111111111");
+        CafeEntity central = createCafe("cafe.central@test.com", "Café Central", "Av Siempreviva 123",
+                "Cafetería de prueba en el centro", "1111111111");
         completeProfile(central, openEvery(WEEKDAYS, LocalTime.of(8, 0), LocalTime.of(20, 0)));
-        CafeEntity north = createCafe("cafe.norte@test.com", "Cafe Norte", "Calle Falsa 456",
-                "Cafeteria de prueba zona norte", "2222222222");
+        CafeEntity north = createCafe("cafe.norte@test.com", "Café Norte", "Calle Falsa 456",
+                "Cafetería de prueba zona norte", "2222222222");
         completeProfile(north, openEvery(List.of(DayOfWeek.values()), LocalTime.of(9, 0), LocalTime.of(22, 0)));
 
-        CafeProductEntity capuccino = sell(central, "Capuccino", "Cafe", "Capuccino clasico", "2500", 80);
+        CafeProductEntity capuccino = sell(central, "Capuccino", "Cafe", "Capuccino clásico", "2500", 80);
         sell(central, "Medialuna", "Pasteleria", "Medialuna de manteca", "800", 50);
-        sell(north, "Latte", "Cafe", "Cafe latte grande", "2800", 90);
+        sell(north, "Latte", "Cafe", "Café latte grande", "2800", 90);
         CafeProductEntity northMedialuna = sell(north, "Medialuna", "Pasteleria", "Medialuna de manteca", "900", 50);
 
         TierEntity base = tierRepository.findByMinPoints(0)
-                .orElseThrow(() -> new EntityNotFoundException("Base tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier base no encontrado"));
         BenefitEntity welcome = benefit("Descuento 15% bienvenida", "Descuento de bienvenida para socios", 500,
                 BenefitType.CODIGO_DESCUENTO, base, null);
         welcome.setDiscountPercentage(BigDecimal.valueOf(15));
@@ -103,7 +103,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         var account = userService.saveCafe(new CreateCafeAccountRequest(email, DEMO_PASSWORD_CAFE, name, address,
                 description, phone));
         return cafeRepository.findByExternalId(account.externalId())
-                .orElseThrow(() -> new EntityNotFoundException("Demo cafe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería de demostración no encontrada"));
     }
 
     private void completeProfile(CafeEntity cafe, List<OpeningHours> hours) {
@@ -121,7 +121,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             int points) {
         CatalogProductEntity catalogProduct = catalogProductService.findOrCreate(new CatalogProductRequest(
                 name, description, null, categoryRepository.findByName(category)
-                        .orElseThrow(() -> new EntityNotFoundException("Category " + category + " not found"))
+                        .orElseThrow(() -> new EntityNotFoundException("Categoría " + category + " no encontrada"))
                         .getExternalId()), cafe);
         return cafeProductRepository.save(CafeProductEntity.builder()
                 .cafe(cafe)
@@ -144,7 +144,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 .isPublic(true)
                 .maxRedemptions(100)
                 .format(benefitFormatRepository.findByCode(type)
-                        .orElseThrow(() -> new EntityNotFoundException("Format " + type + " not found")))
+                        .orElseThrow(() -> new EntityNotFoundException("Formato " + type + " no encontrado")))
                 .tier(tier)
                 .cafe(cafe)
                 .build();

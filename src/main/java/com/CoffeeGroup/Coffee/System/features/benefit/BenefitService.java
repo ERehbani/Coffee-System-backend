@@ -82,7 +82,7 @@ public class BenefitService implements IBenefitService {
     public BenefitResponse update(UUID externalId, BenefitUpdateRequest request) {
         BenefitEntity benefit = managedBenefit(externalId);
         if (request.maxRedemptions() != null && request.maxRedemptions() < benefit.getRedeemedCount()) {
-            throw new BusinessRuleException("The limit cannot be lower than the redemptions already made");
+            throw new BusinessRuleException("El límite no puede ser menor que los canjes ya realizados");
         }
         benefit.setName(request.name());
         benefit.setDescription(request.description());
@@ -105,7 +105,7 @@ public class BenefitService implements IBenefitService {
         boolean adminDeletingGlobal = securityUtils.isAdmin() && benefit.isGlobal();
         boolean cafeDeletingOwn = securityUtils.isCafe() && benefit.belongsTo(securityUtils.currentCafe());
         if (!adminDeletingGlobal && !cafeDeletingOwn) {
-            throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
+            throw new AccessDeniedException("Acceso denegado: no tienes permiso para eliminar este beneficio");
         }
         benefitRepository.delete(benefit);
         benefitRepository.flush();
@@ -126,10 +126,10 @@ public class BenefitService implements IBenefitService {
     public BenefitResponse findById(UUID externalId) {
         BenefitEntity benefit = findBenefit(externalId);
         if (securityUtils.isCafe() && !benefit.belongsTo(securityUtils.currentCafe())) {
-            throw new AccessDeniedException("Access denied: You do not have permission to view this benefit");
+            throw new AccessDeniedException("Acceso denegado: no tienes permiso para ver este beneficio");
         }
         if (securityUtils.isClient() && !benefit.isPublished()) {
-            throw new EntityNotFoundException("Benefit not found");
+            throw new EntityNotFoundException("Beneficio no encontrado");
         }
         return benefitMapper.toResponse(benefit);
     }
@@ -169,7 +169,7 @@ public class BenefitService implements IBenefitService {
         CafeEntity cafe = cafeAccessGuard.managedCafe(cafeExternalId);
         BenefitEntity benefit = findBenefit(benefitExternalId);
         if (!benefit.belongsTo(cafe)) {
-            throw new EntityNotFoundException("Benefit not found");
+            throw new EntityNotFoundException("Beneficio no encontrado");
         }
         return benefitMapper.toResponse(benefit);
     }
@@ -241,22 +241,22 @@ public class BenefitService implements IBenefitService {
 
     private CafeProductEntity productOfCafe(UUID productId, BenefitEntity benefit) {
         if (benefit.isGlobal()) {
-            throw new BusinessRuleException("A global benefit uses a catalog product, not the product of a cafe");
+            throw new BusinessRuleException("Un beneficio global usa un producto del catálogo, no un producto de la cafetería");
         }
         return cafeProductRepository.findByExternalIdAndCafe(productId, benefit.getCafe())
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado en esta cafetería"));
     }
 
     private BenefitFormatEntity enabledFormat(BenefitType type) {
         return benefitFormatRepository.findByCode(type)
                 .filter(BenefitFormatEntity::isActive)
-                .orElseThrow(() -> new BusinessRuleException("The benefit format " + type + " is not enabled"));
+                .orElseThrow(() -> new BusinessRuleException("El tipo de beneficio " + type + " no está habilitado"));
     }
 
     private static void ensureValidDates(BenefitEntity benefit) {
         if (benefit.getStartDate() != null && benefit.getEndDate() != null
                 && benefit.getEndDate().isBefore(benefit.getStartDate())) {
-            throw new BusinessRuleException("The end date cannot be before the start date");
+            throw new BusinessRuleException("La fecha de fin no puede ser anterior a la fecha de inicio");
         }
     }
 
@@ -275,12 +275,12 @@ public class BenefitService implements IBenefitService {
 
     private BenefitEntity findBenefit(UUID externalId) {
         return benefitRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Beneficio no encontrado"));
     }
 
     private TierEntity findTier(UUID tierId) {
         return tierRepository.findByExternalId(tierId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
     }
 
     private record RuleSettings(BigDecimal discountPercentage, UUID productId, UUID catalogProductId) {

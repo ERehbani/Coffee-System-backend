@@ -10,29 +10,29 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateProductRequest(
-        @Size(min = 2, max = 50, message = "The name must be between 2 and 50 characters long")
-        @Pattern(regexp = "^[\\p{L}\\s]+$", message = "The name can only contain letters and spaces.")
-        @Pattern(regexp = ".*\\S.*", message = "The name must not be blank")
+        @Size(min = 2, max = 50, message = "El nombre debe tener entre 2 y 50 caracteres")
+        @Pattern(regexp = "^[\\p{L}\\s]+$", message = "El nombre solo puede tener letras y espacios")
+        @Pattern(regexp = ".*\\S.*", message = "El nombre no puede estar vacío")
         String name,
 
-        @Size(min = 5, max = 100, message = "The description must be between 5 and 100 characters long")
-        @Pattern(regexp = "^[\\p{L}\\d\\s.,]+$", message = "The description can only contain letters, numbers, dots and commas.")
-        @Pattern(regexp = ".*\\S.*", message = "The description must not be blank")
+        @Size(min = 5, max = 100, message = "La descripción debe tener entre 5 y 100 caracteres")
+        @Pattern(regexp = "^[\\p{L}\\d\\s.,]+$", message = "La descripción solo puede tener letras, números, espacios, puntos y comas")
+        @Pattern(regexp = ".*\\S.*", message = "La descripción no puede estar vacía")
         String description,
 
-        @Min(value = 500, message = "The price must be bigger than 500")
-        @Max(value = 50000, message = "The price must be smaller than 50000")
+        @Min(value = 500, message = "El precio debe ser mayor o igual que 500")
+        @Max(value = 50000, message = "El precio debe ser menor o igual que 50000")
         BigDecimal price,
 
-        @Min(value = 50, message = "Awarded points must be bigger than 50")
-        @Max(value = 3000, message = "Awarded points must be smaller than 3000")
+        @Min(value = 50, message = "Los puntos otorgados deben ser mayores o iguales que 50")
+        @Max(value = 3000, message = "Los puntos otorgados deben ser menores o iguales que 3000")
         Integer awardedPoints,
 
-        @Size(max = 500, message = "The image must be at most 500 characters long")
+        @Size(max = 500, message = "La imagen puede tener hasta 500 caracteres")
         String image,
 
-        @Size(max = 10, message = "A product can have at most 10 tags")
-        List<@NotBlank(message = "Tags must not be blank")
-             @Size(max = 30, message = "Each tag must be at most 30 characters long") String> tags
+        @Size(max = 10, message = "Un producto puede tener hasta 10 etiquetas")
+        List<@NotBlank(message = "Las etiquetas no pueden estar vacías")
+             @Size(max = 30, message = "Cada etiqueta puede tener hasta 30 caracteres") String> tags
 ) {
 }

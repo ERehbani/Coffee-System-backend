@@ -28,10 +28,10 @@ public class TierService implements ITierService {
     public TierResponse create(CreateTierRequest request) {
         String name = request.name().trim();
         if (tierRepository.existsByNameIgnoreCase(name)) {
-            throw new EntityAlreadyExistsException("A tier named " + name + " already exists");
+            throw new EntityAlreadyExistsException("Ya existe un tier llamado " + name);
         }
         if (tierRepository.existsByMinPoints(request.minPoints())) {
-            throw new EntityAlreadyExistsException("A tier with " + request.minPoints() + " points already exists");
+            throw new EntityAlreadyExistsException("Ya existe un tier con " + request.minPoints() + " puntos");
         }
         TierEntity tier = TierEntity.builder().name(name).minPoints(request.minPoints()).build();
         tierRepository.save(tier);
@@ -54,13 +54,13 @@ public class TierService implements ITierService {
         TierEntity tier = findTier(externalId);
         String name = request.name().trim();
         if (tier.isBase() && request.minPoints() != 0) {
-            throw new BusinessRuleException("The base tier must keep 0 points");
+            throw new BusinessRuleException("El tier base debe mantener 0 puntos");
         }
         if (tierRepository.existsByNameIgnoreCaseAndExternalIdNot(name, externalId)) {
-            throw new EntityAlreadyExistsException("A tier named " + name + " already exists");
+            throw new EntityAlreadyExistsException("Ya existe un tier llamado " + name);
         }
         if (tierRepository.existsByMinPointsAndExternalIdNot(request.minPoints(), externalId)) {
-            throw new EntityAlreadyExistsException("A tier with " + request.minPoints() + " points already exists");
+            throw new EntityAlreadyExistsException("Ya existe un tier con " + request.minPoints() + " puntos");
         }
         tier.setName(name);
         tier.setMinPoints(request.minPoints());
@@ -76,6 +76,6 @@ public class TierService implements ITierService {
 
     private TierEntity findTier(UUID externalId) {
         return tierRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Tier not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tier no encontrado"));
     }
 }

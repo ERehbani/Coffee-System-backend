@@ -31,7 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/clients")
 @RequiredArgsConstructor
-@Tag(name = "Clients", description = "Endpoints for managing client profiles")
+@Tag(name = "Clientes", description = "Endpoints para administrar perfiles de clientes")
 public class ClientController {
     private final IClientService clientService;
     private final IClientTierService clientTierService;
@@ -41,7 +41,7 @@ public class ClientController {
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @GetMapping
-    @Operation(summary = "List all clients", description = "Retrieves all client profiles")
+    @Operation(summary = "Listar todos los clientes", description = "Obtiene todos los perfiles de clientes")
     @ApiResponses
     public ResponseEntity<List<ClientResponse>> getAll() {
         return ResponseEntity.ok(clientService.findAll());
@@ -49,33 +49,33 @@ public class ClientController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get client by ID", description = "Retrieves a specific client by its external ID")
+    @Operation(summary = "Obtener cliente por ID", description = "Obtiene un cliente por su ID externo")
     @ApiResponses
-    public ResponseEntity<ClientResponse> getById(@Parameter(description = "Client external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<ClientResponse> getById(@Parameter(description = "ID externo del cliente") @PathVariable UUID externalId) {
         return ResponseEntity.ok(clientService.getById(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update client", description = "Updates client profile information")
+    @Operation(summary = "Actualizar cliente", description = "Actualiza los datos del perfil del cliente")
     @ApiResponses
-    public ResponseEntity<ClientResponse> update(@Parameter(description = "Client external ID") @PathVariable UUID externalId, @Valid @RequestBody UpdateClientRequest request
+    public ResponseEntity<ClientResponse> update(@Parameter(description = "ID externo del cliente") @PathVariable UUID externalId, @Valid @RequestBody UpdateClientRequest request
     ) {
         return ResponseEntity.ok(clientService.update(externalId, request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Delete client", description = "Deletes a client by its external ID")
+    @Operation(summary = "Eliminar cliente", description = "Elimina un cliente por su ID externo")
     @ApiResponses
-    public ResponseEntity<Void> delete(@Parameter(description = "Client external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo del cliente") @PathVariable UUID externalId) {
         clientService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
     @GetMapping("/ViewMyPoints")
-    @Operation(summary = "View my points", description = "Retrieves the current user's loyalty points")
+    @Operation(summary = "Ver mis puntos", description = "Obtiene los puntos de fidelidad del usuario actual")
     @ApiResponses
     public  ResponseEntity<ClientPointsResponse> viewMyPoints(){
         return ResponseEntity.ok(clientService.viewMyPoints());
@@ -83,7 +83,7 @@ public class ClientController {
 
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
     @GetMapping("/me/tier")
-    @Operation(summary = "View my tier", description = "Retrieves the current client's tier, progress towards the next tier and the benefits enabled at each level")
+    @Operation(summary = "Ver mi tier", description = "Obtiene el tier del cliente actual, su avance hacia el siguiente tier y los beneficios habilitados en cada tier")
     @ApiResponses
     public ResponseEntity<ClientTierResponse> viewMyTier() {
         return ResponseEntity.ok(clientTierService.viewMyTier());
@@ -91,7 +91,7 @@ public class ClientController {
 
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
     @GetMapping("/me/benefits")
-    @Operation(summary = "View my tier benefits", description = "Lists the enabled benefits available to the current client's tier and the tiers below it")
+    @Operation(summary = "Ver los beneficios de mi tier", description = "Lista los beneficios habilitados para el tier del cliente actual y los tiers inferiores")
     @ApiResponses
     public ResponseEntity<List<TierBenefitResponse>> viewMyBenefits() {
         return ResponseEntity.ok(clientTierService.viewMyBenefits());
@@ -99,7 +99,7 @@ public class ClientController {
 
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
     @GetMapping("/me/dashboard")
-    @Operation(summary = "View my dashboard", description = "Retrieves the current client's profile, loyalty status, active redemptions, cafes and featured benefits in one response")
+    @Operation(summary = "Ver mi dashboard", description = "Obtiene en una sola respuesta el perfil del cliente actual, su estado de fidelidad, los canjes activos, las cafeterías y los beneficios destacados")
     @ApiResponses
     public ResponseEntity<ClientDashboardResponse> viewMyDashboard() {
         return ResponseEntity.ok(clientDashboardService.viewMyDashboard());

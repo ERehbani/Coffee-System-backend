@@ -65,7 +65,7 @@ public class PurchaseDraft {
 
     public void addGift(CafeProductEntity product) {
         if (product.isActive() && product.belongsTo(cafe) && !product.isAvailable()) {
-            throw new ProductNotAvailableException("The coupon product " + product.name() + " is sold out for today");
+            throw new ProductNotAvailableException("El producto del cupón " + product.name() + " está agotado por hoy");
         }
         product.ensureCanBeSoldBy(cafe);
         details.add(PurchaseDetailEntity.gift(product));

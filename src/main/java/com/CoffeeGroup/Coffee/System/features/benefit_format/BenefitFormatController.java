@@ -26,29 +26,29 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/benefit-formats")
 @RequiredArgsConstructor
-@Tag(name = "Benefit formats", description = "Catalog of the benefit formats admitted on the platform")
+@Tag(name = "Tipos de beneficio", description = "Catálogo de los tipos de beneficio admitidos en la plataforma")
 public class BenefitFormatController {
     private final IBenefitFormatService benefitFormatService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA')")
     @GetMapping
-    @Operation(summary = "List benefit formats", description = "Lists the catalog ordered by name, with the benefits using each format")
+    @Operation(summary = "Listar tipos de beneficio", description = "Lista el catálogo ordenado por nombre, con los beneficios que usan cada tipo")
     public ResponseEntity<List<BenefitFormatResponse>> getAll() {
         return ResponseEntity.ok(benefitFormatService.getAll());
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping
-    @Operation(summary = "Register benefit format", description = "Adds a format to the catalog")
+    @Operation(summary = "Registrar tipo de beneficio", description = "Agrega un tipo de beneficio al catálogo")
     public ResponseEntity<BenefitFormatResponse> create(@Valid @RequestBody CreateBenefitFormatRequest request) {
         return ResponseEntity.ok(benefitFormatService.create(request));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update benefit format", description = "Updates the name, description and availability of a format")
+    @Operation(summary = "Actualizar tipo de beneficio", description = "Actualiza el nombre, la descripción y la disponibilidad de un tipo de beneficio")
     public ResponseEntity<BenefitFormatResponse> update(
-            @Parameter(description = "Benefit format external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo del tipo de beneficio") @PathVariable UUID externalId,
             @Valid @RequestBody UpdateBenefitFormatRequest request) {
         return ResponseEntity.ok(benefitFormatService.update(externalId, request));
     }

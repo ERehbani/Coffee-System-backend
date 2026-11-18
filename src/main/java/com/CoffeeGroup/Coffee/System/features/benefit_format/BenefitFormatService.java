@@ -40,7 +40,7 @@ public class BenefitFormatService implements IBenefitFormatService {
     public BenefitFormatResponse create(CreateBenefitFormatRequest request) {
         String displayName = request.displayName().trim();
         if (formatRepository.existsByCode(request.code())) {
-            throw new EntityAlreadyExistsException("The format " + request.code() + " is already in the catalog");
+            throw new EntityAlreadyExistsException("El formato " + request.code() + " ya está en el catálogo");
         }
         if (formatRepository.existsByDisplayNameIgnoreCase(displayName)) {
             throw new EntityAlreadyExistsException(duplicateName(displayName));
@@ -59,7 +59,7 @@ public class BenefitFormatService implements IBenefitFormatService {
     @Transactional
     public BenefitFormatResponse update(UUID externalId, UpdateBenefitFormatRequest request) {
         BenefitFormatEntity format = formatRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Benefit format not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Tipo de beneficio no encontrado"));
         String displayName = request.displayName().trim();
         if (formatRepository.existsByDisplayNameIgnoreCaseAndExternalIdNot(displayName, externalId)) {
             throw new EntityAlreadyExistsException(duplicateName(displayName));
@@ -78,7 +78,7 @@ public class BenefitFormatService implements IBenefitFormatService {
     }
 
     private static String duplicateName(String displayName) {
-        return "A benefit type named " + displayName + " already exists";
+        return "Ya existe un tipo de beneficio llamado " + displayName;
     }
 
     private static BenefitFormatResponse toResponse(BenefitFormatEntity format, long usageCount) {

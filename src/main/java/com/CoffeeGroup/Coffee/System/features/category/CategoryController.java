@@ -27,13 +27,13 @@ import lombok.AllArgsConstructor;
 @RestController
 @RequestMapping("/category")
 @AllArgsConstructor
-@Tag(name = "Categories", description = "Endpoints for managing product categories")
+@Tag(name = "Categorías", description = "Endpoints para administrar categorías de productos")
 public class CategoryController {
     private final ICategoryService categoryService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @GetMapping()
-    @Operation(summary = "List all categories", description = "Retrieves all product categories")
+    @Operation(summary = "Listar todas las categorías", description = "Obtiene todas las categorías de productos")
     @ApiResponses
     public ResponseEntity<List<CategoryResponse>> getAllCategories() {
         return ResponseEntity.ok(categoryService.getAllCategories());
@@ -41,15 +41,15 @@ public class CategoryController {
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get category by ID", description = "Retrieves a specific category by its external ID")
+    @Operation(summary = "Obtener categoría por ID", description = "Obtiene una categoría por su ID externo")
     @ApiResponses
-    public ResponseEntity<CategoryResponse> getCategoryByExternalId(@Parameter(description = "Category external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<CategoryResponse> getCategoryByExternalId(@Parameter(description = "ID externo de la categoría") @PathVariable UUID externalId) {
         return ResponseEntity.ok(categoryService.getCategoryByExternalId(externalId));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PostMapping
-    @Operation(summary = "Create category", description = "Creates a new product category")
+    @Operation(summary = "Crear categoría", description = "Crea una categoría de productos nueva")
     @ApiResponses
     public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
         return ResponseEntity.ok(categoryService.create(categoryRequest));
@@ -57,18 +57,18 @@ public class CategoryController {
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update category", description = "Renames a product category")
+    @Operation(summary = "Actualizar categoría", description = "Cambia el nombre de una categoría de productos")
     @ApiResponses
-    public ResponseEntity<CategoryResponse> update(@Parameter(description = "Category external ID") @PathVariable UUID externalId,
+    public ResponseEntity<CategoryResponse> update(@Parameter(description = "ID externo de la categoría") @PathVariable UUID externalId,
                                                    @Valid @RequestBody CategoryRequest categoryRequest) {
         return ResponseEntity.ok(categoryService.update(externalId, categoryRequest));
     }
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Delete category", description = "Deletes a category by its external ID")
+    @Operation(summary = "Eliminar categoría", description = "Elimina una categoría por su ID externo")
     @ApiResponses
-    public ResponseEntity<Void> delete(@Parameter(description = "Category external ID") @PathVariable UUID externalId) {
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo de la categoría") @PathVariable UUID externalId) {
         categoryService.delete(externalId);
         return ResponseEntity.noContent().build();
     }

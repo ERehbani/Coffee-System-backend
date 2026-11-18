@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-// Constant order matches the MySQL enum (V13): new values are appended
+// El orden de las constantes coincide con el enum de MySQL (V13): los valores nuevos van al final
 public enum PurchaseStatus {
     CONFIRMED,
     CANCELLED,

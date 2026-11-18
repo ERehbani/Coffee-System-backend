@@ -27,7 +27,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> SKIPPED_PATHS = Set.of("/auth/login", "/auth/register", "/auth/logout");
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String INVALID_TOKEN = "Token JWT invalido o expirado";
+    private static final String INVALID_TOKEN = "Token JWT inválido o expirado";
 
     private final JwtService jwtService;
     private final AuthCookieService authCookieService;

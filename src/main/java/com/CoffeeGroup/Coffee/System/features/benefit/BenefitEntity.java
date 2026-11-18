@@ -157,19 +157,19 @@ public class BenefitEntity extends AuditableEntity {
 
     public void ensureRedeemableBy(ClientEntity client, LocalDate today) {
         if (!isActive() || !isPublished()) {
-            throw new BusinessRuleException("Benefit is not enabled");
+            throw new BusinessRuleException("El beneficio no está habilitado");
         }
         if (startDate != null && startDate.isAfter(today)) {
-            throw new BusinessRuleException("Benefit is not available yet");
+            throw new BusinessRuleException("El beneficio todavía no está disponible");
         }
         if (hasEndedBy(today)) {
-            throw new BusinessRuleException("Benefit has expired");
+            throw new BusinessRuleException("El beneficio está vencido");
         }
         if (requiresHigherTierThan(client.getTier())) {
-            throw new BusinessRuleException("Benefit requires a higher tier");
+            throw new BusinessRuleException("El beneficio requiere un tier superior");
         }
         if (isSoldOut()) {
-            throw new BenefitSoldOutException("Benefit is sold out");
+            throw new BenefitSoldOutException("El beneficio está agotado");
         }
     }
 

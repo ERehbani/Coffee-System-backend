@@ -15,6 +15,6 @@ public class ProductNotAvailableException extends DomainException {
 
     @Override
     public String title() {
-        return "Product not available";
+        return "Producto no disponible";
     }
 }

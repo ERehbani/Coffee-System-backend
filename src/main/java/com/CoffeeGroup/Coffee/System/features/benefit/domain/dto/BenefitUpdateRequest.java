@@ -14,40 +14,40 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record BenefitUpdateRequest(
-        @NotBlank(message = "The name is required")
+        @NotBlank(message = "El nombre es obligatorio")
         String name,
 
-        @NotBlank(message = "The description is required")
+        @NotBlank(message = "La descripción es obligatoria")
         String description,
 
         String conditions,
 
-        @NotNull(message = "The pointsCost is required")
-        @PositiveOrZero(message = "The pointsCost cannot be negative")
+        @NotNull(message = "El costo en puntos es obligatorio")
+        @PositiveOrZero(message = "El costo en puntos no puede ser negativo")
         Integer pointsCost,
 
         LocalDate startDate,
 
         LocalDate endDate,
 
-        @Positive(message = "The maxRedemptions must be bigger than 0")
+        @Positive(message = "El máximo de canjes debe ser mayor que 0")
         Integer maxRedemptions,
 
-        @Positive(message = "The maxPerClient must be bigger than 0")
+        @Positive(message = "El máximo por cliente debe ser mayor que 0")
         Integer maxPerClient,
 
-        @NotNull(message = "The type is required")
+        @NotNull(message = "El tipo es obligatorio")
         BenefitType type,
 
-        @DecimalMin(value = "0.01", message = "The discount must be bigger than 0")
-        @DecimalMax(value = "100", message = "The discount cannot be bigger than 100")
+        @DecimalMin(value = "0.01", message = "El descuento debe ser mayor o igual que 0,01")
+        @DecimalMax(value = "100", message = "El descuento no puede ser mayor que 100")
         BigDecimal discountPercentage,
 
         UUID productId,
 
         UUID catalogProductId,
 
-        @NotNull(message = "The tierId is required")
+        @NotNull(message = "El tier es obligatorio")
         UUID tierId
 ) {
 }

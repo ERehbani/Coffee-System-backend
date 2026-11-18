@@ -98,7 +98,7 @@ class CafeProductServiceTest {
 
         assertThatThrownBy(() -> service.create(central.getExternalId(), fromCatalog))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("The cafe already sells Medialuna");
+                .hasMessage("La cafetería ya vende Medialuna");
     }
 
     @Test
@@ -117,7 +117,7 @@ class CafeProductServiceTest {
     void anotherCafeCannotChangeTheProduct() {
         CafeProductEntity product = TestData.product(central, medialuna, "900", 50);
         when(cafeProductRepository.findByExternalId(product.getExternalId())).thenReturn(Optional.of(product));
-        doThrow(new AccessDeniedException("not yours")).when(cafeAccessGuard).assertCanManage(central);
+        doThrow(new AccessDeniedException("no es tu cafetería")).when(cafeAccessGuard).assertCanManage(central);
 
         assertThatThrownBy(() -> service.deactivate(product.getExternalId())).isInstanceOf(AccessDeniedException.class);
         assertThat(product.isActive()).isTrue();
@@ -145,7 +145,7 @@ class CafeProductServiceTest {
 
         assertThatThrownBy(() -> service.activate(product.getExternalId()))
                 .isInstanceOf(EntityAlreadyExistsException.class)
-                .hasMessage("The cafe already sells Medialuna");
+                .hasMessage("La cafetería ya vende Medialuna");
         assertThat(product.isActive()).isFalse();
     }
 

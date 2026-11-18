@@ -6,11 +6,11 @@ import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 public record CreateTierRequest(
-        @NotBlank(message = "The name is required")
-        @Size(max = 50, message = "The name must have at most 50 characters")
+        @NotBlank(message = "El nombre es obligatorio")
+        @Size(max = 50, message = "El nombre puede tener hasta 50 caracteres")
         String name,
 
-        @NotNull(message = "The minimum points are required")
-        @PositiveOrZero(message = "The minimum points cannot be negative")
+        @NotNull(message = "Los puntos mínimos son obligatorios")
+        @PositiveOrZero(message = "Los puntos mínimos no pueden ser negativos")
         Integer minPoints) {
 }

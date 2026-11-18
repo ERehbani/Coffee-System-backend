@@ -47,6 +47,6 @@ public class FreeProductRule implements BenefitRule {
                 .filter(ProductTargetRules.targetOf(benefit))
                 .findFirst()
                 .orElseThrow(() -> new ProductNotAvailableException(
-                        "This cafe does not sell " + benefit.getCatalogProduct().getName()));
+                        "Esta cafetería no vende " + benefit.getCatalogProduct().getName()));
     }
 }

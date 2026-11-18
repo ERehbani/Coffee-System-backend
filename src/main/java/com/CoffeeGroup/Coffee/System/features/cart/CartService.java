@@ -43,9 +43,9 @@ public class CartService implements ICartService {
     public CartResponse addItem(UUID cafeExternalId, CartItemRequest request) {
         ClientEntity client = securityUtils.currentClient();
         CafeEntity cafe = cafeRepository.findByExternalId(cafeExternalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cafetería no encontrada"));
         CafeProductEntity product = cafeProductRepository.findByExternalIdAndCafe(request.productId(), cafe)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in this cafe"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado en esta cafetería"));
 
         CartEntity cart = cartRepository.findByClientAndCafe(client, cafe)
                 .orElseGet(() -> CartEntity.openFor(client, cafe));
@@ -80,6 +80,6 @@ public class CartService implements ICartService {
         return cartRepository.findByClient(securityUtils.currentClient()).stream()
                 .filter(cart -> cart.contains(productExternalId))
                 .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("Product not found in any cart"));
+                .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado en ningún carrito"));
     }
 }

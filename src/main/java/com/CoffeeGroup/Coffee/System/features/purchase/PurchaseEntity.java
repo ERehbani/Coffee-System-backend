@@ -83,7 +83,7 @@ public class PurchaseEntity extends AuditableEntity {
 
     public void changeStatus(PurchaseStatus next) {
         if (!status.canTransitionTo(next)) {
-            throw new InvalidStatusTransitionException("A purchase cannot go from " + status + " to " + next);
+            throw new InvalidStatusTransitionException("Una compra no puede pasar de " + status + " a " + next);
         }
         status = next;
     }

@@ -15,6 +15,6 @@ public class BenefitSoldOutException extends DomainException {
 
     @Override
     public String title() {
-        return "Benefit sold out";
+        return "Beneficio agotado";
     }
 }

@@ -6,13 +6,13 @@ import java.time.LocalTime;
 import jakarta.validation.constraints.NotNull;
 
 public record OpeningHoursRequest(
-        @NotNull(message = "The day is required")
+        @NotNull(message = "El día es obligatorio")
         DayOfWeek day,
 
-        @NotNull(message = "The opening time is required")
+        @NotNull(message = "La hora de apertura es obligatoria")
         LocalTime opensAt,
 
-        @NotNull(message = "The closing time is required")
+        @NotNull(message = "La hora de cierre es obligatoria")
         LocalTime closesAt
 ) {
 }

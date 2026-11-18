@@ -13,10 +13,10 @@ final class ProductTargetRules {
 
     static void requireTargetProduct(BenefitEntity benefit) {
         if (benefit.isGlobal() && benefit.getCatalogProduct() == null) {
-            throw new BusinessRuleException("A global product benefit needs a catalog product");
+            throw new BusinessRuleException("Un beneficio global de producto necesita un producto del catálogo");
         }
         if (!benefit.isGlobal() && benefit.getCafeProduct() == null) {
-            throw new BusinessRuleException("A product benefit needs a product of the cafe");
+            throw new BusinessRuleException("Un beneficio de producto necesita un producto de la cafetería");
         }
     }
 

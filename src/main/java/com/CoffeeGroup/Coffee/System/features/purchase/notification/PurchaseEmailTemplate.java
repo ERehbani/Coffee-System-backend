@@ -63,7 +63,7 @@ public class PurchaseEmailTemplate {
         try (InputStream input = new ClassPathResource(path).getInputStream()) {
             return new String(input.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new UncheckedIOException("Missing email template " + path, e);
+            throw new UncheckedIOException("Falta la plantilla de email " + path, e);
         }
     }
 }

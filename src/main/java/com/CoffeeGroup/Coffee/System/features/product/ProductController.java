@@ -33,66 +33,66 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-@Tag(name = "Products (deprecated)", description = "Use /cafes/{cafeId}/products and /catalog-products")
+@Tag(name = "Productos (obsoleto)", description = "Usa /cafes/{cafeId}/products y /catalog-products")
 public class ProductController {
 
     private final ICafeProductService cafeProductService;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "List products", deprecated = true)
+    @Operation(summary = "Listar productos", deprecated = true)
     public ResponseEntity<List<ProductResponse>> getAll() {
         return ResponseEntity.ok(cafeProductService.listVisibleToCurrentUser());
     }
 
     @GetMapping("/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Get product by ID", deprecated = true)
+    @Operation(summary = "Obtener producto por ID", deprecated = true)
     public ResponseEntity<ProductResponse> getById(
-            @Parameter(description = "Product external ID") @PathVariable UUID productId) {
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId) {
         return ResponseEntity.ok(cafeProductService.getById(productId));
     }
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
-    @Operation(summary = "Create product for my cafe", deprecated = true)
+    @Operation(summary = "Crear producto para mi cafetería", deprecated = true)
     public ResponseEntity<ProductResponse> create(@Valid @RequestBody ProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cafeProductService.createForCurrentCafe(request));
     }
 
     @PutMapping("/{productId}")
     @PreAuthorize("hasAuthority('ROLE_CAFETERIA')")
-    @Operation(summary = "Update product", deprecated = true)
+    @Operation(summary = "Actualizar producto", deprecated = true)
     public ResponseEntity<ProductResponse> update(
             @Valid @RequestBody UpdateProductRequest request,
-            @Parameter(description = "Product external ID") @PathVariable UUID productId) {
+            @Parameter(description = "ID externo del producto") @PathVariable UUID productId) {
         return ResponseEntity.ok(cafeProductService.update(productId, request));
     }
 
     @DeleteMapping("/{productId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Deactivate product", deprecated = true)
-    public ResponseEntity<Void> delete(@Parameter(description = "Product external ID") @PathVariable UUID productId) {
+    @Operation(summary = "Desactivar producto", deprecated = true)
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo del producto") @PathVariable UUID productId) {
         cafeProductService.deactivate(productId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/cafes/{cafeId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Get products by cafe", deprecated = true)
+    @Operation(summary = "Obtener productos por cafetería", deprecated = true)
     public ResponseEntity<List<ProductResponse>> getAllProductsByCafe(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId) {
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId) {
         return ResponseEntity.ok(cafeProductService.listByCafe(cafeId, ProductFilter.none(), Pageable.unpaged()).content());
     }
 
     @GetMapping("/cafes/{cafeId}/filter")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Filter products by cafe", deprecated = true)
+    @Operation(summary = "Filtrar productos por cafetería", deprecated = true)
     public ResponseEntity<List<ProductResponse>> filterProductsByCafe(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Filter by name") @RequestParam(required = false) String name,
-            @Parameter(description = "Filter by price") @RequestParam(required = false) BigDecimal price,
-            @Parameter(description = "Filter by awarded points") @RequestParam(required = false) Integer awardedPoints) {
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "Filtra por nombre") @RequestParam(required = false) String name,
+            @Parameter(description = "Filtra por precio") @RequestParam(required = false) BigDecimal price,
+            @Parameter(description = "Filtra por puntos otorgados") @RequestParam(required = false) Integer awardedPoints) {
         ProductFilter filter = new ProductFilter(name, null, price, awardedPoints, null);
         return ResponseEntity.ok(cafeProductService.listByCafe(cafeId, filter, Pageable.unpaged()).content());
     }

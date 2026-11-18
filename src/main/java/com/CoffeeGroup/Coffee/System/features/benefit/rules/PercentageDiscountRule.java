@@ -24,7 +24,7 @@ public class PercentageDiscountRule implements BenefitRule {
     public void validate(BenefitEntity benefit) {
         BigDecimal percentage = benefit.getDiscountPercentage();
         if (percentage == null || percentage.signum() <= 0 || percentage.compareTo(MAX_PERCENTAGE) > 0) {
-            throw new BusinessRuleException("A discount benefit needs a percentage between 0 and 100");
+            throw new BusinessRuleException("Un beneficio de descuento necesita un porcentaje entre 0 y 100");
         }
     }
 

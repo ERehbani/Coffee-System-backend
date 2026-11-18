@@ -19,7 +19,7 @@ public class ProblemResponseWriter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(String.format(BODY, "Unauthorized", HttpServletResponse.SC_UNAUTHORIZED,
+        response.getWriter().write(String.format(BODY, "No autorizado", HttpServletResponse.SC_UNAUTHORIZED,
                 escape(detail), escape(request.getRequestURI())));
         response.getWriter().flush();
     }

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record RedemptionCreateRequest(
 
-        @NotNull(message = "The Benefit ID is required")
+        @NotNull(message = "El ID del beneficio es obligatorio")
         UUID benefitId
 
 ) {}

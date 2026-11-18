@@ -81,7 +81,7 @@ public class CafeEntity extends AuditableEntity {
     public void replaceOpeningHours(List<OpeningHours> newHours) {
         long distinctDays = newHours.stream().map(OpeningHours::getDay).distinct().count();
         if (distinctDays != newHours.size()) {
-            throw new BusinessRuleException("Each day can only have one opening hours");
+            throw new BusinessRuleException("Cada día solo puede tener un horario de atención");
         }
         openingHours.clear();
         newHours.stream()

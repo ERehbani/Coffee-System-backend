@@ -103,10 +103,10 @@ public class CafeProductEntity extends AuditableEntity {
 
     public void ensureCanBeSoldBy(CafeEntity sellingCafe) {
         if (!isActive() || !belongsTo(sellingCafe)) {
-            throw new ProductNotAvailableException("Product " + name() + " is not available");
+            throw new ProductNotAvailableException("El producto " + name() + " no está disponible");
         }
         if (!isAvailable()) {
-            throw new ProductNotAvailableException("Product " + name() + " is sold out for today");
+            throw new ProductNotAvailableException("El producto " + name() + " está agotado por hoy");
         }
     }
 

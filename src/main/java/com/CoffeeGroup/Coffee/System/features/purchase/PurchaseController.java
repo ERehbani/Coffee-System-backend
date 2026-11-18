@@ -35,27 +35,27 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/purchases")
-@Tag(name = "Purchases", description = "Endpoints for managing purchases")
+@Tag(name = "Compras", description = "Endpoints para administrar compras")
 public class PurchaseController {
 
     private final IPurchaseService purchaseService;
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Create purchase", description = "Buys the cart, optionally with a redemption code")
+    @Operation(summary = "Crear compra", description = "Compra el carrito, opcionalmente con un código de canje")
     public ResponseEntity<PurchaseResponse> create(@Valid @RequestBody CreatePurchaseRequest request) {
         return new ResponseEntity<>(purchaseService.create(request), HttpStatus.CREATED);
     }
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "List purchases", description = "Paginated; each role only sees what belongs to it")
+    @Operation(summary = "Listar compras", description = "Paginado; cada rol solo ve lo que le corresponde")
     public ResponseEntity<PageResponse<PurchaseResponse>> findAll(
-            @Parameter(description = "Filter by purchase status, several separated by commas")
+            @Parameter(description = "Filtra por estado de la compra, varios separados por comas")
             @RequestParam(required = false) List<PurchaseStatus> status,
-            @Parameter(description = "From date (yyyy-MM-dd)") @RequestParam(required = false)
+            @Parameter(description = "Desde la fecha (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @Parameter(description = "To date (yyyy-MM-dd)") @RequestParam(required = false)
+            @Parameter(description = "Hasta la fecha (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(purchaseService.findAll(new PurchaseFilter(status, from, to), pageable));
@@ -63,7 +63,7 @@ public class PurchaseController {
 
     @GetMapping("/me")
     @PreAuthorize("hasAuthority('ROLE_CLIENTE')")
-    @Operation(summary = "Get my purchase history")
+    @Operation(summary = "Obtener mi historial de compras")
     public ResponseEntity<PageResponse<PurchaseResponse>> getMyHistory(
             @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(purchaseService.getMyHistory(pageable));
@@ -71,33 +71,33 @@ public class PurchaseController {
 
     @GetMapping("/{externalId}")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA', 'ROLE_CLIENTE')")
-    @Operation(summary = "Get purchase by ID")
+    @Operation(summary = "Obtener compra por ID")
     public ResponseEntity<PurchaseResponse> getById(
-            @Parameter(description = "Purchase external ID") @PathVariable UUID externalId) {
+            @Parameter(description = "ID externo de la compra") @PathVariable UUID externalId) {
         return ResponseEntity.ok(purchaseService.getById(externalId));
     }
 
     @PatchMapping("/{externalId}/status")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Change the status of a purchase",
-            description = "Moves the order through IN_PREPARATION, READY and DELIVERED. Only CANCELLED or REFUNDED "
-                    + "takes back the points it gave, reactivates the coupon and emails the client")
+    @Operation(summary = "Cambiar el estado de una compra",
+            description = "Avanza el pedido por IN_PREPARATION, READY y DELIVERED. Solo CANCELLED o REFUNDED "
+                    + "retiran los puntos que otorgó, reactivan el cupón y avisan al cliente por email")
     public ResponseEntity<PurchaseResponse> updateStatus(
-            @Parameter(description = "Purchase external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo de la compra") @PathVariable UUID externalId,
             @Valid @RequestBody UpdatePurchaseStatusRequest request) {
         return ResponseEntity.ok(purchaseService.updateStatus(externalId, request));
     }
 
     @GetMapping("/cafe/{cafeId}/history")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CAFETERIA')")
-    @Operation(summary = "Purchase history of a cafe")
+    @Operation(summary = "Historial de compras de una cafetería")
     public ResponseEntity<PageResponse<PurchaseResponse>> getHistoryByCafe(
-            @Parameter(description = "Cafe external ID") @PathVariable UUID cafeId,
-            @Parameter(description = "Filter by purchase status, several separated by commas")
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID cafeId,
+            @Parameter(description = "Filtra por estado de la compra, varios separados por comas")
             @RequestParam(required = false) List<PurchaseStatus> status,
-            @Parameter(description = "From date (yyyy-MM-dd)") @RequestParam(required = false)
+            @Parameter(description = "Desde la fecha (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @Parameter(description = "To date (yyyy-MM-dd)") @RequestParam(required = false)
+            @Parameter(description = "Hasta la fecha (yyyy-MM-dd)") @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(purchaseService.getHistoryByCafe(cafeId, new PurchaseFilter(status, from, to), pageable));
@@ -105,9 +105,9 @@ public class PurchaseController {
 
     @GetMapping("/client/{clientId}/history")
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")
-    @Operation(summary = "Purchase history of a client")
+    @Operation(summary = "Historial de compras de un cliente")
     public ResponseEntity<PageResponse<PurchaseResponse>> getHistoryByClient(
-            @Parameter(description = "Client external ID") @PathVariable UUID clientId,
+            @Parameter(description = "ID externo del cliente") @PathVariable UUID clientId,
             @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(purchaseService.getHistoryByClient(clientId, pageable));
     }

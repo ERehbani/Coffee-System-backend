@@ -100,12 +100,12 @@ class BenefitEntityTest {
 
         benefit.setTier(oro);
         assertThatThrownBy(() -> benefit.ensureRedeemableBy(client, today))
-                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("higher tier");
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("tier superior");
 
         benefit.setTier(bronce);
         benefit.setStartDate(today.plusDays(1));
         assertThatThrownBy(() -> benefit.ensureRedeemableBy(client, today))
-                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("not available yet");
+                .isInstanceOf(BusinessRuleException.class).hasMessageContaining("todavía no está disponible");
 
         benefit.setStartDate(null);
         benefit.setRedeemedCount(5);

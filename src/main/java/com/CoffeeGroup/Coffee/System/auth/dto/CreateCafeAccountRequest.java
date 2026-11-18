@@ -6,32 +6,32 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateCafeAccountRequest(
-        @NotBlank(message = "Email is required")
-        @Email(message = "Invalid email")
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email no es válido")
         String email,
 
-        @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "The password must be at least 6 characters long")
+        @NotBlank(message = "La contraseña es obligatoria")
+        @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
         @Pattern(
                 regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+$",
-                message = "The password must contain at least one uppercase letter, one lowercase letter, and one number"
+                message = "La contraseña debe tener al menos una mayúscula, una minúscula y un número"
         )
         String password,
 
-        @NotBlank(message = "The name of the cafe is required")
-        @Size(min = 2, max = 80, message = "The name must be between 2 and 80 characters long")
+        @NotBlank(message = "El nombre de la cafetería es obligatorio")
+        @Size(min = 2, max = 80, message = "El nombre debe tener entre 2 y 80 caracteres")
         String name,
 
-        @NotBlank(message = "The address is required")
-        @Size(min = 5, max = 150, message = "The address must be between 5 and 150 characters long")
+        @NotBlank(message = "La dirección es obligatoria")
+        @Size(min = 5, max = 150, message = "La dirección debe tener entre 5 y 150 caracteres")
         String address,
 
-        @Size(max = 500, message = "The description cannot exceed 500 characters")
+        @Size(max = 500, message = "La descripción puede tener hasta 500 caracteres")
         String description,
 
         @Pattern(
                 regexp = "^[0-9+\\-\\s()]{6,20}$",
-                message = "The phone number is not in a valid format"
+                message = "El teléfono no tiene un formato válido"
         )
         String phoneNumber
 ) {

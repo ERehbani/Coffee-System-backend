@@ -46,7 +46,7 @@ public class CategoryService implements ICategoryService {
     public CategoryResponse create(CategoryRequest request) {
         String name = request.name().trim();
         if (categoryRepository.existsByNameIgnoreCase(name)) {
-            throw new EntityAlreadyExistsException("A category named " + name + " already exists");
+            throw new EntityAlreadyExistsException("Ya existe una categoría llamada " + name);
         }
         CategoryEntity category = CategoryEntity.builder().name(name).build();
         categoryRepository.save(category);
@@ -59,7 +59,7 @@ public class CategoryService implements ICategoryService {
         CategoryEntity category = findCategory(externalId);
         String name = request.name().trim();
         if (categoryRepository.existsByNameIgnoreCaseAndExternalIdNot(name, externalId)) {
-            throw new EntityAlreadyExistsException("A category named " + name + " already exists");
+            throw new EntityAlreadyExistsException("Ya existe una categoría llamada " + name);
         }
         category.setName(name);
         return withProductCount(category);
@@ -78,6 +78,6 @@ public class CategoryService implements ICategoryService {
 
     private CategoryEntity findCategory(UUID externalId) {
         return categoryRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Category not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Categoría no encontrada"));
     }
 }

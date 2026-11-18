@@ -135,7 +135,7 @@ class ClientTierServiceTest {
 
     @Test
     void viewMyTierFailsWhenTheCurrentUserHasNoClientProfile() {
-        when(securityUtils.currentClient()).thenThrow(new AccessDeniedException("no client"));
+        when(securityUtils.currentClient()).thenThrow(new AccessDeniedException("sin perfil de cliente"));
 
         assertThatThrownBy(() -> service.viewMyTier()).isInstanceOf(AccessDeniedException.class);
     }

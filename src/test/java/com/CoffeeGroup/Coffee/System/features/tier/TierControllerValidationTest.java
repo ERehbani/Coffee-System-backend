@@ -57,7 +57,7 @@ class TierControllerValidationTest {
     void postRejectsABlankName() throws Exception {
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("   ", 100)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.name").value("The name is required"))
+                .andExpect(jsonPath("$.errors.name").value("El nombre es obligatorio"))
                 .andExpect(jsonPath("$.status").value(400));
         verify(tierService, never()).create(any());
     }
@@ -66,7 +66,7 @@ class TierControllerValidationTest {
     void postRejectsANameLongerThanFiftyCharacters() throws Exception {
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("a".repeat(51), 100)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.name").value("The name must have at most 50 characters"));
+                .andExpect(jsonPath("$.errors.name").value("El nombre puede tener hasta 50 caracteres"));
         verify(tierService, never()).create(any());
     }
 
@@ -74,7 +74,7 @@ class TierControllerValidationTest {
     void postRejectsNullMinPoints() throws Exception {
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("Plata", null)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.minPoints").value("The minimum points are required"));
+                .andExpect(jsonPath("$.errors.minPoints").value("Los puntos mínimos son obligatorios"));
         verify(tierService, never()).create(any());
     }
 
@@ -82,7 +82,7 @@ class TierControllerValidationTest {
     void postRejectsNegativeMinPoints() throws Exception {
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("Plata", -1)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.minPoints").value("The minimum points cannot be negative"));
+                .andExpect(jsonPath("$.errors.minPoints").value("Los puntos mínimos no pueden ser negativos"));
         verify(tierService, never()).create(any());
     }
 
@@ -90,8 +90,8 @@ class TierControllerValidationTest {
     void putAppliesTheSameValidation() throws Exception {
         mockMvc.perform(put("/tiers/" + externalId).contentType(MediaType.APPLICATION_JSON).content(body("", -5)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errors.name").value("The name is required"))
-                .andExpect(jsonPath("$.errors.minPoints").value("The minimum points cannot be negative"));
+                .andExpect(jsonPath("$.errors.name").value("El nombre es obligatorio"))
+                .andExpect(jsonPath("$.errors.minPoints").value("Los puntos mínimos no pueden ser negativos"));
         verify(tierService, never()).update(any(), any());
     }
 
@@ -109,21 +109,21 @@ class TierControllerValidationTest {
 
     @Test
     void duplicateTiersAnswerConflictWithTheProblemDetail() throws Exception {
-        when(tierService.create(any())).thenThrow(new EntityAlreadyExistsException("A tier named Plata already exists"));
+        when(tierService.create(any())).thenThrow(new EntityAlreadyExistsException("Ya existe un tier llamado Plata"));
 
         mockMvc.perform(post("/tiers").contentType(MediaType.APPLICATION_JSON).content(body("Plata", 1000)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.detail").value("A tier named Plata already exists"));
+                .andExpect(jsonPath("$.detail").value("Ya existe un tier llamado Plata"));
     }
 
     @Test
     void movingTheBaseTierAnswersUnprocessableWithTheProblemDetail() throws Exception {
         when(tierService.update(eq(externalId), any()))
-                .thenThrow(new BusinessRuleException("The base tier must keep 0 points"));
+                .thenThrow(new BusinessRuleException("El tier base debe mantener 0 puntos"));
 
         mockMvc.perform(put("/tiers/" + externalId).contentType(MediaType.APPLICATION_JSON).content(body("Bronce", 500)))
                 .andExpect(status().isUnprocessableContent())
-                .andExpect(jsonPath("$.detail").value("The base tier must keep 0 points"))
+                .andExpect(jsonPath("$.detail").value("El tier base debe mantener 0 puntos"))
                 .andExpect(jsonPath("$.status").value(422));
     }
 

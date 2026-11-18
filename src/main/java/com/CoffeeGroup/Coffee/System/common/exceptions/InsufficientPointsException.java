@@ -15,6 +15,6 @@ public class InsufficientPointsException extends DomainException {
 
     @Override
     public String title() {
-        return "Insufficient points";
+        return "Puntos insuficientes";
     }
 }

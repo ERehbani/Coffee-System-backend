@@ -29,35 +29,35 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
-@Tag(name = "Users", description = "Endpoints for managing users")
+@Tag(name = "Usuarios", description = "Endpoints para administrar usuarios")
 public class UserController {
 
     private final IUserService userService;
 
     @GetMapping
-    @Operation(summary = "List users", description = "Lists the users page by page, newest first by default")
+    @Operation(summary = "Listar usuarios", description = "Lista los usuarios paginados, los más nuevos primero por defecto")
     public ResponseEntity<PageResponse<UserResponse>> getAll(
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(userService.getAll(pageable));
     }
 
     @GetMapping("/{externalId}")
-    @Operation(summary = "Get user by ID")
-    public ResponseEntity<UserResponse> getById(@Parameter(description = "User external ID") @PathVariable UUID externalId) {
+    @Operation(summary = "Obtener usuario por ID")
+    public ResponseEntity<UserResponse> getById(@Parameter(description = "ID externo del usuario") @PathVariable UUID externalId) {
         return ResponseEntity.ok(userService.getById(externalId));
     }
 
     @PutMapping("/{externalId}")
-    @Operation(summary = "Update user", description = "Changes the email (and the login username) or the active state")
+    @Operation(summary = "Actualizar usuario", description = "Cambia el email (y el usuario de inicio de sesión) o el estado activo")
     public ResponseEntity<UserResponse> update(
-            @Parameter(description = "User external ID") @PathVariable UUID externalId,
+            @Parameter(description = "ID externo del usuario") @PathVariable UUID externalId,
             @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.update(externalId, request));
     }
 
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Deactivate user", description = "Logical delete: the user can no longer sign in")
-    public ResponseEntity<Void> delete(@Parameter(description = "User external ID") @PathVariable UUID externalId) {
+    @Operation(summary = "Desactivar usuario", description = "Eliminación lógica: el usuario ya no puede iniciar sesión")
+    public ResponseEntity<Void> delete(@Parameter(description = "ID externo del usuario") @PathVariable UUID externalId) {
         userService.delete(externalId);
         return ResponseEntity.noContent().build();
     }
