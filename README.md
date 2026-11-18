@@ -40,7 +40,7 @@ Los permisos se asignan a cada rol al iniciar la aplicación a través de `Datab
 
 ## Estructura del proyecto
 
-El código se organiza por features, donde cada modulo agrupa su controlador, servicio, entidad, repositorio y DTOs.
+El código se organiza por features, donde cada módulo agrupa su controlador, servicio, entidad, repositorio y DTOs.
 
 ```
 src/main/java/com/CoffeeGroup/Coffee/System
@@ -179,7 +179,7 @@ Al arrancar, `DatabaseInitializer` crea de forma automática:
 - Categorías de productos por defecto.
 - Si `DEMO_DATA_ENABLED=true`, datos de demostración: dos cafeterías de prueba con productos y beneficios, y un cliente de prueba.
 
-Cada dato se crea solo si no existe, así que reiniciar la aplicación no duplica nada ni pisa lo que ya este cargado.
+Cada dato se crea solo si no existe, así que reiniciar la aplicación no duplica nada ni pisa lo que ya esté cargado.
 
 ## Usuarios de prueba
 
