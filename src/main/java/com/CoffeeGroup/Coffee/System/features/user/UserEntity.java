@@ -53,7 +53,7 @@ public class UserEntity extends AuditableEntity {
         return email == null ? null : email.value();
     }
 
-    // Every account is created with exactly one role, so the first one is the user's role.
+    // Cada cuenta se crea con un solo rol, así que el primero es el rol del usuario
     public String roleName() {
         if (credentials == null) {
             return null;

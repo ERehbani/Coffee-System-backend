@@ -102,7 +102,7 @@ public class UserService implements IUserService {
                 .roles(Set.of(role))
                 .build();
         credentialsRepository.save(credentials);
-        // Keep the inverse side in sync so the response can read the role in this same transaction.
+        // Sincroniza el lado inverso para que la respuesta lea el rol en esta misma transacción
         user.setCredentials(credentials);
         return user;
     }

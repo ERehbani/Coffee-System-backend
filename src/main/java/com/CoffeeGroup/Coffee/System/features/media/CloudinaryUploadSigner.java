@@ -32,13 +32,13 @@ public class CloudinaryUploadSigner implements IMediaService {
         }
         String folder = target.folderUnder(properties.folder(), ownerId);
         long timestamp = clock.instant().getEpochSecond();
-        // Cloudinary signs the params sorted by name; these are already in alphabetical order.
+        // Cloudinary firma los parámetros ordenados por nombre; estos ya están en orden alfabético
         String params = "allowed_formats=" + ALLOWED_FORMATS + "&folder=" + folder + "&timestamp=" + timestamp;
         return new UploadSignatureResponse(properties.cloudName(), properties.apiKey(), timestamp,
                 folder, ALLOWED_FORMATS, sha1Hex(params + properties.apiSecret()));
     }
 
-    // The folder comes from the authenticated user so nobody can sign uploads into another owner's folder.
+    // La carpeta sale del usuario autenticado para que nadie firme subidas en la carpeta de otro dueño
     private UUID ownerIdOf(UploadTarget target) {
         if (target.owner() == UploadTarget.Owner.CAFE && securityUtils.isCafe()) {
             return securityUtils.currentCafe().getExternalId();
@@ -46,7 +46,7 @@ public class CloudinaryUploadSigner implements IMediaService {
         if (target.owner() == UploadTarget.Owner.CLIENT && securityUtils.isClient()) {
             return securityUtils.currentClient().getExternalId();
         }
-        throw new AccessDeniedException("You cannot upload a " + target + " image");
+        throw new AccessDeniedException("No puedes subir imágenes para el destino " + target);
     }
 
     private static String sha1Hex(String value) {
@@ -54,7 +54,7 @@ public class CloudinaryUploadSigner implements IMediaService {
             byte[] digest = MessageDigest.getInstance("SHA-1").digest(value.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(digest);
         } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-1 is not available", e);
+            throw new IllegalStateException("SHA-1 no está disponible", e);
         }
     }
 }

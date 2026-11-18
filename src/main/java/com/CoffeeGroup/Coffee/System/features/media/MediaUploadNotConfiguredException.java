@@ -7,7 +7,7 @@ import com.CoffeeGroup.Coffee.System.common.exceptions.DomainException;
 public class MediaUploadNotConfiguredException extends DomainException {
 
     public MediaUploadNotConfiguredException() {
-        super("Image upload is not configured");
+        super("La subida de imágenes no está configurada");
     }
 
     @Override
@@ -17,6 +17,6 @@ public class MediaUploadNotConfiguredException extends DomainException {
 
     @Override
     public String title() {
-        return "Image upload unavailable";
+        return "Subida de imágenes no disponible";
     }
 }

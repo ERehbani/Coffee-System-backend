@@ -4,5 +4,5 @@ import com.CoffeeGroup.Coffee.System.features.media.UploadTarget;
 
 import jakarta.validation.constraints.NotNull;
 
-public record UploadSignatureRequest(@NotNull UploadTarget target) {
+public record UploadSignatureRequest(@NotNull(message = "El destino es obligatorio") UploadTarget target) {
 }

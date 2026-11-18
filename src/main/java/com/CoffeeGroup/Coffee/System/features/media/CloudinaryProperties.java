@@ -13,7 +13,7 @@ public record CloudinaryProperties(String cloudName, String apiKey, String apiSe
         return value != null && !value.isBlank();
     }
 
-    // The generated record toString would print the API secret wherever this object is logged.
+    // El toString generado del record imprimiría el API secret en cualquier log que lo muestre
     @Override
     public String toString() {
         return "CloudinaryProperties[cloudName=" + cloudName + ", apiKey=" + apiKey + ", folder=" + folder + "]";

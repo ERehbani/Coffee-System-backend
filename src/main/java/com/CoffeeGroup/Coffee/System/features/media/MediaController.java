@@ -18,18 +18,18 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/media")
 @RequiredArgsConstructor
-@Tag(name = "Media", description = "Signed uploads of images straight from the browser to Cloudinary")
+@Tag(name = "Media", description = "Subida firmada de imágenes desde el navegador directo a Cloudinary")
 public class MediaController {
     private final IMediaService mediaService;
 
     @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_CLIENTE')")
     @PostMapping("/signature")
-    @Operation(summary = "Sign image upload", description = """
-            Returns the signed parameters the browser sends with the image to Cloudinary; the signature is valid for one hour.
-            The target picks the folder of the authenticated owner: CAFE_LOGO, CAFE_COVER and PRODUCT_IMAGE \
-            sign into {base}/cafes/{cafeId}/logo, /cover or /products and need the cafe role; CLIENT_AVATAR signs into \
-            {base}/clients/{clientId}/avatar and needs the client role. A missing or unknown target answers 400, \
-            a target of another role answers 403.""")
+    @Operation(summary = "Firmar la subida de una imagen", description = """
+            Devuelve los parámetros firmados que el navegador envía a Cloudinary junto con la imagen; la firma vale una hora.
+            El destino define la carpeta del dueño autenticado: CAFE_LOGO, CAFE_COVER y PRODUCT_IMAGE \
+            firman en {base}/cafes/{cafeId}/logo, /cover o /products y requieren el rol de cafetería; CLIENT_AVATAR firma en \
+            {base}/clients/{clientId}/avatar y requiere el rol de cliente. Un destino ausente o desconocido responde 400, \
+            un destino de otro rol responde 403.""")
     public ResponseEntity<UploadSignatureResponse> signImageUpload(@Valid @RequestBody UploadSignatureRequest request) {
         return ResponseEntity.ok(mediaService.signImageUpload(request.target()));
     }

@@ -18,7 +18,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
 
     boolean existsByNameIgnoreCaseAndExternalIdNot(String name, UUID externalId);
 
-    // Catalog products hold the foreign key that blocks deleting a category in use.
+    // Los productos del catálogo tienen la clave foránea que impide borrar una categoría en uso
     @Query("select p.category.id as categoryId, count(p) as productCount "
             + "from CatalogProductEntity p group by p.category.id")
     List<CategoryProductCount> countProductsByCategory();
