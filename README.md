@@ -44,21 +44,21 @@ El código se organiza por features, donde cada modulo agrupa su controlador, se
 
 ```
 src/main/java/com/CoffeeGroup/Coffee/System
-  auth/                  Autenticacion, JWT, roles, permisos y configuracion de seguridad
-  common/                Utilidades compartidas, manejo de excepciones, email e inicializacion de datos
+  auth/                  Autenticación, JWT, roles, permisos y configuración de seguridad
+  common/                Utilidades compartidas, manejo de excepciones, email e inicialización de datos
   features/
     benefit/             Beneficios canjeables
     benefit_type/        Tipos de beneficio (descuento, producto por puntos, 2x1)
-    cafe/                Cafeterias
+    cafe/                Cafeterías
     cart/                Carrito de compras
-    category/            Categorias de productos
+    category/            Categorías de productos
     client/              Perfiles de cliente y puntos
-    product/             Productos del catalogo
+    product/             Productos del catálogo
     purchase/            Compras
     purchase_detail/     Detalle de cada compra
     redemption/          Canje de beneficios
-    review/              Resenas de cafeterias
-    tier/                Niveles de fidelizacion
+    review/              Reseñas de cafeterías
+    tier/                Niveles de fidelización
     user/                Cuentas de usuario
 ```
 
