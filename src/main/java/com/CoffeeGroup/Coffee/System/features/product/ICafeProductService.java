@@ -1,11 +1,13 @@
 package com.CoffeeGroup.Coffee.System.features.product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 
 import com.CoffeeGroup.Coffee.System.common.web.PageResponse;
+import com.CoffeeGroup.Coffee.System.features.product.domain.dto.PointsRangeResponse;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductFilter;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductRequest;
 import com.CoffeeGroup.Coffee.System.features.product.domain.dto.ProductResponse;
@@ -30,4 +32,6 @@ public interface ICafeProductService {
     void deactivate(UUID productExternalId);
 
     ProductResponse activate(UUID productExternalId);
+
+    PointsRangeResponse pointsRange(UUID cafeExternalId, UUID catalogProductId, String name, BigDecimal price);
 }

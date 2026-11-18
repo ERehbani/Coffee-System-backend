@@ -134,7 +134,9 @@ openssl rand -base64 48
 | `AUTH_COOKIE_SECURE` | Si la cookie de sesion lleva el atributo `Secure`. Por defecto `true`; los navegadores la aceptan igual en `localhost` |
 | `AUTH_COOKIE_SAME_SITE` | Atributo `SameSite` de la cookie de sesion. Por defecto `Strict` |
 | `SUPERADMIN_EMAIL` / `SUPERADMIN_PASSWORD` | Superadmin que se crea al arrancar si no existe |
-| `DEMO_DATA_ENABLED` | Crea las cafeterias y el cliente de prueba. Por defecto `false`; ponerlo en `true` solo en desarrollo local |
+| `DEMO_DATA_ENABLED` | Crea las cafeterias y los clientes de prueba. Por defecto `false`; ponerlo en `true` solo en desarrollo local |
+| `POINTS_PESOS_PER_POINT` | Cuantos pesos del precio promedio de un producto equivalen a un punto. Por defecto `25` |
+| `POINTS_MAX_DEVIATION_PERCENT` | Cuanto (en %) puede bajar (piso) o subir (tope) una cafeteria los puntos sugeridos de un producto. Por defecto `20` |
 | `RESEND_APIKEY` | API key de Resend. En local alcanza con un valor de prueba |
 | `CORS_ALLOWED_ORIGINS` | Origenes del frontend habilitados, separados por coma |
 | `MYSQL_ROOT_PASSWORD` / `MYSQL_DATABASE` | Solo para Docker Compose |
@@ -177,7 +179,7 @@ Al arrancar, `DatabaseInitializer` crea de forma automatica:
 - El usuario superadmin con las credenciales de las variables de entorno.
 - Los tiers iniciales (BRONCE, PLATA, ORO, DIAMANTE).
 - Categorias de productos por defecto.
-- Si `DEMO_DATA_ENABLED=true`, datos de demostracion: dos cafeterias de prueba con productos y beneficios, y un cliente de prueba.
+- Si `DEMO_DATA_ENABLED=true`, datos de demostracion: cinco cafeterias con productos y beneficios, clientes con distintas cantidades de puntos (uno por nivel) con su historial de compras, y pedidos abiertos para gestionar desde el panel de la cafeteria.
 
 Cada dato se crea solo si no existe, asi que reiniciar la aplicacion no duplica nada ni pisa lo que ya este cargado.
 
@@ -188,9 +190,25 @@ Con el `.env` copiado de `.env.example` y `DEMO_DATA_ENABLED=true`, al arrancar 
 | Rol | Email | Contraseña | Origen |
 |---|---|---|---|
 | Superadmin | `admin@test.com` | `Admin123` | Variables `SUPERADMIN_EMAIL` y `SUPERADMIN_PASSWORD` |
-| Cafeteria | `cafe.central@test.com` | `Cafe1234` | `DatabaseInitializer` |
-| Cafeteria | `cafe.norte@test.com` | `Cafe1234` | `DatabaseInitializer` |
-| Cliente | `cliente@test.com` | `Cliente123` | `DemoClientSeeder` |
+| Cafeteria | `cafe.central@test.com` (Cafe Central, con pedidos abiertos) | `Cafe1234` | `DemoDataSeeder` |
+| Cafeteria | `cafe.norte@test.com` (Cafe Norte) | `Cafe1234` | `DemoDataSeeder` |
+| Cafeteria | `cafe.sur@test.com` (Tostadero del Sur, puntos en el tope) | `Cafe1234` | `DemoDataSeeder` |
+| Cafeteria | `cafe.grano@test.com` (Grano de Oro) | `Cafe1234` | `DemoDataSeeder` |
+| Cafeteria | `cafe.esquina@test.com` (La Esquina, puntos en el piso) | `Cafe1234` | `DemoDataSeeder` |
+| Cliente | `cliente@test.com` (sin compras) | `Cliente123` | `DemoDataSeeder` |
+| Cliente | `valentina@test.com` (0 pts, Bronce) | `Cliente123` | `DemoDataSeeder` |
+| Cliente | `lucia@test.com` (~500 pts, Bronce) | `Cliente123` | `DemoDataSeeder` |
+| Cliente | `martin@test.com` (~1.500 pts, Plata) | `Cliente123` | `DemoDataSeeder` |
+| Cliente | `sofia@test.com` (~4.000 pts, Oro) | `Cliente123` | `DemoDataSeeder` |
+| Cliente | `tomas@test.com` (~7.800 pts, Diamante) | `Cliente123` | `DemoDataSeeder` |
+
+Cada cuenta se crea solo si su email no existe, asi que en una base que ya tenia la demo anterior se agregan solo las nuevas. Los puntos exactos dependen de los productos de cada cafeteria.
+
+## Puntos de los productos
+
+Los puntos que otorga un producto salen de su precio. Para que no haya cafeterias que regalen muchos mas puntos que otras por el mismo producto, el valor sugerido se calcula con el **precio promedio de ese producto del catalogo entre todas las cafeterias que lo venden** (incluyendo el precio que esta cargando la cafeteria), dividido por `POINTS_PESOS_PER_POINT`. La cafeteria puede elegir cualquier valor entre el piso y el tope (`POINTS_MAX_DEVIATION_PERCENT` por debajo y por encima del sugerido); si no manda puntos, se usa el sugerido. Si cambia solo el precio, los puntos se ajustan al rango nuevo.
+
+`GET /cafes/{cafeId}/products/points-range?price=2500&catalogProductId=...` (o `&name=...` para un producto nuevo) devuelve `suggested`, `min`, `max`, `referencePrice` y `cafesSelling`.
 
 Son solo para desarrollo: no usar estas credenciales en un entorno publico.
 

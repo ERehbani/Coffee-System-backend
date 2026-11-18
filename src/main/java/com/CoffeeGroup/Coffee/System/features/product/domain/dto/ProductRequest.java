@@ -32,8 +32,7 @@ public record ProductRequest(
         @Max(value = 50000, message = "The price must be smaller than 50000")
         BigDecimal price,
 
-        @NotNull(message = "Awarded points is required")
-        @Min(value = 50, message = "Awarded points must be bigger than 50")
+        @Min(value = 1, message = "Awarded points must be at least 1")
         @Max(value = 3000, message = "Awarded points must be smaller than 3000")
         Integer awardedPoints,
 
