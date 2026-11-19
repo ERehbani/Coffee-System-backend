@@ -30,6 +30,7 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
 import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
 import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 
@@ -44,6 +45,7 @@ public class BenefitService implements IBenefitService {
     private static final Sort BY_POINTS = Sort.by("pointsCost", "name");
 
     private final BenefitRepository benefitRepository;
+    private final RedemptionRepository redemptionRepository;
     private final BenefitFormatRepository benefitFormatRepository;
     private final TierRepository tierRepository;
     private final CafeProductRepository cafeProductRepository;
@@ -106,6 +108,10 @@ public class BenefitService implements IBenefitService {
         boolean cafeDeletingOwn = securityUtils.isCafe() && benefit.belongsTo(securityUtils.currentCafe());
         if (!adminDeletingGlobal && !cafeDeletingOwn) {
             throw new AccessDeniedException("Access denied: You do not have permission to delete this benefit");
+        }
+        if (redemptionRepository.existsByBenefit(benefit)) {
+            throw new BusinessRuleException(
+                    "Este beneficio ya tiene canjes y no se puede eliminar. Pausalo para que no se pueda canjear más");
         }
         benefitRepository.delete(benefit);
         benefitRepository.flush();
