@@ -62,7 +62,7 @@ public class SecurityConfig {
             Exception {
         http.authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/auth/me").authenticated()
+                        .requestMatchers("/auth/me", "/auth/password").authenticated()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         .anyRequest().authenticated())

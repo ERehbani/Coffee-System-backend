@@ -2,6 +2,7 @@ package com.CoffeeGroup.Coffee.System.auth;
 
 import com.CoffeeGroup.Coffee.System.auth.cookie.AuthCookieService;
 import com.CoffeeGroup.Coffee.System.auth.dto.AuthRequest;
+import com.CoffeeGroup.Coffee.System.auth.dto.ChangePasswordRequest;
 import com.CoffeeGroup.Coffee.System.auth.dto.CreateAccountRequest;
 import com.CoffeeGroup.Coffee.System.auth.dto.SessionResponse;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
@@ -20,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,6 +65,15 @@ public class AuthController {
     @ApiResponses
     public ResponseEntity<SessionResponse> currentSession(Authentication authentication) {
         return ResponseEntity.ok(SessionResponse.of(authentication.getName(), authentication.getAuthorities()));
+    }
+
+    @PutMapping("/password")
+    @Operation(summary = "Cambiar la contraseña", description = "Cambia la contraseña del usuario de la sesión después de verificar la actual")
+    @ApiResponses
+    public ResponseEntity<Void> changePassword(Authentication authentication,
+            @RequestBody @Valid ChangePasswordRequest request) {
+        authService.changePassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/register")
