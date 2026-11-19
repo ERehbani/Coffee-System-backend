@@ -123,6 +123,23 @@ class BenefitEntityTest {
     }
 
     @Test
+    void theBenefitOfADeactivatedCafeIsHiddenAndCannotBeRedeemed() {
+        central.deactivate();
+
+        assertThat(benefit.isVisibleOn(today)).isFalse();
+        assertThatThrownBy(() -> benefit.ensureRedeemableBy(client, today))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("La cafetería de este beneficio está desactivada");
+    }
+
+    @Test
+    void aGlobalBenefitDoesNotDependOnAnyCafe() {
+        BenefitEntity global = TestData.benefit("Global", BenefitType.CODIGO_DESCUENTO, null, bronce);
+
+        assertThat(global.belongsToActiveCafe()).isTrue();
+    }
+
+    @Test
     void theLimitPerClientIsOptional() {
         assertThat(benefit.reachedClientLimit(10)).isFalse();
 

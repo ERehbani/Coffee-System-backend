@@ -68,6 +68,12 @@ public class CafeEntity extends AuditableEntity {
 
     public void deactivate() {
         active = false;
+        user.deactivate();
+    }
+
+    public void reactivate() {
+        active = true;
+        user.activate();
     }
 
     public boolean isOpenAt(LocalDateTime moment) {
