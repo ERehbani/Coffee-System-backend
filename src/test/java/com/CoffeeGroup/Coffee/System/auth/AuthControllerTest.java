@@ -2,9 +2,11 @@ package com.CoffeeGroup.Coffee.System.auth;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.CoffeeGroup.Coffee.System.auth.cookie.AuthCookieService;
+import com.CoffeeGroup.Coffee.System.auth.dto.ChangePasswordRequest;
 import com.CoffeeGroup.Coffee.System.auth.jwt.JwtService;
 import com.CoffeeGroup.Coffee.System.features.user.UserService;
 
@@ -83,5 +86,19 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("cafe.central@test.com"))
                 .andExpect(jsonPath("$.roles[0]").value("ROLE_CAFETERIA"));
+    }
+
+    @Test
+    void changePasswordUsesTheUserOfTheSession() throws Exception {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                "cliente@test.com", null, List.of(new SimpleGrantedAuthority("ROLE_CLIENTE")));
+
+        mockMvc.perform(put("/auth/password")
+                        .principal(authentication)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"currentPassword\":\"Actual123\",\"newPassword\":\"Nueva1234\"}"))
+                .andExpect(status().isNoContent());
+
+        verify(authService).changePassword("cliente@test.com", new ChangePasswordRequest("Actual123", "Nueva1234"));
     }
 }
