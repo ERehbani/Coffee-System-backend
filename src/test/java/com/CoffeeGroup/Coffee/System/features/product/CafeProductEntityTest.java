@@ -46,6 +46,15 @@ class CafeProductEntityTest {
     }
 
     @Test
+    void cannotBeSoldWhileItsCafeIsDeactivated() {
+        central.deactivate();
+
+        assertThatThrownBy(() -> capuccino.ensureCanBeSoldBy(central))
+                .isInstanceOf(ProductNotAvailableException.class)
+                .hasMessage("La cafetería Cafe Central no está recibiendo pedidos");
+    }
+
+    @Test
     void cannotBeSoldWhileSoldOutForToday() {
         capuccino.markAvailability(false);
 

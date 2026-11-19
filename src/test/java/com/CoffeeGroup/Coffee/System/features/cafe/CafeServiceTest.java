@@ -1,17 +1,20 @@
 package com.CoffeeGroup.Coffee.System.features.cafe;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
 
 import com.CoffeeGroup.Coffee.System.auth.access.CafeAccessGuard;
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
@@ -45,8 +48,12 @@ class CafeServiceTest {
     }
 
     private UpdateCafeRequest completeProfile(List<OpeningHoursRequest> hours) {
-        return new UpdateCafeRequest("Av Siempreviva 123", "1111111111", "Cafe del centro",
+        return new UpdateCafeRequest(null, "Av Siempreviva 123", "1111111111", "Cafe del centro",
                 "https://img/logo.png", "https://img/cover.png", hours);
+    }
+
+    private UpdateCafeRequest renamedTo(String name) {
+        return new UpdateCafeRequest(name, "Av Siempreviva 123", "1111111111", "Cafe del centro", null, null, null);
     }
 
     @Test
@@ -88,5 +95,47 @@ class CafeServiceTest {
         when(securityUtils.currentCafe()).thenReturn(central);
 
         assertThat(service.getMine().profileComplete()).isFalse();
+    }
+
+    @Test
+    void deactivatingTheCafeAlsoBlocksTheLoginOfItsAccount() {
+        when(cafeRepository.findByExternalId(central.getExternalId())).thenReturn(Optional.of(central));
+
+        service.delete(central.getExternalId());
+
+        assertThat(central.isActive()).isFalse();
+        assertThat(central.getUser().isActive()).isFalse();
+    }
+
+    @Test
+    void reactivatingTheCafeGivesBackTheCafeAndItsAccount() {
+        central.deactivate();
+        when(cafeRepository.findByExternalId(central.getExternalId())).thenReturn(Optional.of(central));
+
+        CafeResponse response = service.reactivate(central.getExternalId());
+
+        assertThat(central.isActive()).isTrue();
+        assertThat(central.getUser().isActive()).isTrue();
+        assertThat(response.state()).isTrue();
+    }
+
+    @Test
+    void theAdminCanRenameTheCafe() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(securityUtils.isAdmin()).thenReturn(true);
+
+        CafeResponse response = service.update(central.getExternalId(), renamedTo("  Cafe Central Palermo "));
+
+        assertThat(response.name()).isEqualTo("Cafe Central Palermo");
+    }
+
+    @Test
+    void aCafeCannotChangeItsOwnName() {
+        when(cafeAccessGuard.managedCafe(central.getExternalId())).thenReturn(central);
+        when(securityUtils.isAdmin()).thenReturn(false);
+
+        assertThatThrownBy(() -> service.update(central.getExternalId(), renamedTo("Otro nombre")))
+                .isInstanceOf(AccessDeniedException.class);
+        assertThat(central.getName()).isEqualTo("Cafe Central");
     }
 }

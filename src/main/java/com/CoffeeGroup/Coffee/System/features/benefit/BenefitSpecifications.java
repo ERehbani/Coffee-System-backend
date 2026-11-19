@@ -81,6 +81,13 @@ public final class BenefitSpecifications {
         };
     }
 
+    public static Specification<BenefitEntity> fromActiveCafe() {
+        return (root, query, builder) -> {
+            Join<BenefitEntity, CafeEntity> cafe = root.join("cafe", JoinType.LEFT);
+            return builder.or(builder.isNull(cafe), builder.isTrue(cafe.get("active")));
+        };
+    }
+
     public static Specification<BenefitEntity> ofCafe(UUID cafeExternalId) {
         if (cafeExternalId == null) {
             return null;

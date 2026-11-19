@@ -49,6 +49,10 @@ public class UserEntity extends AuditableEntity {
         active = false;
     }
 
+    public void activate() {
+        active = true;
+    }
+
     public String emailAddress() {
         return email == null ? null : email.value();
     }
