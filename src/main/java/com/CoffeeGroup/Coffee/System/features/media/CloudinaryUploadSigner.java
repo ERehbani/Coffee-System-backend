@@ -5,12 +5,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.util.HexFormat;
-import java.util.UUID;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.CoffeeGroup.Coffee.System.auth.config.securityconfig.SecurityUtils;
+import com.CoffeeGroup.Coffee.System.features.media.UploadTarget.Owner;
 import com.CoffeeGroup.Coffee.System.features.media.domain.dto.UploadSignatureResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -26,11 +26,11 @@ public class CloudinaryUploadSigner implements IMediaService {
 
     @Override
     public UploadSignatureResponse signImageUpload(UploadTarget target) {
-        UUID ownerId = ownerIdOf(target);
+        String ownerFolder = ownerFolderOf(target);
         if (!properties.isConfigured()) {
             throw new MediaUploadNotConfiguredException();
         }
-        String folder = target.folderUnder(properties.folder(), ownerId);
+        String folder = target.folderUnder(properties.folder(), ownerFolder);
         long timestamp = clock.instant().getEpochSecond();
         // Cloudinary signs the params sorted by name; these are already in alphabetical order.
         String params = "allowed_formats=" + ALLOWED_FORMATS + "&folder=" + folder + "&timestamp=" + timestamp;
@@ -39,12 +39,15 @@ public class CloudinaryUploadSigner implements IMediaService {
     }
 
     // The folder comes from the authenticated user so nobody can sign uploads into another owner's folder.
-    private UUID ownerIdOf(UploadTarget target) {
-        if (target.owner() == UploadTarget.Owner.CAFE && securityUtils.isCafe()) {
-            return securityUtils.currentCafe().getExternalId();
+    private String ownerFolderOf(UploadTarget target) {
+        if (target.isUploadableBy(Owner.CAFE) && securityUtils.isCafe()) {
+            return Owner.CAFE.folderOf(securityUtils.currentCafe().getExternalId());
         }
-        if (target.owner() == UploadTarget.Owner.CLIENT && securityUtils.isClient()) {
-            return securityUtils.currentClient().getExternalId();
+        if (target.isUploadableBy(Owner.CLIENT) && securityUtils.isClient()) {
+            return Owner.CLIENT.folderOf(securityUtils.currentClient().getExternalId());
+        }
+        if (target.isUploadableBy(Owner.PLATFORM) && securityUtils.isAdmin()) {
+            return Owner.PLATFORM.folder();
         }
         throw new AccessDeniedException("You cannot upload a " + target + " image");
     }

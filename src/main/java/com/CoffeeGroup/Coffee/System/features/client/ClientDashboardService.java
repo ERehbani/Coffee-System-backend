@@ -81,6 +81,7 @@ public class ClientDashboardService implements IClientDashboardService {
                 redemption.getExternalId(),
                 benefit.getName(),
                 orEmpty(benefit.getDescription()),
+                benefit.getImage(),
                 redemption.getValidationCode(),
                 benefit.getEndDate(),
                 benefit.isGlobal() ? null : benefit.getCafe().getName());
@@ -114,7 +115,7 @@ public class ClientDashboardService implements IClientDashboardService {
                 .filter(benefit -> !benefit.soldOut())
                 .limit(MAX_FEATURED_BENEFITS)
                 .map(benefit -> new FeaturedBenefit(benefit.externalId(), benefit.name(),
-                        orEmpty(benefit.description()), null, benefit.pointsCost()))
+                        orEmpty(benefit.description()), benefit.image(), benefit.pointsCost()))
                 .toList();
     }
 

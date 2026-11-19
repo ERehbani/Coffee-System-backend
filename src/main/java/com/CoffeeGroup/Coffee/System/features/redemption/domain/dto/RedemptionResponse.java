@@ -18,6 +18,7 @@ public record RedemptionResponse(
         String benefitName,
         String cafeName,
         String description,
+        String image,
         LocalDate expiresAt,
         String conditions,
         LocalDateTime usedDate,

@@ -19,6 +19,7 @@ public record BenefitResponse(
         boolean soldOut,
         String description,
         String conditions,
+        String image,
         UUID cafeId,
         String cafeEntity,
         boolean global,

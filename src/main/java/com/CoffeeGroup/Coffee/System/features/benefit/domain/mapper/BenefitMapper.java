@@ -32,6 +32,7 @@ public class BenefitMapper {
                 benefit.isSoldOut(),
                 benefit.getDescription(),
                 benefit.getConditions(),
+                benefit.getImage(),
                 cafe == null ? null : cafe.getExternalId(),
                 cafe == null ? null : cafe.getName(),
                 benefit.isGlobal(),

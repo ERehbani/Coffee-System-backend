@@ -22,14 +22,15 @@ import lombok.RequiredArgsConstructor;
 public class MediaController {
     private final IMediaService mediaService;
 
-    @PreAuthorize("hasAnyAuthority('ROLE_CAFETERIA','ROLE_CLIENTE')")
+    @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN','ROLE_CAFETERIA','ROLE_CLIENTE')")
     @PostMapping("/signature")
     @Operation(summary = "Sign image upload", description = """
             Returns the signed parameters the browser sends with the image to Cloudinary; the signature is valid for one hour.
             The target picks the folder of the authenticated owner: CAFE_LOGO, CAFE_COVER and PRODUCT_IMAGE \
             sign into {base}/cafes/{cafeId}/logo, /cover or /products and need the cafe role; CLIENT_AVATAR signs into \
-            {base}/clients/{clientId}/avatar and needs the client role. A missing or unknown target answers 400, \
-            a target of another role answers 403.""")
+            {base}/clients/{clientId}/avatar and needs the client role; BENEFIT_IMAGE signs into \
+            {base}/cafes/{cafeId}/benefits for the cafe role and into {base}/global/benefits for the superadmin role. \
+            A missing or unknown target answers 400, a target of another role answers 403.""")
     public ResponseEntity<UploadSignatureResponse> signImageUpload(@Valid @RequestBody UploadSignatureRequest request) {
         return ResponseEntity.ok(mediaService.signImageUpload(request.target()));
     }

@@ -37,6 +37,7 @@ public record ClientDashboardResponse(
             UUID id,
             String title,
             String description,
+            String imageUrl,
             String code,
             LocalDate expiresAt,
             String cafeName
