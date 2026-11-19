@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +68,9 @@ public class CafeService implements ICafeService {
     @Transactional
     public CafeResponse update(UUID externalId, UpdateCafeRequest request) {
         CafeEntity cafe = cafeAccessGuard.managedCafe(externalId);
+        if (request.name() != null) {
+            rename(cafe, request.name());
+        }
         cafe.setAddress(request.address());
         cafe.setPhoneNumber(request.phoneNumber());
         cafe.setDescription(request.description());
@@ -81,15 +85,33 @@ public class CafeService implements ICafeService {
     @Override
     @Transactional
     public void delete(UUID externalId) {
-        cafeRepository.findByExternalId(externalId)
-                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"))
-                .deactivate();
+        findCafe(externalId).deactivate();
+    }
+
+    @Override
+    @Transactional
+    public CafeResponse reactivate(UUID externalId) {
+        CafeEntity cafe = findCafe(externalId);
+        cafe.reactivate();
+        return cafeMapper.toResponse(cafe);
     }
 
     @Override
     public List<CafeResponse> filterCafes(String name, String address, Boolean active) {
         Boolean visibleState = securityUtils.isAdmin() ? active : true;
         return search(name, address, visibleState);
+    }
+
+    private void rename(CafeEntity cafe, String newName) {
+        if (!securityUtils.isAdmin()) {
+            throw new AccessDeniedException("Solo el administrador puede cambiar el nombre de la cafetería");
+        }
+        cafe.setName(newName.trim());
+    }
+
+    private CafeEntity findCafe(UUID externalId) {
+        return cafeRepository.findByExternalId(externalId)
+                .orElseThrow(() -> new EntityNotFoundException("Cafe not found"));
     }
 
     private List<CafeResponse> search(String name, String address, Boolean active) {

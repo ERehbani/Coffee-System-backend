@@ -8,6 +8,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record UpdateCafeRequest(
+        @Size(min = 2, max = 80, message = "El nombre debe tener entre 2 y 80 caracteres")
+        String name,
+
         @NotBlank(message = "Address cannot be empty")
         String address,
 

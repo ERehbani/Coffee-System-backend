@@ -34,7 +34,12 @@ public final class TestData {
     }
 
     public static CafeEntity cafe(String name) {
-        return CafeEntity.builder().externalId(UUID.randomUUID()).name(name).active(true).build();
+        return CafeEntity.builder()
+                .externalId(UUID.randomUUID())
+                .name(name)
+                .active(true)
+                .user(UserEntity.builder().email(new Email("cafe@test.com")).active(true).build())
+                .build();
     }
 
     public static ClientEntity client(TierEntity tier, int points) {

@@ -50,4 +50,27 @@ class BenefitSpecificationsTest {
         assertThat(predicate).isSameAs(either);
         verify(builder).or(isGlobal, isOwn);
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void onlyTheGlobalBenefitsAndTheOnesOfActiveCafesAreListed() {
+        Root<BenefitEntity> root = mock(Root.class);
+        CriteriaQuery<?> query = mock(CriteriaQuery.class);
+        CriteriaBuilder builder = mock(CriteriaBuilder.class);
+        Join<BenefitEntity, CafeEntity> cafe = mock(Join.class);
+        Path<Boolean> active = mock(Path.class);
+        Predicate isGlobal = mock(Predicate.class);
+        Predicate isActive = mock(Predicate.class);
+        Predicate either = mock(Predicate.class);
+        when(root.<BenefitEntity, CafeEntity>join("cafe", JoinType.LEFT)).thenReturn(cafe);
+        when(cafe.<Boolean>get("active")).thenReturn(active);
+        when(builder.isNull(cafe)).thenReturn(isGlobal);
+        when(builder.isTrue(active)).thenReturn(isActive);
+        when(builder.or(any(Predicate.class), any(Predicate.class))).thenReturn(either);
+
+        Predicate predicate = BenefitSpecifications.fromActiveCafe().toPredicate(root, query, builder);
+
+        assertThat(predicate).isSameAs(either);
+        verify(builder).or(isGlobal, isActive);
+    }
 }

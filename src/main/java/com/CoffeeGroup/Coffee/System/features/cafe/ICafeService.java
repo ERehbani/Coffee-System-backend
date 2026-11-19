@@ -22,5 +22,7 @@ public interface ICafeService {
 
     void delete(UUID externalId);
 
+    CafeResponse reactivate(UUID externalId);
+
     List<CafeResponse> filterCafes(String name, String address, Boolean active);
 }

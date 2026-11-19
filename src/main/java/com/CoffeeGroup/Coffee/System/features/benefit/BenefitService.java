@@ -224,7 +224,8 @@ public class BenefitService implements IBenefitService {
     private Specification<BenefitEntity> availableToday() {
         return Specifications.allOf(
                 BenefitSpecifications.isPublished(),
-                BenefitSpecifications.isInsideDates(LocalDate.now(clock)));
+                BenefitSpecifications.isInsideDates(LocalDate.now(clock)),
+                BenefitSpecifications.fromActiveCafe());
     }
 
     private List<BenefitResponse> search(Specification<BenefitEntity> specification, Sort sort) {

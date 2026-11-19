@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -57,10 +58,19 @@ public class CafeController {
 
     @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
     @DeleteMapping("/{externalId}")
-    @Operation(summary = "Deactivate cafe")
+    @Operation(summary = "Desactivar cafetería",
+            description = "Oculta la cafetería y bloquea su cuenta, sus ventas y el canje de sus beneficios")
     public ResponseEntity<Void> delete(@Parameter(description = "Cafe external ID") @PathVariable UUID externalId) {
         cafeService.delete(externalId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_SUPERADMIN')")
+    @PatchMapping("/{externalId}/activate")
+    @Operation(summary = "Reactivar cafetería", description = "Deshace la desactivación de la cafetería y de su cuenta")
+    public ResponseEntity<CafeResponse> reactivate(
+            @Parameter(description = "ID externo de la cafetería") @PathVariable UUID externalId) {
+        return ResponseEntity.ok(cafeService.reactivate(externalId));
     }
 
     @PreAuthorize("hasAnyAuthority('ROLE_SUPERADMIN', 'ROLE_CLIENTE')")

@@ -44,8 +44,12 @@ public class SecurityUtils {
     }
 
     public CafeEntity currentCafe() {
-        return findCurrentCafe()
+        CafeEntity cafe = findCurrentCafe()
                 .orElseThrow(() -> new AccessDeniedException("The current user has no cafe"));
+        if (!cafe.isActive()) {
+            throw new AccessDeniedException("Tu cafetería está desactivada. Comunicate con el administrador");
+        }
+        return cafe;
     }
 
     public Optional<CafeEntity> findCurrentCafe() {

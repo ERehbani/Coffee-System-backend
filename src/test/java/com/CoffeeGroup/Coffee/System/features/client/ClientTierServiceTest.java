@@ -216,7 +216,7 @@ class ClientTierServiceTest {
         global.setFormat(BenefitFormatEntity.builder().code(BenefitType.PRODUCTO_GRATIS_SOCIO).build());
         BenefitEntity local = benefit("Two for one", bronce);
         local.setEndDate(null);
-        local.setCafe(CafeEntity.builder().name("Cafe Central").build());
+        local.setCafe(CafeEntity.builder().name("Cafe Central").active(true).build());
 
         when(securityUtils.currentClient()).thenReturn(client(bronce, 0, 0));
         when(benefitRepository.findByTierIsNotNull()).thenReturn(List.of(global, local));

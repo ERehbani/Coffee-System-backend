@@ -126,7 +126,11 @@ public class BenefitEntity extends AuditableEntity {
     }
 
     public boolean isVisibleOn(LocalDate today) {
-        return isActive() && isPublished() && isInsideDates(today);
+        return isActive() && isPublished() && isInsideDates(today) && belongsToActiveCafe();
+    }
+
+    public boolean belongsToActiveCafe() {
+        return isGlobal() || cafe.isActive();
     }
 
     public boolean isEnabledOn(LocalDate today) {
@@ -158,6 +162,9 @@ public class BenefitEntity extends AuditableEntity {
     public void ensureRedeemableBy(ClientEntity client, LocalDate today) {
         if (!isActive() || !isPublished()) {
             throw new BusinessRuleException("Benefit is not enabled");
+        }
+        if (!belongsToActiveCafe()) {
+            throw new BusinessRuleException("La cafetería de este beneficio está desactivada");
         }
         if (startDate != null && startDate.isAfter(today)) {
             throw new BusinessRuleException("Benefit is not available yet");
