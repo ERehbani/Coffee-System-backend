@@ -25,6 +25,8 @@ public interface RedemptionRepository
 
     List<RedemptionEntity> findByClientAndStatusOrderByRedeemedAtDesc(ClientEntity client, RedemptionStatus status);
 
+    boolean existsByBenefit(BenefitEntity benefit);
+
     long countByClientAndBenefitAndStatusNot(ClientEntity client, BenefitEntity benefit, RedemptionStatus status);
 
     long countByBenefitCafeAndStatusAndUsedAtBetween(CafeEntity cafe, RedemptionStatus status, LocalDateTime from,

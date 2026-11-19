@@ -40,6 +40,7 @@ import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
 import com.CoffeeGroup.Coffee.System.features.catalog.ICatalogProductService;
 import com.CoffeeGroup.Coffee.System.features.product.CafeProductEntity;
 import com.CoffeeGroup.Coffee.System.features.product.CafeProductRepository;
+import com.CoffeeGroup.Coffee.System.features.redemption.RedemptionRepository;
 import com.CoffeeGroup.Coffee.System.features.tier.TierEntity;
 import com.CoffeeGroup.Coffee.System.features.tier.TierRepository;
 import com.CoffeeGroup.Coffee.System.support.TestData;
@@ -49,6 +50,8 @@ class BenefitServiceTest {
 
     @Mock
     private BenefitRepository benefitRepository;
+    @Mock
+    private RedemptionRepository redemptionRepository;
     @Mock
     private BenefitFormatRepository benefitFormatRepository;
     @Mock
@@ -73,7 +76,7 @@ class BenefitServiceTest {
     void setUp() {
         BenefitRules rules = new BenefitRules(List.of(
                 new PercentageDiscountRule(), new TwoForOneRule(), new FreeProductRule(cafeProductRepository)));
-        service = new BenefitService(benefitRepository, benefitFormatRepository, tierRepository,
+        service = new BenefitService(benefitRepository, redemptionRepository, benefitFormatRepository, tierRepository,
                 cafeProductRepository, catalogProductService, new BenefitMapper(), rules, cafeAccessGuard,
                 securityUtils, TestData.fixedClock());
         lenient().when(tierRepository.findByExternalId(bronce.getExternalId())).thenReturn(Optional.of(bronce));
@@ -174,6 +177,20 @@ class BenefitServiceTest {
         when(securityUtils.currentCafe()).thenReturn(central);
         service.delete(ofCentral.getExternalId());
         verify(benefitRepository).delete(ofCentral);
+    }
+
+    @Test
+    void aBenefitWithRedemptionsIsNotDeletedSoItsCouponsKeepWorking() {
+        BenefitEntity redeemed = TestData.benefit("Local", BenefitType.CODIGO_DESCUENTO, central, bronce);
+        when(benefitRepository.findByExternalId(redeemed.getExternalId())).thenReturn(Optional.of(redeemed));
+        when(securityUtils.isCafe()).thenReturn(true);
+        when(securityUtils.currentCafe()).thenReturn(central);
+        when(redemptionRepository.existsByBenefit(redeemed)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.delete(redeemed.getExternalId()))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessageContaining("Pausalo");
+        verify(benefitRepository, never()).delete(any(BenefitEntity.class));
     }
 
     @Test
