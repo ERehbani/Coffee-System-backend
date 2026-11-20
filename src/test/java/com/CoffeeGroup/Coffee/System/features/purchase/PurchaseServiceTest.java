@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,6 +35,7 @@ import com.CoffeeGroup.Coffee.System.features.benefit.rules.BenefitRules;
 import com.CoffeeGroup.Coffee.System.features.benefit.rules.PercentageDiscountRule;
 import com.CoffeeGroup.Coffee.System.features.benefit_format.BenefitType;
 import com.CoffeeGroup.Coffee.System.features.cafe.CafeEntity;
+import com.CoffeeGroup.Coffee.System.features.cafe.OpeningHours;
 import com.CoffeeGroup.Coffee.System.features.cart.CartEntity;
 import com.CoffeeGroup.Coffee.System.features.cart.CartRepository;
 import com.CoffeeGroup.Coffee.System.features.client.ClientEntity;
@@ -88,6 +90,8 @@ class PurchaseServiceTest {
                 purchaseMapper, new BenefitRules(List.of(new PercentageDiscountRule())), clientTierService,
                 securityUtils, cafeAccessGuard, eventPublisher, TestData.fixedClock());
 
+        // El reloj fijo marca las 10:00, así que la cafetería está abierta salvo que el test diga lo contrario.
+        openCentralToday(LocalTime.of(8, 0), LocalTime.of(20, 0));
         client = TestData.client(bronce, 950);
         capuccino = TestData.product(central, TestData.catalogProduct("Capuccino"), "2500", 80);
         cart = CartEntity.openFor(client, central);
@@ -96,6 +100,10 @@ class PurchaseServiceTest {
 
         lenient().when(securityUtils.currentClient()).thenReturn(client);
         lenient().when(cartRepository.findByExternalId(cart.getExternalId())).thenReturn(Optional.of(cart));
+    }
+
+    private void openCentralToday(LocalTime opensAt, LocalTime closesAt) {
+        central.replaceOpeningHours(List.of(OpeningHours.of(TestData.TODAY.getDayOfWeek(), opensAt, closesAt)));
     }
 
     private PurchaseEntity savedPurchase() {
@@ -128,6 +136,18 @@ class PurchaseServiceTest {
         assertThat(event.getValue().receipt().recipient()).isEqualTo("ana@test.com");
         assertThat(event.getValue().receipt().total()).isEqualByComparingTo("5000");
         assertThat(event.getValue().receipt().lines()).hasSize(1);
+    }
+
+    @Test
+    void createRejectsThePurchaseWhenTheCafeIsClosed() {
+        openCentralToday(LocalTime.of(14, 0), LocalTime.of(20, 0));
+
+        assertThatThrownBy(() -> service.create(new CreatePurchaseRequest(cart.getExternalId(), null)))
+                .isInstanceOf(BusinessRuleException.class)
+                .hasMessage("The cafe is closed right now");
+        verify(purchaseRepository, never()).save(any());
+        assertThat(client.getCurrentPoints()).isEqualTo(950);
+        assertThat(cart.getItems()).isNotEmpty();
     }
 
     @Test

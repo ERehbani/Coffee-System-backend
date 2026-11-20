@@ -67,6 +67,7 @@ public class PurchaseService implements IPurchaseService {
         }
 
         PurchaseDraft draft = PurchaseDraft.from(cart);
+        ensureCafeIsOpen(draft.cafe());
         RedemptionEntity coupon = applyCoupon(request.validationCode(), client, draft);
 
         PurchaseEntity purchase = PurchaseEntity.builder()
@@ -141,6 +142,12 @@ public class PurchaseService implements IPurchaseService {
     @Override
     public PageResponse<PurchaseResponse> getMyHistory(Pageable pageable) {
         return search(null, securityUtils.currentClient(), PurchaseFilter.none(), pageable);
+    }
+
+    private void ensureCafeIsOpen(CafeEntity cafe) {
+        if (!cafe.isOpenAt(LocalDateTime.now(clock))) {
+            throw new BusinessRuleException("The cafe is closed right now");
+        }
     }
 
     private RedemptionEntity applyCoupon(String validationCode, ClientEntity client, PurchaseDraft draft) {
