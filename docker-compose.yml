@@ -20,6 +20,15 @@ services:
     build: .
     env_file:
       - .env
+    # Inside the compose network the database is the "mysql" service, not localhost.
+    # To use a MySQL running on your machine instead, set COMPOSE_DB_URL, COMPOSE_DB_USER and
+    # COMPOSE_DB_PASSWORD in .env (host: host.docker.internal) and run: docker compose up -d --no-deps app
+    environment:
+      DB_URL: ${COMPOSE_DB_URL:-jdbc:mysql://mysql:3306/${MYSQL_DATABASE}}
+      DB_USER: ${COMPOSE_DB_USER:-root}
+      DB_PASSWORD: ${COMPOSE_DB_PASSWORD:-${MYSQL_ROOT_PASSWORD}}
+      # The frontend container serves the app on :4000, besides ng serve on :4200.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200},http://localhost:4000
     container_name: spring-app
     restart: always
     depends_on:
@@ -27,6 +36,8 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   mysql_data:
