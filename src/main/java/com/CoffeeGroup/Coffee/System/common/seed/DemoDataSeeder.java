@@ -69,6 +69,7 @@ public class DemoDataSeeder implements ApplicationRunner {
     static final String CORNER = "cafe.esquina@test.com";
 
     private static final String IMG = "https://images.unsplash.com/photo-";
+    private static final String DEMO_BENEFIT_IMAGE = IMG + "1495474472287-4d71bcdd2085?w=800";
     private static final List<DayOfWeek> WEEKDAYS = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
             DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY);
     private static final List<DayOfWeek> MONDAY_TO_SATURDAY = List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY,
@@ -342,6 +343,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         return BenefitEntity.builder()
                 .name(name)
                 .description(description)
+                .image(DEMO_BENEFIT_IMAGE)
                 .pointsCost(pointsCost)
                 .startDate(today)
                 .endDate(today.plusMonths(3))

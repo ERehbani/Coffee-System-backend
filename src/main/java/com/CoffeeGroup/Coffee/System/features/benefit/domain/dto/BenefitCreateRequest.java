@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
 
 public record BenefitCreateRequest(
         @NotBlank(message = "The name is required")
@@ -22,6 +23,9 @@ public record BenefitCreateRequest(
         String description,
 
         String conditions,
+
+        @Size(max = 500, message = "La imagen no puede superar los 500 caracteres")
+        String image,
 
         @NotNull(message = "The pointsCost is required")
         @PositiveOrZero(message = "The pointsCost cannot be negative")

@@ -109,6 +109,7 @@ public class ClientTierService implements IClientTierService {
                 benefit.getExternalId(),
                 benefit.getName(),
                 benefit.getDescription(),
+                benefit.getImage(),
                 benefit.getPointsCost(),
                 benefit.getEndDate(),
                 benefit.isGlobal() ? null : benefit.getCafe().getName(),

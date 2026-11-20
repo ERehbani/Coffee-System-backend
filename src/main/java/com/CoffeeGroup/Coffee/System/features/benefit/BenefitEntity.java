@@ -43,6 +43,9 @@ public class BenefitEntity extends AuditableEntity {
     @Column(name = "conditions", columnDefinition = "TEXT")
     private String conditions;
 
+    @Column(name = "image", length = 500)
+    private String image;
+
     @Column(name = "points_cost", nullable = false)
     private Integer pointsCost;
 

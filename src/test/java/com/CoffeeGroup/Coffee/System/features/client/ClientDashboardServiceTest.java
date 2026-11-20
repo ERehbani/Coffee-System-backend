@@ -126,7 +126,7 @@ class ClientDashboardServiceTest {
     }
 
     private static TierBenefitResponse tierBenefit(String name, boolean soldOut) {
-        return new TierBenefitResponse(UUID.randomUUID(), name, null, 100, null, null, "BRONCE", "CODIGO_DESCUENTO",
+        return new TierBenefitResponse(UUID.randomUUID(), name, null, null, 100, null, null, "BRONCE", "CODIGO_DESCUENTO",
                 soldOut, soldOut ? 0 : 5, true);
     }
 }

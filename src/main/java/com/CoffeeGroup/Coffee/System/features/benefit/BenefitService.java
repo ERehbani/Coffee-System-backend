@@ -66,6 +66,7 @@ public class BenefitService implements IBenefitService {
                 .name(request.name())
                 .description(request.description())
                 .conditions(request.conditions())
+                .image(request.image())
                 .pointsCost(request.pointsCost())
                 .startDate(request.startDate())
                 .endDate(request.endDate())
@@ -89,6 +90,7 @@ public class BenefitService implements IBenefitService {
         benefit.setName(request.name());
         benefit.setDescription(request.description());
         benefit.setConditions(request.conditions());
+        benefit.setImage(request.image());
         benefit.setPointsCost(request.pointsCost());
         benefit.setStartDate(request.startDate());
         benefit.setEndDate(request.endDate());

@@ -79,7 +79,7 @@ class ClientControllerContractTest {
     void getMyBenefitsServesTheEnabledBenefitsUnderMeBenefits() throws Exception {
         UUID id = UUID.fromString("11111111-1111-1111-1111-111111111111");
         when(clientTierService.viewMyBenefits()).thenReturn(List.of(
-                new TierBenefitResponse(id, "Cafe de cortesia", "Un cafe gratis", 300,
+                new TierBenefitResponse(id, "Cafe de cortesia", "Un cafe gratis", null, 300,
                         LocalDate.of(2026, 12, 31), null, "BRONCE", "PRODUCTO_GRATIS_SOCIO", false, 10, true)));
 
         mockMvc.perform(get("/clients/me/benefits"))
@@ -104,7 +104,7 @@ class ClientControllerContractTest {
                 new ClientDashboardResponse.Profile(clientId, "Ana", null, "ana@mail.com", null, "https://img/ana.png"),
                 new ClientDashboardResponse.Loyalty("PLATA", 820, 1420, "ORO", 3000, 21, 1580),
                 List.of(new ClientDashboardResponse.ActiveRedemption(
-                        redemptionId, "Free coffee", "A free coffee", "ABC123", LocalDate.of(2026, 12, 31),
+                        redemptionId, "Free coffee", "A free coffee", null, "ABC123", LocalDate.of(2026, 12, 31),
                         "Cafe Central")),
                 List.of(new ClientDashboardResponse.NearbyCafe(
                         cafeId, "Cafe Central", null, 4.3, 12, false, null, 80, "Cafe en el centro")),
@@ -153,7 +153,7 @@ class ClientControllerContractTest {
                 new ClientDashboardResponse.Profile(UUID.randomUUID(), "Ana", null, null, null, null),
                 new ClientDashboardResponse.Loyalty("BRONCE", 0, 0, "PLATA", 1000, 0, 1000),
                 List.of(new ClientDashboardResponse.ActiveRedemption(
-                        UUID.randomUUID(), "Global perk", "", "XYZ", null, null)),
+                        UUID.randomUUID(), "Global perk", "", null, "XYZ", null, null)),
                 List.of(), List.of()));
 
         mockMvc.perform(get("/clients/me/dashboard"))

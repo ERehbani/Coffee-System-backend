@@ -7,6 +7,7 @@ public record TierBenefitResponse(
         UUID externalId,
         String name,
         String description,
+        String image,
         Integer pointsCost,
         LocalDate endDate,
         String cafeName,

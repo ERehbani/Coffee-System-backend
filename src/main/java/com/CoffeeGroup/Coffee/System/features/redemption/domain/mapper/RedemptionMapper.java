@@ -27,6 +27,7 @@ public class RedemptionMapper {
                 benefit.getName(),
                 cafe == null ? GLOBAL_CAFE_NAME : cafe.getName(),
                 benefit.getDescription(),
+                benefit.getImage(),
                 benefit.getEndDate(),
                 benefit.getConditions(),
                 redemption.getUsedAt(),

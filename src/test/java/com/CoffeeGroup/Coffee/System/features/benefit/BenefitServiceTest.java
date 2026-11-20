@@ -85,7 +85,7 @@ class BenefitServiceTest {
     }
 
     private BenefitCreateRequest request(BenefitType type, BigDecimal discount, UUID productId) {
-        return new BenefitCreateRequest("Beneficio", "Descripcion", null, 100, null, null, 20, null, type, discount,
+        return new BenefitCreateRequest("Beneficio", "Descripcion", null, null, 100, null, null, 20, null, type, discount,
                 productId, null, null, bronce.getExternalId());
     }
 
@@ -199,7 +199,7 @@ class BenefitServiceTest {
         benefit.setRedeemedCount(8);
         when(benefitRepository.findByExternalId(benefit.getExternalId())).thenReturn(Optional.of(benefit));
 
-        BenefitUpdateRequest update = new BenefitUpdateRequest("Cafe", "Descripcion", null, 100, null, null, 5, null,
+        BenefitUpdateRequest update = new BenefitUpdateRequest("Cafe", "Descripcion", null, null, 100, null, null, 5, null,
                 BenefitType.CODIGO_DESCUENTO, BigDecimal.TEN, null, null, bronce.getExternalId());
 
         assertThatThrownBy(() -> service.update(benefit.getExternalId(), update))
